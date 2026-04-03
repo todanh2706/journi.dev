@@ -276,3 +276,219 @@
 
 ### AI_MODEL_CONFIG
 - AI_MODEL_CONFIG(config_id) 1---n AI_REVIEW_TASK(config_id) (powers)
+
+### ERD
+
+```mermaid
+erDiagram
+    %% ================= ENTITIES =================
+    USER {
+        UUID user_id PK
+        Varchar username
+        Varchar email
+        Varchar role
+        Varchar status
+    }
+
+    COMMUNITY_CLUSTER {
+        UUID cluster_id PK
+        Varchar name
+        Varchar chapter_code
+    }
+
+    CLUSTER_MEMBERSHIP {
+        UUID cluster_id PK,FK
+        UUID user_id PK,FK
+        Varchar member_role
+    }
+
+    HEATMAP_STREAK {
+        UUID streak_id PK
+        UUID user_id FK
+        Integer current_streak
+        Integer longest_streak
+    }
+
+    REMINDER_NOTIFICATION {
+        UUID notification_id PK
+        UUID user_id FK
+        Varchar notification_type
+        Varchar status
+    }
+
+    LEARNING_ROADMAP {
+        UUID roadmap_id PK
+        UUID user_id FK "Owner"
+        Varchar title
+        Boolean is_dynamic
+    }
+
+    CLUSTER_NODE_MAPPING {
+        UUID cluster_id PK,FK
+        UUID node_id PK,FK
+    }
+
+    SKILL_NODE {
+        UUID node_id PK
+        UUID roadmap_id FK
+        Varchar title
+        Varchar slug
+        Integer order_index
+        Jsonb content_json
+        Boolean is_locked
+    }
+
+    NODE_PREREQUISITE {
+        UUID parent_node_id PK,FK
+        UUID child_node_id PK,FK
+        Varchar relation_type
+    }
+
+    USER_NODE_PROGRESS {
+        UUID progress_id PK
+        UUID user_id FK
+        UUID node_id FK
+        Varchar status
+    }
+
+    LEARNING_CONTENT {
+        UUID content_id PK
+        UUID node_id FK
+        Varchar source_type
+        Varchar title
+    }
+
+    CHALLENGE {
+        UUID challenge_id PK
+        UUID node_id FK
+        Varchar title
+        Integer max_score
+    }
+
+    LEADERBOARD {
+        UUID leaderboard_id PK
+        Varchar niche
+        Varchar period
+    }
+
+    LEADERBOARD_ENTRY {
+        UUID leaderboard_id PK,FK
+        UUID user_id PK,FK
+        Integer score
+        Integer rank_position
+    }
+
+    GITHUB_REPOSITORY {
+        UUID repo_id PK
+        UUID user_id FK
+        Varchar repo_name
+        Varchar github_url
+    }
+
+    GITHUB_WEBHOOK_EVENT {
+        UUID webhook_event_id PK
+        UUID repo_id FK
+        Varchar event_type
+        Jsonb payload_json
+    }
+
+    SUBMISSION {
+        UUID submission_id PK
+        UUID user_id FK
+        UUID challenge_id FK
+        UUID github_repo_id FK
+        Varchar commit_hash
+        Varchar status
+    }
+
+    PEER_REVIEW {
+        UUID peer_review_id PK
+        UUID submission_id FK
+        UUID reviewer_user_id FK
+        Integer rating
+    }
+
+    CODE_REVIEW {
+        UUID review_id PK
+        UUID submission_id FK
+        Varchar reviewer_type
+        Integer score
+        Varchar decision
+    }
+
+    AI_REVIEW_TASK {
+        UUID task_id PK
+        UUID webhook_event_id FK
+        UUID submission_id FK
+        Varchar task_status
+        Jsonb analysis_json
+    }
+
+    AI_MODEL_CONFIG {
+        UUID config_id PK
+        Varchar model_provider
+        Varchar model_name
+        Boolean enabled
+    }
+
+    DEPLOYMENT_ENVIRONMENT {
+        UUID environment_id PK
+        UUID user_id FK
+        Varchar name
+        Varchar platform
+    }
+
+    AI_ASSISTANT_CONVERSATION {
+        UUID conversation_id PK
+        UUID user_id FK
+        UUID node_id FK
+        Varchar session_token
+    }
+
+    %% ================= RELATIONSHIPS =================
+    
+    %% User Core Relations
+    USER ||--|| HEATMAP_STREAK : "tracks"
+    USER ||--o{ LEARNING_ROADMAP : "owns"
+    USER ||--o{ CLUSTER_MEMBERSHIP : "joins"
+    USER ||--o{ USER_NODE_PROGRESS : "tracks_progress"
+    USER ||--o{ SUBMISSION : "submits"
+    USER ||--o{ PEER_REVIEW : "reviews"
+    USER ||--o{ GITHUB_REPOSITORY : "connects"
+    USER ||--o{ LEADERBOARD_ENTRY : "ranks"
+    USER ||--o{ REMINDER_NOTIFICATION : "receives"
+    USER ||--o{ AI_ASSISTANT_CONVERSATION : "uses"
+    USER ||--o{ DEPLOYMENT_ENVIRONMENT : "owns"
+
+    %% Roadmap & Nodes
+    LEARNING_ROADMAP ||--o{ SKILL_NODE : "contains"
+    SKILL_NODE ||--o{ NODE_PREREQUISITE : "is_prerequisite_of"
+    SKILL_NODE ||--o{ NODE_PREREQUISITE : "depends_on"
+    SKILL_NODE ||--o{ LEARNING_CONTENT : "has_content"
+    SKILL_NODE ||--o{ CHALLENGE : "generates_challenge"
+    SKILL_NODE ||--o{ USER_NODE_PROGRESS : "monitored_by"
+    SKILL_NODE ||--o{ AI_ASSISTANT_CONVERSATION : "focuses_on"
+
+    %% Community & Grouping
+    COMMUNITY_CLUSTER ||--o{ CLUSTER_MEMBERSHIP : "has_members"
+    COMMUNITY_CLUSTER ||--o{ CLUSTER_NODE_MAPPING : "contains_nodes"
+    SKILL_NODE ||--o{ CLUSTER_NODE_MAPPING : "belongs_to_clusters"
+
+    %% Challenges & Submissions
+    CHALLENGE ||--o{ SUBMISSION : "for"
+    SUBMISSION ||--o{ PEER_REVIEW : "receives_peer"
+    SUBMISSION ||--o{ CODE_REVIEW : "receives_system"
+    SUBMISSION ||--o{ AI_REVIEW_TASK : "processed_by_AI"
+
+    %% GitHub Integration
+    GITHUB_REPOSITORY ||--o{ SUBMISSION : "source_of"
+    GITHUB_REPOSITORY ||--o{ GITHUB_WEBHOOK_EVENT : "emits"
+    GITHUB_WEBHOOK_EVENT ||--o{ AI_REVIEW_TASK : "triggers"
+
+    %% AI & Environment
+    DEPLOYMENT_ENVIRONMENT ||--o{ AI_MODEL_CONFIG : "uses"
+    AI_MODEL_CONFIG ||--o{ AI_REVIEW_TASK : "powers"
+
+    %% Leaderboard
+    LEADERBOARD ||--o{ LEADERBOARD_ENTRY : "contains"
+```
