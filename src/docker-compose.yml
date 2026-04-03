@@ -6,7 +6,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: journi_frontend
-    ports: 3000:3000
+    ports:
+      - "3000:3000"
     env_file: ./frontend/.env
     environment:
       - CHOKIDAR_USEPOLLING=true
@@ -20,7 +21,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: journi_backend
-    ports: 8000:8000
+    ports:
+      - "8000:8080"
     env_file: ./backend/.env
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DB_URL}
@@ -33,15 +35,17 @@ services:
       - cache
     restart: always
     volumes:
-      - ./backend/:app
+      - ./backend:/app
       - ~/.m2:/root/.m2
 
   database:
     image: postgres:16
     container_name: journi_prim_db
     env_file: .env
-    ports: 5432:5432
-    volumes: journi_prim_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    volumes:
+      - journi_prim_db:/var/lib/postgresql/data
     restart: always
     environment:
       - POSTGRES_USER=${DB_USER}
@@ -52,8 +56,10 @@ services:
     image: redis:7
     container_name: journi_cache_db
     env_file: .env
-    ports: 6379:6379
-    volumes: journi_cache_db:/data
+    ports:
+      - "6379:6379"
+    volumes:
+      - journi_cache_db:/data
     restart: always
 
 volumes:
