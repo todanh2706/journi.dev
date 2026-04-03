@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: journi_frontend
+    ports: 3000:3000
+    env_file: ./frontend/.env
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: journi_backend
+    ports: 8000:8000
+    env_file: ./backend/.env
+    depends_on:
+      - database
+      - cache
+    restart: always
+
+  database:
+    image: postgres:16
+    container_name: journi_prim_db
+    env_file: .env
+    ports: 5432:5432
+    volumes: journi_prim_db:/var/lib/postgresql/data
+    restart: always
+
+  cache:
+    image: redis:7
+    container_name: journi_cache_db
+    env_file: .env
+    ports: 6379:6379
+    volumes: journi_cache_db:/data
+    restart: always
+
+volumes:
+  journi_prim_db:
+  journi_cache_db:
