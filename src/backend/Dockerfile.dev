@@ -1,0 +1,6 @@
+FROM eclipse-eclipse-temurin:21-jdk-alphine
+WORKDIR /app
+RUN apk add --no-cache bash
+COPY . .
+RUN chmod +x ./mvnw
+CMD ["./mvnw", "spring-boot:run"]
