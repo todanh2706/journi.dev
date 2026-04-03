@@ -1,0 +1,76 @@
+# =========================
+# Operating System Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# =========================
+# IDEs and Editors
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Node.js / React (Frontend)
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+.npm
+.eslintcache
+.stylelintcache
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Java / Spring Boot (Backend)
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Gradle (If used in backend)
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven (If used in backend)
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Miscellaneous
+# =========================
+*.pem
