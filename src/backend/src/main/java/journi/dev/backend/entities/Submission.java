@@ -2,12 +2,14 @@ package journi.dev.backend.entities;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,8 +20,9 @@ public class Submission {
     @Column(name = "submission_id")
     private UUID submissionId;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User submitee;
 
     @Column(name = "challenge_id")
     private UUID challengeId;
@@ -47,12 +50,12 @@ public class Submission {
         this.submissionId = submissionId;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public User getSubmitee() {
+        return submitee;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setSubmitee(User submitee) {
+        this.submitee = submitee;
     }
 
     public UUID getChallengeId() {

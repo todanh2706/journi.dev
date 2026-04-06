@@ -6,14 +6,14 @@ import java.util.UUID;
 
 public class LeaderboardEntryId implements Serializable {
     private UUID leaderboardId;
-    private UUID userId;
+    private UUID owner;
 
     public LeaderboardEntryId() {
     }
 
-    public LeaderboardEntryId(UUID leaderboardId, UUID userId) {
+    public LeaderboardEntryId(UUID leaderboardId, UUID owner) {
         this.leaderboardId = leaderboardId;
-        this.userId = userId;
+        this.owner = owner;
     }
 
     @Override
@@ -23,11 +23,11 @@ public class LeaderboardEntryId implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         LeaderboardEntryId that = (LeaderboardEntryId) o;
-        return Objects.equals(leaderboardId, that.leaderboardId) && Objects.equals(userId, that.userId);
+        return Objects.equals(leaderboardId, that.leaderboardId) && Objects.equals(owner, that.owner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(leaderboardId, userId);
+        return Objects.hash(leaderboardId, owner);
     }
 }

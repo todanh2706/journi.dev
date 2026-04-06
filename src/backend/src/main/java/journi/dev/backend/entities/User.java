@@ -1,23 +1,28 @@
 package journi.dev.backend.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.SQLRestriction;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 
 @Entity
-@Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id =?")
+@Table(name = "user")
+@SQLDelete(sql = "UPDATE user SET deleted_at = CURRENT_TIMESTAMP WHERE user_id =?")
 @SQLRestriction("deleted_at IS NULL")
-public class Users {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
@@ -48,6 +53,48 @@ public class Users {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LearningRoadmap> roadmaps = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LeaderboardEntry> leaderboardEntries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AiAssistantConversation> conversations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "submitee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reviewerUserId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PeerReview> reviewers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "joinee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClusterMembership> participations = new ArrayList<>();
+
+    public List<Submission> getSubmissions() {
+        return submissions;
+    }
+
+    public void setSubmissions(List<Submission> submissions) {
+        this.submissions = submissions;
+    }
+
+    public List<AiAssistantConversation> getConversations() {
+        return conversations;
+    }
+
+    public void setConversations(List<AiAssistantConversation> conversations) {
+        this.conversations = conversations;
+    }
+
+    public List<LeaderboardEntry> getLeaderboardEntries() {
+        return leaderboardEntries;
+    }
+
+    public void setLeaderboardEntries(List<LeaderboardEntry> leaderboardEntries) {
+        this.leaderboardEntries = leaderboardEntries;
+    }
 
     public UUID getUserId() {
         return userId;
@@ -119,5 +166,13 @@ public class Users {
 
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public List<LearningRoadmap> getRoadmaps() {
+        return roadmaps;
+    }
+
+    public void setRoadmaps(List<LearningRoadmap> roadmaps) {
+        this.roadmaps = roadmaps;
     }
 }

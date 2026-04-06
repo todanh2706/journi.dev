@@ -4,8 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -16,9 +19,9 @@ public class ClusterMembership {
     @Column(name = "cluster_id")
     private UUID clusterId;
 
-    @Id
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User joinee;
 
     @Column(name = "member_role", length = 30)
     private String memberRole;
@@ -34,12 +37,12 @@ public class ClusterMembership {
         this.clusterId = clusterId;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public User getJoinee() {
+        return joinee;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setJoinee(User joinee) {
+        this.joinee = joinee;
     }
 
     public String getMemberRole() {
