@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "reminder_notificaton")
+@Table(name = "reminder_notification")
 public class ReminderNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,7 +27,7 @@ public class ReminderNotification {
     @Column(length = 30)
     private String channel;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @Column(name = "scheduled_at")

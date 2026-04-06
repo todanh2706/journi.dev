@@ -3,8 +3,10 @@ package journi.dev.backend.entities;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,23 +16,32 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "community_clusters")
-@SQLDelete(sql = "UPDATE community_clusters SET deleted_at = CURRENT_TIMESTAMP WHERE cluster_id =?")
+@Table(name = "challenge")
+@SQLDelete(sql = "UPDATE challenge SET deleted_at = CURRENT_TIMESTAMP WHERE challenge_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class CommunityClusters {
+public class Challenge {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "cluster_id")
-    private UUID clusterId;
+    @Column(name = "challenge_id")
+    private UUID challengeId;
 
-    @Column(length = 120, nullable = false)
-    private String name;
+    @Column(name = "node_id")
+    private UUID nodeId;
+
+    @Column(length = 150, nullable = false)
+    private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "chapter_code", length = 50)
-    private String chapterCode;
+    @Column(length = 20)
+    private String difficulty;
+
+    @Column(name = "max_score")
+    private Integer maxScore;
+
+    @Column(name = "is_required")
+    private Boolean isRequired;
 
     @Column(name = "created_by")
     private UUID createdBy;
@@ -38,29 +49,39 @@ public class CommunityClusters {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public UUID getClusterId() {
-        return clusterId;
+    public UUID getChallengeId() {
+        return challengeId;
     }
 
-    public void setClusterId(UUID clusterId) {
-        this.clusterId = clusterId;
+    public void setChallengeId(UUID challengeId) {
+        this.challengeId = challengeId;
     }
 
-    public String getName() {
-        return name;
+    public UUID getNodeId() {
+        return nodeId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNodeId(UUID nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -71,12 +92,28 @@ public class CommunityClusters {
         this.description = description;
     }
 
-    public String getChapterCode() {
-        return chapterCode;
+    public String getDifficulty() {
+        return difficulty;
     }
 
-    public void setChapterCode(String chapterCode) {
-        this.chapterCode = chapterCode;
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public Integer getMaxScore() {
+        return maxScore;
+    }
+
+    public void setMaxScore(Integer maxScore) {
+        this.maxScore = maxScore;
+    }
+
+    public Boolean getIsRequired() {
+        return isRequired;
+    }
+
+    public void setIsRequired(Boolean isRequired) {
+        this.isRequired = isRequired;
     }
 
     public UUID getCreatedBy() {
