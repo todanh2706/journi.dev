@@ -19,6 +19,7 @@ public class ClusterMembership {
     @Column(name = "cluster_id")
     private UUID clusterId;
 
+    @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User joinee;

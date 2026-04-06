@@ -6,14 +6,14 @@ import java.util.UUID;
 
 public class ClusterMembershipId implements Serializable {
     private UUID clusterId;
-    private UUID userId;
+    private UUID joinee;
 
     public ClusterMembershipId() {
     };
 
-    public ClusterMembershipId(UUID clusterId, UUID userId) {
+    public ClusterMembershipId(UUID clusterId, UUID joinee) {
         this.clusterId = clusterId;
-        this.userId = userId;
+        this.joinee = joinee;
     }
 
     @Override
@@ -24,11 +24,11 @@ public class ClusterMembershipId implements Serializable {
             return false;
 
         ClusterMembershipId that = (ClusterMembershipId) o;
-        return Objects.equals(clusterId, that.clusterId) && Objects.equals(userId, that.userId);
+        return Objects.equals(clusterId, that.clusterId) && Objects.equals(joinee, that.joinee);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clusterId, userId);
+        return Objects.hash(clusterId, joinee);
     }
 }
