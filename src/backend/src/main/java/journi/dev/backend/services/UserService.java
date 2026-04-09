@@ -33,8 +33,17 @@ public class UserService {
                 user.getDeletedAt())).collect(Collectors.toList());
     }
 
-    public User getUserById(UUID id) {
-        return userRepository.findById(id).orElse(null);
+    public UserResponse getUserById(UUID id) {
+        User user = userRepository.findById(id).orElse(null);
+        return new UserResponse(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getStatus(),
+                user.getCreateAt(),
+                user.getUpdatedAt(),
+                user.getDeletedAt());
     }
 
     public UserResponse createUser(UserRequest request) {
@@ -58,10 +67,19 @@ public class UserService {
                 savedUser.getDeletedAt());
     }
 
-    public User updateUser(UUID id, User user) {
+    public UserResponse updateUser(UUID id, User user) {
         if (userRepository.existsById(id)) {
             user.setUserId(id);
-            return userRepository.save(user);
+            User updatedUser = userRepository.save(user);
+            return new UserResponse(
+                    updatedUser.getUserId(),
+                    updatedUser.getUsername(),
+                    updatedUser.getEmail(),
+                    updatedUser.getRole(),
+                    updatedUser.getStatus(),
+                    updatedUser.getCreateAt(),
+                    updatedUser.getUpdatedAt(),
+                    updatedUser.getDeletedAt());
         }
         return null;
     }
