@@ -1,6 +1,8 @@
 package journi.dev.backend.services;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -38,13 +40,44 @@ public class HeatmapStreakService {
                 savedHeatmapStreak.getLongestStreak());
     }
 
-    public HeatmapStreakResponse getHeatmapStreak(UUID streakId) {
+    public HeatmapStreakResponse getHeatmapStreakByStreakId(UUID streakId) {
         HeatmapStreak foundHeatmapStreak = heatmapStreakRepository.findById(streakId).orElse(null);
+
+        if (foundHeatmapStreak == null) {
+            return null;
+        }
 
         return new HeatmapStreakResponse(
                 foundHeatmapStreak.getStreakId(),
                 foundHeatmapStreak.getOwner(),
                 foundHeatmapStreak.getCurrentStreak(),
                 foundHeatmapStreak.getLongestStreak());
+    }
+
+    public HeatmapStreakResponse getHeatmapStreak(UUID userId) {
+        User owner = userRepository.findById(userId).orElse(null);
+
+        if (owner == null) {
+            return null;
+        }
+
+        HeatmapStreak foundHeatmapStreak = heatmapStreakRepository.findByOwner(owner).orElse(null);
+        if (foundHeatmapStreak == null) {
+            return null;
+        }
+
+        return new HeatmapStreakResponse(
+                foundHeatmapStreak.getStreakId(),
+                foundHeatmapStreak.getOwner(),
+                foundHeatmapStreak.getCurrentStreak(),
+                foundHeatmapStreak.getLongestStreak());
+    }
+
+    public List<HeatmapStreakResponse> getAllStreaks() {
+        return heatmapStreakRepository.findAll().stream().map(streak -> new HeatmapStreakResponse(
+                streak.getStreakId(),
+                streak.getOwner(),
+                streak.getCurrentStreak(),
+                streak.getLongestStreak())).collect(Collectors.toList());
     }
 }
