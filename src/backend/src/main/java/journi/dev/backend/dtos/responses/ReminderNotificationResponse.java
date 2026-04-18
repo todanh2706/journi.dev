@@ -1,46 +1,29 @@
-package journi.dev.backend.entities;
+package journi.dev.backend.dtos.responses;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "reminder_notification")
-public class ReminderNotification {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "notification_id")
+public class ReminderNotificationResponse {
     private UUID notificationId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver")
-    private User receiver;
-
-    @Column(name = "notification_type", length = 30)
+    private UUID receiverId;
     private String notificationType;
-
-    @Column(length = 30)
     private String channel;
-
-    @Column(columnDefinition = "TEXT")
     private String message;
-
-    @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
-
-    @Column(name = "sent_at")
     private LocalDateTime sentAt;
-
-    @Column(length = 20)
     private String status;
+
+    public ReminderNotificationResponse(UUID notificationId, UUID receiverId, String notificationType, String channel,
+            String message, LocalDateTime scheduledAt, LocalDateTime sentAt, String status) {
+        this.notificationId = notificationId;
+        this.receiverId = receiverId;
+        this.notificationType = notificationType;
+        this.channel = channel;
+        this.message = message;
+        this.scheduledAt = scheduledAt;
+        this.sentAt = sentAt;
+        this.status = status;
+    }
 
     public UUID getNotificationId() {
         return notificationId;
@@ -50,12 +33,12 @@ public class ReminderNotification {
         this.notificationId = notificationId;
     }
 
-    public User getReceiver() {
-        return receiver;
+    public UUID getReceiverId() {
+        return receiverId;
     }
 
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
+    public void setReceiverId(UUID receiverId) {
+        this.receiverId = receiverId;
     }
 
     public String getNotificationType() {
@@ -105,5 +88,4 @@ public class ReminderNotification {
     public void setStatus(String status) {
         this.status = status;
     }
-
 }

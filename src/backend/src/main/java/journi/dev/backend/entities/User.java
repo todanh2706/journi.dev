@@ -15,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 
@@ -71,6 +72,17 @@ public class User {
 
     @OneToMany(mappedBy = "joinee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClusterMembership> participations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReminderNotification> notifications = new ArrayList<>();
+
+    public List<ReminderNotification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<ReminderNotification> notifications) {
+        this.notifications = notifications;
+    }
 
     public List<Submission> getSubmissions() {
         return submissions;

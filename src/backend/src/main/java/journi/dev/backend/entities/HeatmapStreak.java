@@ -23,7 +23,7 @@ public class HeatmapStreak {
     private UUID streakId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "owner", unique = true)
     private User owner;
 
     @Column(name = "current_streak")

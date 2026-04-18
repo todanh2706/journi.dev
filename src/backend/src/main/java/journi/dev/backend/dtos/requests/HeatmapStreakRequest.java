@@ -3,9 +3,9 @@ package journi.dev.backend.dtos.requests;
 import java.util.UUID;
 
 public class HeatmapStreakRequest {
-    private UUID streakId;
     private UUID userId;
     private Integer currentStreak;
+    private Integer longestStreak;
 
     public Integer getCurrentStreak() {
         return currentStreak;
@@ -15,8 +15,6 @@ public class HeatmapStreakRequest {
         this.currentStreak = currentStreak;
     }
 
-    private Integer longestStreak;
-
     public Integer getLongestStreak() {
         return longestStreak;
     }
@@ -25,15 +23,10 @@ public class HeatmapStreakRequest {
         this.longestStreak = longestStreak;
     }
 
-    public HeatmapStreakRequest() {
-    }
-
-    public UUID getStreakId() {
-        return streakId;
-    }
-
-    public void setStreakId(UUID streakId) {
-        this.streakId = streakId;
+    public HeatmapStreakRequest(UUID userId, Integer currentStreak, Integer longestStreak) {
+        this.userId = userId;
+        this.currentStreak = currentStreak;
+        this.longestStreak = longestStreak;
     }
 
     public UUID getUserId() {

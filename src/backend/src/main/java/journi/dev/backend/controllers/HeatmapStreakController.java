@@ -26,11 +26,14 @@ public class HeatmapStreakController {
     }
 
     @GetMapping
-    public List<HeatmapStreakResponse> getAllStreaks() {
-        return heatmapStreakService.getAllStreaks();
+    public ResponseEntity<List<HeatmapStreakResponse>> getAllStreaks() {
+        List<HeatmapStreakResponse> responses = heatmapStreakService.getAllStreaks();
+        if (responses.size() == 0)
+            return new ResponseEntity<>(responses, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/{userId}")
     public ResponseEntity<HeatmapStreakResponse> createHeadmapStreak(
             @PathVariable UUID userId,
             @RequestBody HeatmapStreakRequest request) {
@@ -41,6 +44,14 @@ public class HeatmapStreakController {
     @GetMapping("/{userId}")
     public ResponseEntity<HeatmapStreakResponse> getHeatmapStreak(@PathVariable UUID userId) {
         HeatmapStreakResponse response = heatmapStreakService.getHeatmapStreak(userId);
+        if (response == null)
+            return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/streak/{streakId}")
+    public ResponseEntity<HeatmapStreakResponse> getHeamapStreakByStreak(@PathVariable UUID streakId) {
+        HeatmapStreakResponse response = heatmapStreakService.getHeatmapStreakByStreak(streakId);
         if (response == null)
             return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(response, HttpStatus.OK);

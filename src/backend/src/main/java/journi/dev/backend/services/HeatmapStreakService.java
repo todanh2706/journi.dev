@@ -40,7 +40,7 @@ public class HeatmapStreakService {
                 savedHeatmapStreak.getLongestStreak());
     }
 
-    public HeatmapStreakResponse getHeatmapStreakByStreakId(UUID streakId) {
+    public HeatmapStreakResponse getHeatmapStreakByStreak(UUID streakId) {
         HeatmapStreak foundHeatmapStreak = heatmapStreakRepository.findById(streakId).orElse(null);
 
         if (foundHeatmapStreak == null) {
