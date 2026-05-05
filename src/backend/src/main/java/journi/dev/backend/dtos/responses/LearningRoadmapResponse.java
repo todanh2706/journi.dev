@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public class LearningRoadmapResponse {
     private UUID roadmapId;
+    private String title;
     private String description;
     private String visibility;
     private Boolean isDynamic;
@@ -14,9 +15,10 @@ public class LearningRoadmapResponse {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public LearningRoadmapResponse(UUID roadmapId, String description, String visibility, Boolean isDynamic,
+    public LearningRoadmapResponse(UUID roadmapId, String title, String description, String visibility, Boolean isDynamic,
             UUID createdBy, UUID updatedBy, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.roadmapId = roadmapId;
+        this.title = title;
         this.description = description;
         this.visibility = visibility;
         this.isDynamic = isDynamic;
@@ -33,6 +35,14 @@ public class LearningRoadmapResponse {
 
     public void setRoadmapId(UUID roadmapId) {
         this.roadmapId = roadmapId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {

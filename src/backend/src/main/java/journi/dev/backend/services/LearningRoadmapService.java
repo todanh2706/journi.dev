@@ -38,6 +38,7 @@ public class LearningRoadmapService {
 
         return new LearningRoadmapResponse(
                 savedRoadmap.getRoadmapId(),
+                savedRoadmap.getTitle(),
                 savedRoadmap.getDescription(),
                 savedRoadmap.getVisibility(),
                 savedRoadmap.getIsDynamic(),
@@ -54,6 +55,7 @@ public class LearningRoadmapService {
 
         return new LearningRoadmapResponse(
                 roadmap.getRoadmapId(),
+                roadmap.getTitle(),
                 roadmap.getDescription(),
                 roadmap.getVisibility(),
                 roadmap.getIsDynamic(),
