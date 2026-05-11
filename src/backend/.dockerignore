@@ -1,0 +1,9 @@
+target
+.mvn/wrapper
+*.log
+.DS_Store
+.git
+.gitignore
+.env
+.idea
+*.iml

@@ -28,7 +28,7 @@ public class UserService {
                 user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
-                user.getCreateAt(),
+                user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getDeletedAt())).collect(Collectors.toList());
     }
@@ -41,7 +41,7 @@ public class UserService {
                 user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
-                user.getCreateAt(),
+                user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getDeletedAt());
     }
@@ -62,7 +62,7 @@ public class UserService {
                 savedUser.getEmail(),
                 savedUser.getRole(),
                 savedUser.getStatus(),
-                savedUser.getCreateAt(),
+                savedUser.getCreatedAt(),
                 savedUser.getUpdatedAt(),
                 savedUser.getDeletedAt());
     }
@@ -77,7 +77,7 @@ public class UserService {
                     updatedUser.getEmail(),
                     updatedUser.getRole(),
                     updatedUser.getStatus(),
-                    updatedUser.getCreateAt(),
+                    updatedUser.getCreatedAt(),
                     updatedUser.getUpdatedAt(),
                     updatedUser.getDeletedAt());
         }
