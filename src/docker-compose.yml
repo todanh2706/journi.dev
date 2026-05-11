@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: journi
+
 services:
   frontend:
     build:
@@ -7,7 +9,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: journi_frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file: ./frontend/.env
     environment:
       - CHOKIDAR_USEPOLLING=true
@@ -43,7 +45,7 @@ services:
     container_name: journi_prim_db
     env_file: .env
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - journi_prim_db:/var/lib/postgresql/data
     restart: always
@@ -57,7 +59,7 @@ services:
     container_name: journi_cache_db
     env_file: .env
     ports:
-      - "6379:6379"
+      - "6378:6379"
     volumes:
       - journi_cache_db:/data
     restart: always
