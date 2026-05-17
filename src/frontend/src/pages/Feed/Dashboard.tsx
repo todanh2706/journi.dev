@@ -18,6 +18,11 @@ import {
   Box
 } from "lucide-react";
 
+import { ActionCard } from "./components/ActionCard";
+import { LeaderboardItem } from "./components/LeaderboardItem";
+import { NavItem } from "./components/NavItem";
+import { MilestoneCard } from "./components/MilestoneCard";
+
 export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-[#0d0e1a] text-white font-sans selection:bg-indigo-500/30">
@@ -99,13 +104,19 @@ export default function Dashboard() {
                     <div key={colIndex} className="flex flex-col gap-2.5">
                       {Array.from({ length: 5 }).map((_, rowIndex) => {
                         const intensity = Math.random();
-                        let bgClass = "bg-[#1c1d33]"; // empty
-                        if (intensity > 0.95) bgClass = "bg-indigo-400"; // high
-                        else if (intensity > 0.8) bgClass = "bg-indigo-500"; // medium-high
-                        else if (intensity > 0.5) bgClass = "bg-indigo-600/60"; // medium
-                        else if (intensity > 0.3) bgClass = "bg-indigo-900/40"; // low
+                        const bgClass = 
+                          intensity > 0.95 ? "bg-indigo-400" :
+                          intensity > 0.8 ? "bg-indigo-500" :
+                          intensity > 0.5 ? "bg-indigo-600/60" :
+                          intensity > 0.3 ? "bg-indigo-900/40" : 
+                          "bg-[#1c1d33]";
 
-                        return <div key={rowIndex} className={`w-[14px] h-[14px] rounded-[3px] ${bgClass}`} />;
+                        return (
+                          <div 
+                            key={rowIndex} 
+                            className={`w-[14px] h-[14px] rounded-[3px] ${bgClass}`} 
+                          />
+                        );
                       })}
                     </div>
                   ))}
@@ -249,94 +260,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-function NavItem({ icon, label, active }: { icon: React.ReactNode; label: string; active?: boolean }) {
-  return (
-    <a
-      href="#"
-      className={`flex items-center gap-3.5 px-4 py-3 rounded-[14px] text-[15px] font-medium transition-colors ${
-        active 
-          ? "bg-indigo-500/10 text-indigo-300" 
-          : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.03]"
-      }`}
-    >
-      <span className={active ? "text-indigo-400" : "text-gray-500"}>{icon}</span>
-      {label}
-    </a>
-  );
-}
-
-function MilestoneCard({ title, id, progress, status, icon, locked }: any) {
-  return (
-    <div className={`bg-[#141527] border border-white/[0.06] rounded-2xl p-6 flex flex-col ${locked ? 'opacity-50 grayscale-[0.5]' : ''}`}>
-      <div className="flex items-start justify-between mb-8">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center border border-white/[0.04] ${locked ? 'bg-white/[0.02]' : 'bg-[#1c1d33] shadow-inner shadow-white/[0.02]'}`}>
-          {icon}
-        </div>
-        <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-md ${
-          status === 'In Progress' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20' :
-          status === 'Locked' ? 'bg-white/[0.03] text-gray-500 border border-white/[0.05]' :
-          'bg-white/[0.06] text-gray-300 border border-white/[0.05]'
-        }`}>
-          {status}
-        </div>
-      </div>
-      <div className="font-semibold text-[15px] mb-1.5 text-gray-100">{title}</div>
-      <div className="text-[13px] text-gray-500 mb-6 font-mono">ID: {id}</div>
-      
-      <div className="mt-auto">
-        <div className="flex justify-between text-[13px] mb-2.5">
-          <span className="text-gray-500">Progress</span>
-          <span className={locked ? "text-gray-500" : "text-indigo-400 font-medium"}>{progress}%</span>
-        </div>
-        <div className="h-2 w-full bg-[#1c1d33] rounded-full overflow-hidden border border-white/[0.02]">
-          <div 
-            className="h-full bg-indigo-500 rounded-full"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ActionCard({ title, subtitle, icon }: any) {
-  return (
-    <button className="bg-[#141527] border border-white/[0.06] hover:border-white/[0.12] hover:bg-[#18192e] rounded-2xl p-5 flex items-center gap-4 text-left transition-all active:scale-[0.98]">
-      <div className="w-12 h-12 rounded-xl bg-[#1c1d33] flex items-center justify-center shrink-0 border border-white/[0.03] shadow-inner shadow-white/[0.02]">
-        {icon}
-      </div>
-      <div>
-        <div className="font-semibold text-[15px] text-gray-100 mb-1">{title}</div>
-        <div className="text-[13px] text-gray-500">{subtitle}</div>
-      </div>
-    </button>
-  );
-}
-
-function LeaderboardItem({ rank, name, handle, pts, avatar, isUser }: any) {
-  return (
-    <div className={`flex items-center gap-3.5 p-2.5 rounded-xl ${isUser ? 'bg-[#1a1b30] border border-indigo-500/20 shadow-lg shadow-indigo-500/5' : ''}`}>
-      <div className={`w-6 text-center text-[15px] font-bold ${
-        rank === 1 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]' :
-        rank === 2 ? 'text-gray-300 drop-shadow-[0_0_8px_rgba(209,213,219,0.3)]' :
-        rank === 3 ? 'text-amber-600' :
-        isUser ? 'text-indigo-400' :
-        'text-gray-500'
-      }`}>
-        {rank}
-      </div>
-      <img src={avatar} alt={name} className="w-9 h-9 rounded-full border border-white/10" />
-      <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-medium text-gray-200 truncate">{name}</div>
-        <div className="text-[12px] text-gray-500 truncate">{handle}</div>
-      </div>
-      <div className={`text-[14px] font-semibold tracking-tight ${isUser ? 'text-indigo-400' : 'text-indigo-300'}`}>
-        {pts}
-      </div>
     </div>
   );
 }
