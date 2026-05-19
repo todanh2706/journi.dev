@@ -12,6 +12,8 @@ import { LockIcon } from "./components/Icons/LockIcon";
 import { Logo } from "../../components/Logo/Logo";
 import { SocialButton } from "./components/Buttons/SocialButton";
 
+/* ────────────────────────── api ────────────────────────── */
+
 
 
 /* ────────────────────────── main page ────────────────────────── */
@@ -24,7 +26,10 @@ export default function SignIn() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        // TODO: hook up auth
+        
+        // ****************************************************************************************** TO DO ******************************************************************************************
+        
+
         console.log("Sign in:", { email, password, rememberMe });
     };
 
