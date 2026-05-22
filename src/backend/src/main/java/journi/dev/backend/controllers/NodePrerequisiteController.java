@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.qos.logback.core.subst.Node;
 import journi.dev.backend.dtos.requests.NodePrerequisiteRequest;
 import journi.dev.backend.dtos.responses.NodePrerequisiteResponse;
 import journi.dev.backend.entities.NodePrerequisiteId;
