@@ -2,11 +2,14 @@ package journi.dev.backend.entities;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.hibernate.annotations.SQLRestriction;
 
 import jakarta.persistence.CascadeType;
@@ -15,15 +18,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id =?")
+@SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
@@ -55,6 +57,15 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "enabled")
+    private boolean enabled;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "verification_expiration")
+    private LocalDateTime verificationExpiration;
+
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LearningRoadmap> roadmaps = new ArrayList<>();
 
@@ -67,7 +78,7 @@ public class User {
     @OneToMany(mappedBy = "submitee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "reviewerUserId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PeerReview> reviewers = new ArrayList<>();
 
     @OneToMany(mappedBy = "joinee", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -180,11 +191,81 @@ public class User {
         this.deletedAt = deletedAt;
     }
 
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public List<LearningRoadmap> getRoadmaps() {
         return roadmaps;
     }
 
     public void setRoadmaps(List<LearningRoadmap> roadmaps) {
         this.roadmaps = roadmaps;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public LocalDateTime getVerificationExpiration() {
+        return verificationExpiration;
+    }
+
+    public void setVerificationExpiration(LocalDateTime verificationExpiration) {
+        this.verificationExpiration = verificationExpiration;
+    }
+
+    public List<PeerReview> getReviewers() {
+        return reviewers;
+    }
+
+    public void setReviewers(List<PeerReview> reviewers) {
+        this.reviewers = reviewers;
+    }
+
+    public List<ClusterMembership> getParticipations() {
+        return participations;
+    }
+
+    public void setParticipations(List<ClusterMembership> participations) {
+        this.participations = participations;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passwordHash;
     }
 }

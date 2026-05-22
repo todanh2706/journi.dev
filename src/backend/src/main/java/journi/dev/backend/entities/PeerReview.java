@@ -28,7 +28,7 @@ public class PeerReview {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewer_user_id", nullable = false)
-    private User reviewerUserId;
+    private User reviewer;
 
     private Integer rating;
 
@@ -55,12 +55,12 @@ public class PeerReview {
         this.submissionId = submissionId;
     }
 
-    public User getReviewerUserId() {
-        return reviewerUserId;
+    public User getReviewer() {
+        return reviewer;
     }
 
-    public void setReviewerUserId(User reviewerUserId) {
-        this.reviewerUserId = reviewerUserId;
+    public void setReviewer(User reviewer) {
+        this.reviewer = reviewer;
     }
 
     public Integer getRating() {

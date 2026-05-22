@@ -1,6 +1,6 @@
 package journi.dev.backend.entities;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -35,7 +35,7 @@ public class HeatmapStreak {
     private Integer longestStreak;
 
     @Column(name = "last_active_date")
-    private Date lastActiveDate;
+    private LocalDate lastActiveDate;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
@@ -73,11 +73,11 @@ public class HeatmapStreak {
         this.longestStreak = longestStreak;
     }
 
-    public Date getLastActiveDate() {
+    public LocalDate getLastActiveDate() {
         return lastActiveDate;
     }
 
-    public void setLastActiveDate(Date lastActiveDate) {
+    public void setLastActiveDate(LocalDate lastActiveDate) {
         this.lastActiveDate = lastActiveDate;
     }
 

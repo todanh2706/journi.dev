@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "community_clusters")
-@SQLDelete(sql = "UPDATE community_clusters SET deleted_at = CURRENT_TIMESTAMP WHERE cluster_id =?")
+@SQLDelete(sql = "UPDATE community_clusters SET deleted_at = CURRENT_TIMESTAMP WHERE cluster_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class CommunityClusters {
     @Id
