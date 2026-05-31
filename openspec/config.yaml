@@ -1,0 +1,58 @@
+schema: spec-driven
+
+context: |
+  Product: Journi.dev is a gamified learning platform and social learning network for IT students
+  and entry-level developers. The core experience combines guided learning roadmaps, practical
+  coding challenges, AI-assisted code review, milestone-based communities, and progress
+  gamification.
+
+  Existing source-of-truth documents:
+  - README.md for repo layout and local setup
+  - doc/SRS.md for product scope and feature intent
+  - doc/ERD.md for data model expectations
+
+  Frontend:
+  - Located in src/frontend
+  - React 19 + TypeScript + Vite
+  - React Router 7 for routing
+  - Tailwind CSS 4 for styling
+  - Axios for API calls
+  - Current UI structure uses pages/, components/, and services/
+
+  Backend:
+  - Located in src/backend
+  - Spring Boot 4 with Maven
+  - Uses PostgreSQL, Redis, Spring Security, JWT, validation, and OpenAPI
+  - Runtime configuration currently lives in src/backend/src/main/resources/application.properties
+
+  Domain areas that frequently matter in changes:
+  - Authentication and user roles
+  - Learning roadmaps and skill-node progression
+  - Challenge submissions and AI code review
+  - Cluster communities and peer review
+  - Streaks, leaderboards, and reminder workflows
+
+  Working conventions for this repo:
+  - Prefer changes that fit the existing frontend/backend split instead of inventing a new service.
+  - Keep proposals scoped to one meaningful capability or a tight vertical slice.
+  - Call out API, database, webhook, and background-job impacts explicitly.
+  - When behavior depends on roadmap progression or access control, describe unlock rules and guardrails clearly.
+  - Ground new work in the current docs and note when README, SRS, or ERD should be updated.
+
+rules:
+  proposal:
+    - State the user problem, the target user, and the concrete outcome.
+    - Identify which layers are affected: frontend, backend, database, and external integrations.
+    - Call out dependencies on GitHub API, Gemini API, JWT auth, Redis, or PostgreSQL when relevant.
+  specs:
+    - Write testable requirements with clear user-visible behavior and acceptance scenarios.
+    - Capture progression, permissions, review states, and scoring behavior when they are affected.
+    - Distinguish required behavior from nice-to-have product ideas.
+  design:
+    - Include API contracts, persistence changes, background processing, and webhook behavior when applicable.
+    - Prefer incremental designs that can ship without rewriting the platform.
+    - Highlight security concerns around auth, secrets, token handling, webhook validation, and role checks.
+  tasks:
+    - Break work into small, implementation-ready steps that can be verified independently.
+    - Include verification for both frontend and backend when both layers are touched.
+    - Add follow-up documentation or schema updates when requirements affect README, SRS, or ERD.
