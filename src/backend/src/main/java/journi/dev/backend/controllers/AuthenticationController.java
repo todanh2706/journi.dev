@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.dtos.responses.LoginResponse;
+import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.services.AuthenticationService;
 import journi.dev.backend.services.JwtService;
@@ -26,10 +27,20 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@Valid @RequestBody UserRequest registerUserDto) {
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
 
-        return ResponseEntity.ok(registeredUser);
+        UserResponse response = new UserResponse(
+                registeredUser.getUserId(),
+                registeredUser.getUsername(),
+                registeredUser.getEmail(),
+                registeredUser.getRole(),
+                registeredUser.getStatus(),
+                registeredUser.getCreatedAt(),
+                registeredUser.getUpdatedAt(),
+                registeredUser.getDeletedAt());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")

@@ -5,6 +5,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.entities.User;
@@ -26,6 +29,13 @@ public class AuthenticationService {
     }
 
     public User signup(UserRequest input) {
+        if (userRepository.existsByUsername(input.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");
+        }
+        if (userRepository.existsByEmail(input.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already registered");
+        }
+
         User user = new User();
         user.setUsername(input.getUsername());
         user.setEmail(input.getEmail());

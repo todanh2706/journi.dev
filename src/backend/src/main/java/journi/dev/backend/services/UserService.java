@@ -53,6 +53,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus("ACTIVE");
         user.setRole("USER");
+        user.setEnabled(true);
 
         User savedUser = userRepository.save(user);
 
@@ -67,9 +68,14 @@ public class UserService {
                 savedUser.getDeletedAt());
     }
 
-    public UserResponse updateUser(UUID id, User user) {
-        if (userRepository.existsById(id)) {
-            user.setUserId(id);
+    public UserResponse updateUser(UUID id, UserRequest request) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            }
             User updatedUser = userRepository.save(user);
             return new UserResponse(
                     updatedUser.getUserId(),
