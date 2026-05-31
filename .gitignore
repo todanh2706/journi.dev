@@ -37,3 +37,10 @@ logs/
 # Miscellaneous
 # =========================
 *.pem
+
+
+# =========================
+# OpenSpec configs
+# =========================
+*.codex
+*.opencode
