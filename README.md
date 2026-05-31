@@ -12,18 +12,21 @@ Journi.dev is a comprehensive, gamified Learning Management System (LMS) and Soc
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: React.js with TypeScript for type-safe rendering of complex graph structures.
 - **Styling**: Tailwind CSS for modern, premium visual design.
 - **Graph Interaction**: React Flow for handling smooth drag-and-drop, zoom, and interactive skill nodes.
 - **Hosting**: Vercel for continuous integration and optimized delivery.
 
 ### Backend
+
 - **Framework**: Java Spring Boot for robust, enterprise-grade business logic.
 - **Database**: PostgreSQL (primary database) for storing transactional user state, relationships, and JSONB roadmap structures.
 - **Caching & Leaderboards**: Redis (in-memory database) for fast calculations of user streaks, cache management, and real-time leaderboards.
 - **Hosting**: AWS EC2 virtual servers hosting Docker containers.
 
 ### Integration Services
+
 - **GitHub API and Webhooks**: Subscriptions to user submission events (push / pull request) to ingest repository content.
 - **Gemini API**: Powers the automated code reviewer agent, providing context-aware feedback and evaluation results.
 
@@ -48,9 +51,10 @@ journi.dev/
 
 ## System Architecture and Database Schema
 
-The database relies on 17 interconnected tables designed to represent user metrics, progress states, submissions, community clusters, and AI review configurations. 
+The database relies on 17 interconnected tables designed to represent user metrics, progress states, submissions, community clusters, and AI review configurations.
 
 Key entities include:
+
 - **User**: General profile and role settings.
 - **LearningRoadmap & SkillNode**: Represent roadmap hierarchies.
 - **Submission, CodeReview, & AIReviewTask**: Track the lifecycle of pushed code challenges, AI evaluation feedback, and processing tasks.
@@ -100,6 +104,7 @@ docker-compose up --build
 ```
 
 Access the applications on the following ports:
+
 - **Frontend SPA**: `http://localhost:3000`
 - **Backend API**: `http://localhost:8000` (mapped to `8080` internally)
 - **PostgreSQL**: `localhost:5432`
@@ -110,33 +115,33 @@ Access the applications on the following ports:
 #### Running the Backend Locally
 
 1. Navigate to the backend directory:
-   ```bash
-   cd src/backend
-   ```
+    ```bash
+    cd src/backend
+    ```
 2. Configure your local `.env` variables or system properties.
 3. Build the application using Maven:
-   ```bash
-   ./mvnw clean install
-   ```
+    ```bash
+    ./mvnw clean install
+    ```
 4. Run the Spring Boot application:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
+    ```bash
+    ./mvnw spring-boot:run
+    ```
 
 #### Running the Frontend Locally
 
 1. Navigate to the frontend directory:
-   ```bash
-   cd src/frontend
-   ```
+    ```bash
+    cd src/frontend
+    ```
 2. Install the package dependencies:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 3. Run the Vite development server:
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 ## Development Roadmap
 
