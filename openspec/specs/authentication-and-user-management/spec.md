@@ -11,11 +11,15 @@ The frontend API client SHALL centralize outbound HTTP setup through an Axios in
 - **THEN** the outgoing request includes `Authorization: Bearer <token>`
 
 ### Requirement: Auth Signup Endpoint
-The backend SHALL expose `POST /api/v1/auth/signup` for self-service account creation. A successful signup SHALL create a user with the submitted username and email, hash the submitted password, set role to `USER`, set status to `ACTIVE`, and mark the account as enabled.
+The backend SHALL expose `POST /api/v1/auth/signup` for self-service account creation. The endpoint SHALL validate username and email uniqueness, rejecting duplicates with a `400 Bad Request`. A successful signup SHALL create a user with the submitted username and email, hash the submitted password, set role to `USER`, set status to `ACTIVE`, mark the account as enabled, and return a sanitized `UserResponse`.
 
 #### Scenario: Registering a new account
-- **WHEN** a client sends a valid signup request to `POST /api/v1/auth/signup`
-- **THEN** the backend persists a new enabled user record with hashed credentials and default active user status
+- **WHEN** a client sends a valid signup request with a unique username and email to `POST /api/v1/auth/signup`
+- **THEN** the backend persists a new enabled user record with hashed credentials and default active user status, and returns a `UserResponse`
+
+#### Scenario: Registering with duplicate credentials
+- **WHEN** a client sends a signup request with an already-registered username or email
+- **THEN** the backend rejects the request with a `400 Bad Request` status
 
 ### Requirement: Auth Login Endpoint
 The backend SHALL expose `POST /api/v1/auth/login` for username-and-password authentication. Successful login SHALL authenticate against Spring Security and return a JWT plus its configured expiration time.
@@ -25,15 +29,19 @@ The backend SHALL expose `POST /api/v1/auth/login` for username-and-password aut
 - **THEN** the backend returns a token payload containing `token` and `expiresIn`
 
 ### Requirement: User CRUD API
-The backend SHALL expose user management endpoints at `/api/v1/users`. The API SHALL support listing all users, retrieving a user by UUID, creating a user from request DTO fields, updating a user by UUID, and deleting a user by UUID.
+The backend SHALL expose user management endpoints at `/api/v1/users`. All endpoints in this path SHALL require authentication. The API SHALL support listing all users, retrieving a user by UUID, creating an enabled user from request DTO fields, updating a user by UUID using a sanitized `UserRequest` DTO (preventing mass assignment), and deleting a user by UUID.
 
 #### Scenario: Listing user records
-- **WHEN** a client calls `GET /api/v1/users`
+- **WHEN** an authenticated client calls `GET /api/v1/users`
 - **THEN** the backend responds with a collection of `UserResponse` DTOs
 
 #### Scenario: Creating a user through the CRUD endpoint
-- **WHEN** a client sends a valid `POST /api/v1/users` request
-- **THEN** the backend persists a user record and returns a `201 Created` response with a `UserResponse` payload
+- **WHEN** an authenticated client sends a valid `POST /api/v1/users` request
+- **THEN** the backend persists an enabled user record and returns a `201 Created` response with a `UserResponse` payload
+
+#### Scenario: Updating a user through the CRUD endpoint
+- **WHEN** an authenticated client sends a `PUT /api/v1/users/{id}` request with a `UserRequest` payload
+- **THEN** the backend safely updates only the allowed fields (username, email, password) without altering internal state like roles or statuses, and returns a `UserResponse` payload
 
 ### Requirement: Password Hashing for Backend-Provisioned Users
 Any user account created through backend-owned creation flows SHALL store a password hash rather than the raw password. This applies both to the auth signup flow and to the direct user creation endpoint.
