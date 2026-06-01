@@ -61,13 +61,13 @@ export default function SignUp() {
         <div className="min-h-screen bg-[#0d0e1a] text-gray-300 flex font-sans relative overflow-hidden">
             {/* ─── ambient glows ─── */}
             <div
-                className="pointer-events-none fixed top-[-30%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-20"
+                className="pointer-events-none absolute top-[-30%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-20"
                 style={{
                     background: "radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)",
                 }}
             />
             <div
-                className="pointer-events-none fixed bottom-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-15"
+                className="pointer-events-none absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-15"
                 style={{
                     background: "radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)",
                 }}
