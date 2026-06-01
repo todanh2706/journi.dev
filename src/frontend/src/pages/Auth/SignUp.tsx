@@ -14,19 +14,47 @@ import { UserIcon } from "./components/Icons/UserIcon";
 /* ──────────────────────── sub‑components ──────────────────────── */
 import { Logo } from "../../components/Logo/Logo";
 import { SocialButton } from "./components/Buttons/SocialButton";
+import { getSignupErrorMessage, signup } from "./services/auth";
 
 /* ────────────────────────── main page ────────────────────────── */
 export default function SignUp() {
     const [showPassword, setShowPassword] = useState(false);
-    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [agreeTerms, setAgreeTerms] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        // TODO: hook up auth
-        console.log("Sign up:", { name, email, password, agreeTerms });
+
+        if (!agreeTerms || !username || !email || !password || isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setErrorMessage("");
+        setSuccessMessage("");
+
+        try {
+            const createdUser = await signup({
+                username,
+                email,
+                password,
+            });
+
+            setSuccessMessage(
+                `Account created for ${createdUser.username}. You can sign in now.`
+            );
+            setPassword("");
+            setAgreeTerms(false);
+        } catch (error) {
+            setErrorMessage(getSignupErrorMessage(error));
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -169,28 +197,32 @@ export default function SignUp() {
 
                     {/* form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* full name */}
+                        {/* username */}
                         <div className="space-y-1.5">
                             <label
-                                htmlFor="name"
+                                htmlFor="username"
                                 className="block text-[13px] font-medium text-gray-400"
                             >
-                                Full Name
+                                Username
                             </label>
                             <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600">
                                     <UserIcon />
                                 </div>
                                 <input
-                                    id="name"
+                                    id="username"
                                     type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Alex Developer"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="alexdev"
                                     className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
                                     required
                                 />
                             </div>
+                            <p className="text-[12px] text-gray-600">
+                                Pick the username you&apos;ll use to sign in on
+                                Journi.dev.
+                            </p>
                         </div>
 
                         {/* email */}
@@ -275,17 +307,35 @@ export default function SignUp() {
                             </span>
                         </div>
 
+                        {errorMessage ? (
+                            <div className="rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                                {errorMessage}
+                            </div>
+                        ) : null}
+
+                        {successMessage ? (
+                            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                                <p>{successMessage}</p>
+                                <Link
+                                    to="/signin"
+                                    className="mt-2 inline-block text-emerald-100 underline underline-offset-4"
+                                >
+                                    Continue to sign in
+                                </Link>
+                            </div>
+                        ) : null}
+
                         {/* submit */}
                         <button
                             id="btn-signup-submit"
                             type="submit"
-                            disabled={!agreeTerms || !name || !email || !password}
-                            className={`w-full text-white font-semibold text-sm py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/20 mt-4! ${agreeTerms && name && email && password
+                            disabled={!agreeTerms || !username || !email || !password || isSubmitting}
+                            className={`w-full text-white font-semibold text-sm py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/20 mt-4! ${agreeTerms && username && email && password && !isSubmitting
                                 ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 cursor-pointer active:scale-[0.98]"
                                 : "bg-white/[0.05] text-gray-400 cursor-not-allowed border border-white/[0.05]"
                                 }`}
                         >
-                            Create account
+                            {isSubmitting ? "Creating account..." : "Create account"}
                         </button>
                     </form>
 
