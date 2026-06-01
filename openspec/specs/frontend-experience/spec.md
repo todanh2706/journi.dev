@@ -29,15 +29,19 @@ The sign-in page SHALL provide a form-driven sign-in experience with local UI st
 - **THEN** the page prevents default browser submission and handles the data locally without issuing an API request
 
 ### Requirement: Sign-Up Form Experience
-The sign-up page SHALL collect name, email, password, and terms acceptance state. The submit button SHALL remain disabled until all fields are present and the user has accepted the terms, and the current submit behavior SHALL log values locally rather than creating a real account.
+The sign-up page SHALL collect `username`, `email`, `password`, and terms acceptance state. The submit button SHALL remain disabled until all fields are present and the user has accepted the terms. When submitted, the page SHALL call the backend signup service, communicate loading state, show validation or submission failures inline, and present a clear success state that reflects account creation without assuming the user is already authenticated.
 
 #### Scenario: Leaving required sign-up inputs incomplete
-- **WHEN** any sign-up field is empty or terms acceptance is false
+- **WHEN** the username, email, or password field is empty, or terms acceptance is false
 - **THEN** the primary sign-up button remains disabled
 
-#### Scenario: Completing the sign-up form
-- **WHEN** all sign-up fields are filled and terms acceptance is enabled
-- **THEN** the primary sign-up button becomes interactive even though the form still uses a local placeholder submit handler
+#### Scenario: Submitting the sign-up form successfully
+- **WHEN** a user submits the completed sign-up form with unique credentials
+- **THEN** the page prevents the default browser submission, calls the backend signup endpoint, and shows account-creation success feedback without storing an access token
+
+#### Scenario: Receiving a backend validation failure during signup
+- **WHEN** the backend rejects the sign-up request because the username or email is already in use
+- **THEN** the page keeps the user on the sign-up form and displays a clear error message describing the failure
 
 ### Requirement: Dashboard Demo Surface
 The dashboard SHALL act as a high-fidelity demo of the intended logged-in experience. It SHALL render a sidebar, streak badge, contribution heatmap, milestone cards, quick actions, and a leaderboard panel using hard-coded sample data rather than backend-driven state.
