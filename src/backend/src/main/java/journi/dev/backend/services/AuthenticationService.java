@@ -13,6 +13,7 @@ import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
+import journi.dev.backend.mappers.UserMapper;
 import journi.dev.backend.repositories.UserRepository;
 
 @Service
@@ -20,14 +21,17 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final UserMapper userMapper;
 
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper) {
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     public User signup(UserRequest input) {
@@ -38,9 +42,7 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already registered");
         }
 
-        User user = new User();
-        user.setUsername(input.getUsername());
-        user.setEmail(input.getEmail());
+        User user = userMapper.toEntity(input);
         user.setPasswordHash(passwordEncoder.encode(input.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
         user.setRole(UserRole.USER);

@@ -11,47 +11,34 @@ import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
+import journi.dev.backend.mappers.UserMapper;
 import journi.dev.backend.repositories.UserRepository;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream().map(user -> new UserResponse(
-                user.getUserId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                user.getStatus(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeletedAt())).collect(Collectors.toList());
+        return userRepository.findAll().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id).orElse(null);
-        return new UserResponse(
-                user.getUserId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                user.getStatus(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeletedAt());
+        return user != null ? userMapper.toResponse(user) : null;
     }
 
     public UserResponse createUser(UserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        User user = userMapper.toEntity(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
         user.setRole(UserRole.USER);
@@ -59,15 +46,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        return new UserResponse(
-                savedUser.getUserId(),
-                savedUser.getUsername(),
-                savedUser.getEmail(),
-                savedUser.getRole(),
-                savedUser.getStatus(),
-                savedUser.getCreatedAt(),
-                savedUser.getUpdatedAt(),
-                savedUser.getDeletedAt());
+        return userMapper.toResponse(savedUser);
     }
 
     public UserResponse updateUser(UUID id, UserRequest request) {
@@ -79,15 +58,7 @@ public class UserService {
                 user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
             User updatedUser = userRepository.save(user);
-            return new UserResponse(
-                    updatedUser.getUserId(),
-                    updatedUser.getUsername(),
-                    updatedUser.getEmail(),
-                    updatedUser.getRole(),
-                    updatedUser.getStatus(),
-                    updatedUser.getCreatedAt(),
-                    updatedUser.getUpdatedAt(),
-                    updatedUser.getDeletedAt());
+            return userMapper.toResponse(updatedUser);
         }
         return null;
     }
