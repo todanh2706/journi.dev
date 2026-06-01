@@ -4,65 +4,49 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import journi.dev.backend.dtos.requests.LearningRoadmapRequest;
 import journi.dev.backend.dtos.responses.LearningRoadmapResponse;
 import journi.dev.backend.entities.LearningRoadmap;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.repositories.LearningRoadmapRepository;
 import journi.dev.backend.repositories.UserRepository;
+import journi.dev.backend.mappers.LearningRoadmapMapper;
+import journi.dev.backend.exceptions.ResourceNotFoundException;
 
 @Service
 public class LearningRoadmapService {
     private final LearningRoadmapRepository roadmapRepository;
     private final UserRepository userRepository;
+    private final LearningRoadmapMapper roadmapMapper;
 
-    public LearningRoadmapService(LearningRoadmapRepository roadmapRepository, UserRepository userRepository) {
+    public LearningRoadmapService(LearningRoadmapRepository roadmapRepository, UserRepository userRepository, LearningRoadmapMapper roadmapMapper) {
         this.roadmapRepository = roadmapRepository;
         this.userRepository = userRepository;
+        this.roadmapMapper = roadmapMapper;
     }
 
+    @Transactional
+
     public LearningRoadmapResponse createRoadmap(UUID userId, LearningRoadmapRequest request) {
-        User owner = userRepository.findById(userId).orElse(null);
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        LearningRoadmap roadmap = new LearningRoadmap();
+        LearningRoadmap roadmap = roadmapMapper.toEntity(request);
         roadmap.setOwner(owner);
-        roadmap.setTitle(request.getTitle());
-        roadmap.setDescription(request.getDescription());
-        roadmap.setVisibility(request.getVisibility());
         roadmap.setIsDynamic(request.getIsDynamic() != null ? request.getIsDynamic() : false);
-
         roadmap.setCreatedAt(LocalDateTime.now());
         roadmap.setCreatedBy(owner.getUserId()); // TO DO: automatically create roadmap
 
         LearningRoadmap savedRoadmap = roadmapRepository.save(roadmap);
-
-        return new LearningRoadmapResponse(
-                savedRoadmap.getRoadmapId(),
-                savedRoadmap.getTitle(),
-                savedRoadmap.getDescription(),
-                savedRoadmap.getVisibility(),
-                savedRoadmap.getIsDynamic(),
-                savedRoadmap.getCreatedBy(),
-                savedRoadmap.getUpdatedBy(),
-                savedRoadmap.getCreatedAt(),
-                savedRoadmap.getUpdatedAt(),
-                savedRoadmap.getDeletedAt());
+        return roadmapMapper.toResponse(savedRoadmap);
     }
 
     public LearningRoadmapResponse getRoadmapById(UUID roadmapId) {
         LearningRoadmap roadmap = roadmapRepository.findById(roadmapId)
-                .orElseThrow(() -> new RuntimeException("Roadmap not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Roadmap not found with id: " + roadmapId));
 
-        return new LearningRoadmapResponse(
-                roadmap.getRoadmapId(),
-                roadmap.getTitle(),
-                roadmap.getDescription(),
-                roadmap.getVisibility(),
-                roadmap.getIsDynamic(),
-                roadmap.getCreatedBy(),
-                roadmap.getUpdatedBy(),
-                roadmap.getCreatedAt(),
-                roadmap.getUpdatedAt(),
-                roadmap.getDeletedAt());
+        return roadmapMapper.toResponse(roadmap);
     }
 }

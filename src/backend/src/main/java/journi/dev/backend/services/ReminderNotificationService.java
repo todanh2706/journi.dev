@@ -7,99 +7,65 @@ import java.util.stream.Collectors;
 import journi.dev.backend.repositories.ReminderNotificationRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import journi.dev.backend.dtos.requests.ReminderNotificationRequest;
 import journi.dev.backend.dtos.responses.ReminderNotificationResponse;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.entities.ReminderNotification;
 import journi.dev.backend.repositories.UserRepository;
+import journi.dev.backend.exceptions.ResourceNotFoundException;
+import journi.dev.backend.mappers.ReminderNotificationMapper;
 
 @Service
 public class ReminderNotificationService {
     private final ReminderNotificationRepository reminderNotificationRepository;
     private final UserRepository userRepository;
+    private final ReminderNotificationMapper notificationMapper;
 
     public ReminderNotificationService(UserRepository userRepository,
-            ReminderNotificationRepository reminderNotificationRepository) {
+            ReminderNotificationRepository reminderNotificationRepository,
+            ReminderNotificationMapper notificationMapper) {
         this.userRepository = userRepository;
         this.reminderNotificationRepository = reminderNotificationRepository;
+        this.notificationMapper = notificationMapper;
     }
 
     public List<ReminderNotificationResponse> getAllNotifications() {
-        return reminderNotificationRepository.findAll().stream().map(notification -> new ReminderNotificationResponse(
-                notification.getNotificationId(),
-                notification.getReceiver().getUserId(),
-                notification.getNotificationType(),
-                notification.getChannel(),
-                notification.getMessage(),
-                notification.getScheduledAt(),
-                notification.getSentAt(),
-                notification.getStatus())).collect(Collectors.toList());
+        return reminderNotificationRepository.findAll().stream()
+                .map(notificationMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public List<ReminderNotificationResponse> getNotifications(UUID receiverId) {
-        User receiver = userRepository.findById(receiverId).orElse(null);
-
-        if (receiver == null)
-            return null;
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + receiverId));
 
         List<ReminderNotification> foundNotifications = reminderNotificationRepository.findByReceiver(receiver)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Notifications not found for user: " + receiverId));
 
-        if (foundNotifications == null || foundNotifications.size() == 0)
-            return null;
-
-        return foundNotifications.stream().map(notification -> new ReminderNotificationResponse(
-                notification.getNotificationId(),
-                notification.getReceiver().getUserId(),
-                notification.getNotificationType(),
-                notification.getChannel(),
-                notification.getMessage(),
-                notification.getScheduledAt(),
-                notification.getSentAt(),
-                notification.getStatus())).collect(Collectors.toList());
+        return foundNotifications.stream()
+                .map(notificationMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public ReminderNotificationResponse getNotificationByNotification(UUID notificationId) {
-        ReminderNotification foundNotification = reminderNotificationRepository.findById(notificationId).orElse(null);
+        ReminderNotification foundNotification = reminderNotificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));
 
-        if (foundNotification == null)
-            return null;
-
-        return new ReminderNotificationResponse(
-                foundNotification.getNotificationId(),
-                foundNotification.getReceiver().getUserId(),
-                foundNotification.getNotificationType(),
-                foundNotification.getChannel(),
-                foundNotification.getMessage(),
-                foundNotification.getScheduledAt(),
-                foundNotification.getSentAt(),
-                foundNotification.getStatus());
+        return notificationMapper.toResponse(foundNotification);
     }
 
+    @Transactional
     public ReminderNotificationResponse createNotification(UUID receiverId, ReminderNotificationRequest request) {
-        User receiver = userRepository.findById(receiverId).orElse(null);
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + receiverId));
 
-        if (receiver == null)
-            return null;
-
-        ReminderNotification createdNotification = new ReminderNotification();
+        ReminderNotification createdNotification = notificationMapper.toEntity(request);
         createdNotification.setReceiver(receiver);
-        createdNotification.setNotificationType(request.getNotificationType());
-        createdNotification.setChannel(request.getChannel());
-        createdNotification.setMessage(request.getMessage());
-        createdNotification.setStatus(request.getStatus());
 
         ReminderNotification savedNotification = reminderNotificationRepository.save(createdNotification);
 
-        return new ReminderNotificationResponse(
-                savedNotification.getNotificationId(),
-                savedNotification.getReceiver().getUserId(),
-                savedNotification.getNotificationType(),
-                savedNotification.getChannel(),
-                savedNotification.getMessage(),
-                savedNotification.getScheduledAt(),
-                savedNotification.getSentAt(),
-                savedNotification.getStatus());
+        return notificationMapper.toResponse(savedNotification);
     }
 }

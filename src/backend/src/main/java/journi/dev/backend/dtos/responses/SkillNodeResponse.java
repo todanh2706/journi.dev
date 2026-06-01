@@ -143,19 +143,7 @@ public class SkillNodeResponse {
         this.deletedAt = deletedAt;
     }
 
-    public SkillNodeResponse(SkillNode skillNode) {
-        this.nodeId = skillNode.getNodeId();
-        this.roadmapId = skillNode.getRoadmapId();
-        this.title = skillNode.getTitle();
-        this.slug = skillNode.getSlug();
-        this.orderIndex = skillNode.getOrderIndex();
-        this.nodeType = skillNode.getNodeType();
-        this.contentJson = skillNode.getContentJson();
-        this.isLocked = skillNode.getIsLocked();
-        this.createdBy = skillNode.getCreatedBy();
-        this.updatedBy = skillNode.getUpdatedBy();
-        this.createdAt = skillNode.getCreatedAt();
-        this.updatedAt = skillNode.getUpdatedAt();
-        this.deletedAt = skillNode.getDeletedAt();
-    }
+    public SkillNodeResponse() {}
+
+
 }
