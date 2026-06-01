@@ -1,8 +1,6 @@
 ## Purpose
 Document the current authentication and user-management behavior across the shared frontend API client, backend auth endpoints, and user persistence layer.
-
 ## Requirements
-
 ### Requirement: Token-Aware API Client
 The frontend API client SHALL centralize outbound HTTP setup through an Axios instance. When `localStorage` contains `access_token`, the client SHALL attach it to outgoing requests as a bearer token in the `Authorization` header.
 
@@ -40,11 +38,11 @@ The backend SHALL expose `POST /api/v1/auth/login` for username-and-password aut
 - **THEN** the backend returns a token payload containing `token` and `expiresIn`
 
 ### Requirement: User CRUD API
-The backend SHALL expose user management endpoints at `/api/v1/users`. All endpoints in this path SHALL require authentication. The API SHALL support listing all users, retrieving a user by UUID, creating an enabled user from request DTO fields, updating a user by UUID using a sanitized `UserRequest` DTO (preventing mass assignment), and deleting a user by UUID.
+The backend SHALL expose user management endpoints at `/api/v1/users`. All endpoints in this path SHALL require authentication. The API SHALL support listing all users with pagination, retrieving a user by UUID, creating an enabled user from request DTO fields, updating a user by UUID using a sanitized `UserRequest` DTO (preventing mass assignment), and deleting a user by UUID.
 
 #### Scenario: Listing user records
-- **WHEN** an authenticated client calls `GET /api/v1/users`
-- **THEN** the backend responds with a collection of `UserResponse` DTOs
+- **WHEN** an authenticated client calls `GET /api/v1/users` (optionally with page and size parameters)
+- **THEN** the backend responds with a paginated collection of `UserResponse` DTOs, including metadata such as total elements and total pages
 
 #### Scenario: Creating a user through the CRUD endpoint
 - **WHEN** an authenticated client sends a valid `POST /api/v1/users` request
@@ -67,3 +65,4 @@ The `User` aggregate SHALL support soft deletion and Spring Security compatibili
 #### Scenario: Deleting a user entity through JPA-managed flows
 - **WHEN** the `User` entity is deleted through Hibernate-managed persistence
 - **THEN** the mapped table uses the configured soft-delete behavior and excludes deleted rows from normal entity queries
+
