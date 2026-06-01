@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.User;
+import journi.dev.backend.entities.UserRole;
+import journi.dev.backend.entities.UserStatus;
 import journi.dev.backend.repositories.UserRepository;
 
 @Service
@@ -51,8 +53,8 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setStatus("ACTIVE");
-        user.setRole("USER");
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(UserRole.USER);
         user.setEnabled(true);
 
         User savedUser = userRepository.save(user);

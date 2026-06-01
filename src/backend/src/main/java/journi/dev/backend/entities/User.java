@@ -15,6 +15,8 @@ import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -41,11 +43,13 @@ public class User implements UserDetails {
     @Column(name = "password_hash", length = 255, nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
-    private String role;
+    private UserRole role;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private String status;
+    private UserStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
@@ -152,19 +156,19 @@ public class User implements UserDetails {
         this.passwordHash = passwordHash;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 
-    public String getStatus() {
+    public UserStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 

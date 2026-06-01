@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.entities.User;
+import journi.dev.backend.entities.UserRole;
+import journi.dev.backend.entities.UserStatus;
 import journi.dev.backend.repositories.UserRepository;
 
 @Service
@@ -40,8 +42,8 @@ public class AuthenticationService {
         user.setUsername(input.getUsername());
         user.setEmail(input.getEmail());
         user.setPasswordHash(passwordEncoder.encode(input.getPassword()));
-        user.setStatus("ACTIVE");
-        user.setRole("USER");
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(UserRole.USER);
         user.setEnabled(true);
 
         return userRepository.save(user);

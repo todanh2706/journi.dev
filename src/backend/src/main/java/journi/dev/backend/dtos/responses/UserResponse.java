@@ -3,17 +3,20 @@ package journi.dev.backend.dtos.responses;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import journi.dev.backend.entities.UserRole;
+import journi.dev.backend.entities.UserStatus;
+
 public class UserResponse {
     private UUID userId;
     private String username;
     private String email;
-    private String role;
-    private String status;
+    private UserRole role;
+    private UserStatus status;
     private LocalDateTime createAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public UserResponse(UUID userId, String username, String email, String role, String status,
+    public UserResponse(UUID userId, String username, String email, UserRole role, UserStatus status,
             LocalDateTime createAt,
             LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.userId = userId;
@@ -50,19 +53,19 @@ public class UserResponse {
         this.email = email;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 
-    public String getStatus() {
+    public UserStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 
