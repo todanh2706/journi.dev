@@ -4,12 +4,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
+import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
@@ -34,7 +36,8 @@ public class AuthenticationService {
         this.userMapper = userMapper;
     }
 
-    public User signup(UserRequest input) {
+    @Transactional
+    public UserResponse signup(UserRequest input) {
         if (userRepository.existsByUsername(input.getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");
         }
@@ -48,7 +51,8 @@ public class AuthenticationService {
         user.setRole(UserRole.USER);
         user.setEnabled(true);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponse(savedUser);
     }
 
     public User authenticate(LoginUserRequest input) {

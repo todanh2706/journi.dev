@@ -28,18 +28,7 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
-
-        UserResponse response = new UserResponse(
-                registeredUser.getUserId(),
-                registeredUser.getUsername(),
-                registeredUser.getEmail(),
-                registeredUser.getRole(),
-                registeredUser.getStatus(),
-                registeredUser.getCreatedAt(),
-                registeredUser.getUpdatedAt(),
-                registeredUser.getDeletedAt());
-
+        UserResponse response = authenticationService.signup(registerUserDto);
         return ResponseEntity.ok(response);
     }
 

@@ -1,16 +1,18 @@
 package journi.dev.backend.services;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
+import journi.dev.backend.exceptions.ResourceNotFoundException;
 import journi.dev.backend.mappers.UserMapper;
 import journi.dev.backend.repositories.UserRepository;
 
@@ -26,17 +28,18 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponse);
     }
 
     public UserResponse getUserById(UUID id) {
-        User user = userRepository.findById(id).orElse(null);
-        return user != null ? userMapper.toResponse(user) : null;
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        return userMapper.toResponse(user);
     }
 
+    @Transactional
     public UserResponse createUser(UserRequest request) {
         User user = userMapper.toEntity(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -49,20 +52,20 @@ public class UserService {
         return userMapper.toResponse(savedUser);
     }
 
+    @Transactional
     public UserResponse updateUser(UUID id, UserRequest request) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user != null) {
-            user.setUsername(request.getUsername());
-            user.setEmail(request.getEmail());
-            if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-            }
-            User updatedUser = userRepository.save(user);
-            return userMapper.toResponse(updatedUser);
-        }
-        return null;
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        
+        User updatedUser = userRepository.save(user);
+        return userMapper.toResponse(updatedUser);
     }
 
+    @Transactional
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
     }
