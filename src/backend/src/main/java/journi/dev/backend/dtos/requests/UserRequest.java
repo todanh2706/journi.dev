@@ -4,11 +4,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class UserRequest {
-    @NotBlank
+    @NotBlank(message = "Username is required")
     private String username;
-    @Email
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
     private String email;
-    @NotBlank
+
+    @NotBlank(message = "Password is required")
     private String password;
 
     public UserRequest(String username, String email, String password) {
