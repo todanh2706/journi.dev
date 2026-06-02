@@ -92,6 +92,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReminderNotification> notifications = new ArrayList<>();
 
+    public User() {
+    };
+
     public List<ReminderNotification> getNotifications() {
         return notifications;
     }

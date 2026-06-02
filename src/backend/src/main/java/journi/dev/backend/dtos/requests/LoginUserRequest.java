@@ -1,11 +1,15 @@
 package journi.dev.backend.dtos.requests;
 
+import org.hibernate.validator.constraints.Length;
+
 import jakarta.validation.constraints.NotBlank;
 
 public class LoginUserRequest {
-    @NotBlank
+    @NotBlank(message = "Username is required")
     private String username;
-    @NotBlank
+
+    @NotBlank(message = "Password is required")
+    @Length(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
     public LoginUserRequest() {
