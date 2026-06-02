@@ -1,10 +1,13 @@
 package journi.dev.backend.services;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import journi.dev.backend.exceptions.BadRequestException;
+import journi.dev.backend.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -56,12 +59,13 @@ public class AuthenticationService {
     }
 
     public User authenticate(LoginUserRequest input) {
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getUsername(),
                         input.getPassword()));
 
         return userRepository.findByUsername(input.getUsername())
-                .orElseThrow();
+                .orElseThrow(() -> new BadCredentialsException("Invalid Username or Password"));
     }
 }

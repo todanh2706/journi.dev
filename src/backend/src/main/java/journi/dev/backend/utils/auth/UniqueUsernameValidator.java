@@ -1,8 +1,8 @@
 package journi.dev.backend.utils.auth;
 
-import org.springframework.http.HttpStatus;
+import journi.dev.backend.exceptions.BadRequestException;
+
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import journi.dev.backend.dtos.requests.UserRequest;
 import journi.dev.backend.repositories.UserRepository;
@@ -18,7 +18,7 @@ public class UniqueUsernameValidator implements SignupValidator {
     @Override
     public void validate(UserRequest input) {
         if (userRepository.existsByUsername(input.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");
+            throw new BadRequestException("Username is already taken");
         }
     }
 }
