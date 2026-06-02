@@ -6,8 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
 
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
@@ -17,6 +16,7 @@ import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
 import journi.dev.backend.mappers.UserMapper;
 import journi.dev.backend.repositories.UserRepository;
+import journi.dev.backend.utils.auth.SignupValidator;
 
 @Service
 public class AuthenticationService {
@@ -24,25 +24,25 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final List<SignupValidator> validators;
 
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder,
-            UserMapper userMapper) {
+            UserMapper userMapper,
+            List<SignupValidator> validators) {
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.validators = validators;
     }
 
     @Transactional
     public UserResponse signup(UserRequest input) {
-        if (userRepository.existsByUsername(input.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken");
-        }
-        if (userRepository.existsByEmail(input.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already registered");
+        for (SignupValidator validator : validators) {
+            validator.validate(input);
         }
 
         User user = userMapper.toEntity(input);
