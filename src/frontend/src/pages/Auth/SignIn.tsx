@@ -334,7 +334,7 @@ export default function SignIn() {
                     <p className="text-center text-sm text-gray-500 mt-8">
                         Don't have an account?{" "}
                         <a
-                            href="#"
+                            href="/signup"
                             className="text-purple-400 hover:text-purple-300 font-medium transition-colors no-underline"
                         >
                             Create one for free
