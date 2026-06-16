@@ -23,6 +23,17 @@ interface ApiErrorPayload {
     detail?: string;
     message?: string;
     error?: string;
+    validationErrors?: Record<string, string>;
+}
+
+export interface LoginRequest {
+    username: string;
+    password: string;
+}
+
+export interface LoginResponse {
+    token: string;
+    expiresIn: number;
 }
 
 export async function signup(payload: SignupRequest): Promise<SignupResponse> {
@@ -30,9 +41,19 @@ export async function signup(payload: SignupRequest): Promise<SignupResponse> {
     return response.data;
 }
 
+export async function login(payload: LoginRequest): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>("/auth/login", payload);
+    return response.data;
+}
+
 export function getSignupErrorMessage(error: unknown): string {
     if (error instanceof AxiosError) {
         const data = error.response?.data as ApiErrorPayload | string | undefined;
+
+        if (typeof data === "object" && data?.validationErrors) {
+            const firstError = Object.values(data.validationErrors)[0];
+            if (firstError) return firstError;
+        }
 
         const detail =
             typeof data === "string"
@@ -44,7 +65,7 @@ export function getSignupErrorMessage(error: unknown): string {
             return "That username is already taken. Try another one.";
         }
 
-        if (normalizedDetail.includes("email is already registered")) {
+        if (normalizedDetail.includes("email is already registered") || normalizedDetail.includes("email is already taken")) {
             return "That email is already registered. Try signing in instead.";
         }
 

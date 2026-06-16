@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /* ──────────────────────── sub‑components ──────────────────────── */
 import { GitHubIcon } from "./components/Icons/GitHubIcon";
@@ -11,26 +11,39 @@ import { MailIcon } from "./components/Icons/MailIcon";
 import { LockIcon } from "./components/Icons/LockIcon";
 import { Logo } from "../../components/Logo/Logo";
 import { SocialButton } from "./components/Buttons/SocialButton";
+import { AxiosError } from "axios";
 
 /* ────────────────────────── api ────────────────────────── */
+import { login } from "./services/auth";
 
 
 
 /* ────────────────────────── main page ────────────────────────── */
 
 export default function SignIn() {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        setError("");
         
-        // ****************************************************************************************** TO DO ******************************************************************************************
-        
-
-        console.log("Sign in:", { email, password, rememberMe });
+        try {
+            const response = await login({ username, password });
+            localStorage.setItem("access_token", response.token);
+            navigate("/dashboard");
+        } catch (err) {
+            if (err instanceof AxiosError && err.response?.status === 401) {
+                setError("Invalid username or password. Please try again.");
+            } else {
+                setError("We couldn't sign you in right now. Please try again later.");
+            }
+            console.error("Sign in failed:", err);
+        }
     };
 
     return (
@@ -168,6 +181,11 @@ export default function SignIn() {
                             Sign in to continue your learning journey.
                         </p>
                     </div>
+                    {error && (
+                        <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
 
                     {/* social login */}
                     <div className="grid grid-cols-2 gap-3 mb-6">
@@ -194,24 +212,24 @@ export default function SignIn() {
 
                     {/* form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* email */}
+                        {/* username */}
                         <div className="space-y-1.5">
                             <label
-                                htmlFor="email"
+                                htmlFor="username"
                                 className="block text-[13px] font-medium text-gray-400"
                             >
-                                Email address
+                                Username or Email
                             </label>
                             <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600">
                                     <MailIcon />
                                 </div>
                                 <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="you@example.com"
+                                    id="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter your username or email"
                                     className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200"
                                     required
                                 />

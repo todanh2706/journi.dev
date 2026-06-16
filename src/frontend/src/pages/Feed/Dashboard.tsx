@@ -22,8 +22,10 @@ import { ActionCard } from "./components/ActionCard";
 import { LeaderboardItem } from "./components/LeaderboardItem";
 import { NavItem } from "./components/NavItem";
 import { MilestoneCard } from "./components/MilestoneCard";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   return (
     <div className="flex min-h-screen bg-[#0d0e1a] text-white font-sans selection:bg-indigo-500/30">
       {/* Sidebar */}
@@ -51,10 +53,10 @@ export default function Dashboard() {
 
         <div className="p-6 pb-8">
           <div className="flex items-center gap-3 px-2">
-            <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Alex Dev" className="w-9 h-9 rounded-full border border-white/10" />
+            <img src={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"} alt={user ? user.username : "Guest"} className="w-9 h-9 rounded-full border border-white/10" />
             <div>
-              <div className="text-sm font-medium text-gray-200">Alex Dev</div>
-              <div className="text-xs text-gray-500">@alexcode</div>
+              <div className="text-sm font-medium text-gray-200">{user ? user.username : "Guest"}</div>
+              <div className="text-xs text-gray-500">{user ? `@${user.username}` : "Not logged in"}</div>
             </div>
           </div>
         </div>
@@ -65,8 +67,8 @@ export default function Dashboard() {
         {/* Header */}
         <header className="px-12 pt-12 pb-8 flex items-end justify-between">
           <div>
-            <h1 className="text-[28px] font-bold mb-2">Welcome back, Alex</h1>
-            <p className="text-gray-400 text-[15px]">Your learning journey continues. Let's hit that daily goal.</p>
+            <h1 className="text-[28px] font-bold mb-2">Welcome back{user ? `, ${user.username}` : ""}</h1>
+            <p className="text-gray-400 text-[15px]">{user ? "Your learning journey continues. Let's hit that daily goal." : "Sign in to track your learning journey and hit your daily goals."}</p>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-400 bg-white/[0.03] px-4 py-2.5 rounded-xl border border-white/[0.05]">
@@ -231,14 +233,14 @@ export default function Dashboard() {
                 <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none" />
                 
                 <div className="relative mb-4">
-                  <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Alex Dev" className="w-[72px] h-[72px] rounded-full border-[3px] border-[#141527] ring-2 ring-indigo-500/50" />
+                  <img src={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"} alt={user ? user.username : "Guest"} className="w-[72px] h-[72px] rounded-full border-[3px] border-[#141527] ring-2 ring-indigo-500/50" />
                   <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full border-[3px] border-[#1a1b30]">
-                    12
+                    {user ? "12" : "-"}
                   </div>
                 </div>
-                <div className="font-semibold text-lg relative z-10 text-gray-100">Alex Dev</div>
+                <div className="font-semibold text-lg relative z-10 text-gray-100">{user ? user.username : "Guest"}</div>
                 <div className="text-[13px] text-gray-400 mt-1.5 relative z-10 flex items-center gap-2">
-                  Rank 12 <span className="w-1 h-1 rounded-full bg-gray-600" /> <span className="text-indigo-300 font-medium">2,450 pts</span>
+                  Rank {user ? "12" : "-"} <span className="w-1 h-1 rounded-full bg-gray-600" /> <span className="text-indigo-300 font-medium">{user ? "2,450 pts" : "0 pts"}</span>
                 </div>
               </div>
 
@@ -250,7 +252,7 @@ export default function Dashboard() {
                 
                 <div className="h-px bg-white/[0.04] my-2" />
                 
-                <LeaderboardItem rank={12} name="Alex Dev" handle="You" pts="2,450" avatar="https://i.pravatar.cc/150?u=a042581f4e29026704d" isUser />
+                <LeaderboardItem rank={12} name={user ? user.username : "Guest"} handle={user ? "You" : ""} pts={user ? "2,450" : "0"} avatar={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"} isUser />
               </div>
 
               <button className="w-full py-3.5 rounded-xl border border-white/[0.06] text-[13px] font-medium text-gray-400 hover:text-white hover:bg-white/[0.03] transition-colors relative z-10">
