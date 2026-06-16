@@ -5,15 +5,31 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class NodePrerequisiteId implements Serializable {
-    private UUID parentNodeId;
-    private UUID childNodeId;
+    private UUID parentNode;
+    private UUID childNode;
 
     public NodePrerequisiteId() {
     }
 
     public NodePrerequisiteId(UUID parentNodeId, UUID childNodeId) {
-        this.parentNodeId = parentNodeId;
-        this.childNodeId = childNodeId;
+        this.parentNode = parentNodeId;
+        this.childNode = childNodeId;
+    }
+
+    public UUID getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(UUID parentNode) {
+        this.parentNode = parentNode;
+    }
+
+    public UUID getChildNode() {
+        return childNode;
+    }
+
+    public void setChildNode(UUID childNode) {
+        this.childNode = childNode;
     }
 
     @Override
@@ -23,11 +39,11 @@ public class NodePrerequisiteId implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         NodePrerequisiteId that = (NodePrerequisiteId) o;
-        return Objects.equals(parentNodeId, that.parentNodeId) && Objects.equals(childNodeId, that.childNodeId);
+        return Objects.equals(parentNode, that.parentNode) && Objects.equals(childNode, that.childNode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentNodeId, childNodeId);
+        return Objects.hash(parentNode, childNode);
     }
 }

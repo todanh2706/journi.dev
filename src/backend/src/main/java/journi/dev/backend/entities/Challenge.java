@@ -10,9 +10,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,8 +28,9 @@ public class Challenge {
     @Column(name = "challenge_id")
     private UUID challengeId;
 
-    @Column(name = "node_id")
-    private UUID nodeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "node_id", nullable = false)
+    private SkillNode node;
 
     @Column(length = 150, nullable = false)
     private String title;
@@ -68,12 +72,12 @@ public class Challenge {
         this.challengeId = challengeId;
     }
 
-    public UUID getNodeId() {
-        return nodeId;
+    public SkillNode getNode() {
+        return node;
     }
 
-    public void setNodeId(UUID nodeId) {
-        this.nodeId = nodeId;
+    public void setNode(SkillNode node) {
+        this.node = node;
     }
 
     public String getTitle() {

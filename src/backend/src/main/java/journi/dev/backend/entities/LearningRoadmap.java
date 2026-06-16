@@ -17,9 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "learning_roadmap")
+@Table(name = "learning_roadmap", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_learning_roadmap_slug", columnNames = "slug")
+})
 @SQLDelete(sql = "UPDATE learning_roadmap SET deleted_at = CURRENT_TIMESTAMP WHERE roadmap_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class LearningRoadmap {
@@ -34,6 +37,9 @@ public class LearningRoadmap {
 
     @Column(length = 150, nullable = false)
     private String title;
+
+    @Column(length = 150, nullable = false, unique = true)
+    private String slug;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
@@ -83,6 +89,14 @@ public class LearningRoadmap {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getDescription() {

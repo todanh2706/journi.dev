@@ -11,6 +11,9 @@ public class SkillNodeRequest {
     private String contentJson;
     private Boolean isLocked;
 
+    public SkillNodeRequest() {
+    }
+
     public String getTitle() {
         return title;
     }

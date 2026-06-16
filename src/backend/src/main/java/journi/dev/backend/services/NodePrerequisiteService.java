@@ -6,10 +6,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import journi.dev.backend.dtos.requests.NodePrerequisiteRequest;
 import journi.dev.backend.dtos.responses.NodePrerequisiteResponse;
 import journi.dev.backend.entities.NodePrerequisite;
 import journi.dev.backend.entities.NodePrerequisiteId;
+import journi.dev.backend.entities.SkillNode;
+import journi.dev.backend.exceptions.BadRequestException;
 import journi.dev.backend.repositories.NodePrerequisiteRepository;
 import journi.dev.backend.repositories.SkillNodeRepository;
 import journi.dev.backend.exceptions.ResourceNotFoundException;
@@ -30,8 +33,28 @@ public class NodePrerequisiteService {
 
     @Transactional
     public NodePrerequisiteResponse createNodePrerequisite(UUID parentNodeId, NodePrerequisiteRequest request) {
+        if (request.getChildNodeId() == null) {
+            throw new BadRequestException("Child node id is required");
+        }
+
+        if (parentNodeId.equals(request.getChildNodeId())) {
+            throw new BadRequestException("A skill node cannot depend on itself");
+        }
+
+        SkillNode parentNode = skillNodeRepository.findById(parentNodeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Skill node not found with id: " + parentNodeId));
+        SkillNode childNode = skillNodeRepository.findById(request.getChildNodeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Skill node not found with id: " + request.getChildNodeId()));
+        NodePrerequisiteId prerequisiteId = new NodePrerequisiteId(parentNodeId, request.getChildNodeId());
+
+        if (nodePrerequisiteRepository.existsById(prerequisiteId)) {
+            throw new BadRequestException("This prerequisite relationship already exists");
+        }
+
         NodePrerequisite createdPrerequisite = prerequisiteMapper.toEntity(request);
-        createdPrerequisite.setParentNodeId(parentNodeId);
+        createdPrerequisite.setParentNode(parentNode);
+        createdPrerequisite.setChildNode(childNode);
 
         NodePrerequisite savedPrerequisite = nodePrerequisiteRepository.save(createdPrerequisite);
 

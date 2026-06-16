@@ -9,6 +9,9 @@ public class NodePrerequisiteResponse {
     private String relationType;
     private LocalDateTime createdAt;
 
+    public NodePrerequisiteResponse() {
+    }
+
     public UUID getParentId() {
         return parentId;
     }

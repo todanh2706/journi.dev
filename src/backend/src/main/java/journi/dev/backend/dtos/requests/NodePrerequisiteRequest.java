@@ -6,6 +6,9 @@ public class NodePrerequisiteRequest {
     private UUID childNodeId;
     private String relationType;
 
+    public NodePrerequisiteRequest() {
+    }
+
     public UUID getChildNodeId() {
         return childNodeId;
     }

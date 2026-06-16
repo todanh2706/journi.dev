@@ -3,7 +3,8 @@ package journi.dev.backend.dtos.responses;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import journi.dev.backend.entities.SkillNode;
+import journi.dev.backend.entities.NodeType;
+import journi.dev.backend.entities.ProgressStatus;
 
 public class SkillNodeResponse {
     private UUID nodeId;
@@ -11,8 +12,9 @@ public class SkillNodeResponse {
     private String title;
     private String slug;
     private Integer orderIndex;
-    private String nodeType;
+    private NodeType nodeType;
     private String contentJson;
+    private ProgressStatus progressStatus;
     private Boolean isLocked;
     private UUID createdBy;
     private UUID updatedBy;
@@ -60,11 +62,11 @@ public class SkillNodeResponse {
         this.orderIndex = orderIndex;
     }
 
-    public String getNodeType() {
+    public NodeType getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(String nodeType) {
+    public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -74,6 +76,14 @@ public class SkillNodeResponse {
 
     public void setContentJson(String contentJson) {
         this.contentJson = contentJson;
+    }
+
+    public ProgressStatus getProgressStatus() {
+        return progressStatus;
+    }
+
+    public void setProgressStatus(ProgressStatus progressStatus) {
+        this.progressStatus = progressStatus;
     }
 
     public Boolean getIsLocked() {
@@ -125,8 +135,9 @@ public class SkillNodeResponse {
     }
 
     public SkillNodeResponse(UUID nodeId, UUID roadmapId, String title, String slug, Integer orderIndex,
-            String nodeType,
-            String contentJson, Boolean isLocked, UUID createdBy, UUID updatedBy, LocalDateTime createdAt,
+            NodeType nodeType,
+            String contentJson, ProgressStatus progressStatus, Boolean isLocked, UUID createdBy, UUID updatedBy,
+            LocalDateTime createdAt,
             LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.nodeId = nodeId;
         this.roadmapId = roadmapId;
@@ -135,6 +146,7 @@ public class SkillNodeResponse {
         this.orderIndex = orderIndex;
         this.nodeType = nodeType;
         this.contentJson = contentJson;
+        this.progressStatus = progressStatus;
         this.isLocked = isLocked;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
@@ -143,7 +155,6 @@ public class SkillNodeResponse {
         this.deletedAt = deletedAt;
     }
 
-    public SkillNodeResponse() {}
-
-
+    public SkillNodeResponse() {
+    }
 }

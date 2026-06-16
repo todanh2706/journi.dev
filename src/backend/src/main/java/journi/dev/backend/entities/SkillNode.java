@@ -10,13 +10,23 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "skill_node")
+@Table(name = "skill_node", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_skill_node_roadmap_slug", columnNames = {
+                "roadmap_id", "slug"
+        })
+})
 @SQLDelete(sql = "UPDATE skill_node SET deleted_at = CURRENT_TIMESTAMP WHERE node_id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class SkillNode {
@@ -25,8 +35,9 @@ public class SkillNode {
     @Column(name = "node_id")
     private UUID nodeId;
 
-    @Column(name = "roadmap_id")
-    private UUID roadmapId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "roadmap_id", nullable = false)
+    private LearningRoadmap roadmap;
 
     @Column(length = 150, nullable = false)
     private String title;
@@ -37,14 +48,12 @@ public class SkillNode {
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "node_type", length = 30, nullable = false)
-    private String nodeType;
+    private NodeType nodeType;
 
     @Column(name = "content_json", columnDefinition = "TEXT")
     private String contentJson;
-
-    @Column(name = "is_locked")
-    private Boolean isLocked;
 
     @Column(name = "created_by")
     private UUID createdBy;
@@ -71,12 +80,12 @@ public class SkillNode {
         this.nodeId = nodeId;
     }
 
-    public UUID getRoadmapId() {
-        return roadmapId;
+    public LearningRoadmap getRoadmap() {
+        return roadmap;
     }
 
-    public void setRoadmapId(UUID roadmapId) {
-        this.roadmapId = roadmapId;
+    public void setRoadmap(LearningRoadmap roadmap) {
+        this.roadmap = roadmap;
     }
 
     public String getTitle() {
@@ -103,11 +112,11 @@ public class SkillNode {
         this.orderIndex = orderIndex;
     }
 
-    public String getNodeType() {
+    public NodeType getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(String nodeType) {
+    public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -117,14 +126,6 @@ public class SkillNode {
 
     public void setContentJson(String contentJson) {
         this.contentJson = contentJson;
-    }
-
-    public Boolean getIsLocked() {
-        return isLocked;
-    }
-
-    public void setIsLocked(Boolean isLocked) {
-        this.isLocked = isLocked;
     }
 
     public UUID getCreatedBy() {

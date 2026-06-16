@@ -75,6 +75,9 @@ public class User implements UserDetails {
     private List<LearningRoadmap> roadmaps = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserNodeProgress> nodeProgress = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LeaderboardEntry> leaderboardEntries = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -213,6 +216,14 @@ public class User implements UserDetails {
 
     public void setRoadmaps(List<LearningRoadmap> roadmaps) {
         this.roadmaps = roadmaps;
+    }
+
+    public List<UserNodeProgress> getNodeProgress() {
+        return nodeProgress;
+    }
+
+    public void setNodeProgress(List<UserNodeProgress> nodeProgress) {
+        this.nodeProgress = nodeProgress;
     }
 
     public String getVerificationCode() {

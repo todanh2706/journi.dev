@@ -2,6 +2,7 @@ package journi.dev.backend.dtos.requests;
 
 public class LearningRoadmapRequest {
     private String title;
+    private String slug;
     private String description;
     private String visibility;
     private Boolean isDynamic;
@@ -15,6 +16,14 @@ public class LearningRoadmapRequest {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getDescription() {

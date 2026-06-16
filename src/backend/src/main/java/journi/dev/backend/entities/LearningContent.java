@@ -5,9 +5,12 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,8 +21,9 @@ public class LearningContent {
     @Column(name = "content_id")
     private UUID contentId;
 
-    @Column(name = "node_id")
-    private UUID nodeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "node_id", nullable = false)
+    private SkillNode node;
 
     @Column(name = "source_type", length = 30, nullable = false)
     private String sourceType;
@@ -47,12 +51,12 @@ public class LearningContent {
         this.contentId = contentId;
     }
 
-    public UUID getNodeId() {
-        return nodeId;
+    public SkillNode getNode() {
+        return node;
     }
 
-    public void setNodeId(UUID nodeId) {
-        this.nodeId = nodeId;
+    public void setNode(SkillNode node) {
+        this.node = node;
     }
 
     public String getSourceType() {

@@ -1,27 +1,36 @@
 package journi.dev.backend.entities;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "node_prerequisite")
+@Table(name = "node_prerequisite", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_node_prerequisite_edge", columnNames = {
+                "parent_node_id", "child_node_id"
+        })
+})
 @IdClass(NodePrerequisiteId.class)
 public class NodePrerequisite {
     @Id
-    @Column(name = "parent_node_id")
-    private UUID parentNodeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_node_id", nullable = false)
+    private SkillNode parentNode;
 
     @Id
-    @Column(name = "child_node_id")
-    private UUID childNodeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "child_node_id", nullable = false)
+    private SkillNode childNode;
 
     @Column(name = "relation_type", length = 50)
     private String relationType;
@@ -30,20 +39,20 @@ public class NodePrerequisite {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public UUID getParentNodeId() {
-        return parentNodeId;
+    public SkillNode getParentNode() {
+        return parentNode;
     }
 
-    public void setParentNodeId(UUID parentNodeId) {
-        this.parentNodeId = parentNodeId;
+    public void setParentNode(SkillNode parentNode) {
+        this.parentNode = parentNode;
     }
 
-    public UUID getChildNodeId() {
-        return childNodeId;
+    public SkillNode getChildNode() {
+        return childNode;
     }
 
-    public void setChildNodeId(UUID childNodeId) {
-        this.childNodeId = childNodeId;
+    public void setChildNode(SkillNode childNode) {
+        this.childNode = childNode;
     }
 
     public String getRelationType() {

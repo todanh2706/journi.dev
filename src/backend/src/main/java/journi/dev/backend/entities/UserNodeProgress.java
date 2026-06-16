@@ -5,27 +5,40 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "user_node_progress")
+@Table(name = "user_node_progress", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_user_node_progress_user_node", columnNames = {
+                "user_id", "node_id"
+        })
+})
 public class UserNodeProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "progress_id")
     private UUID progressId;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "node_id")
-    private UUID nodeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "node_id", nullable = false)
+    private SkillNode node;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
-    private String status;
+    private ProgressStatus status;
 
     @Column(name = "unlocked_at")
     private LocalDateTime unlockedAt;
@@ -44,27 +57,27 @@ public class UserNodeProgress {
         this.progressId = progressId;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public UUID getNodeId() {
-        return nodeId;
+    public SkillNode getNode() {
+        return node;
     }
 
-    public void setNodeId(UUID nodeId) {
-        this.nodeId = nodeId;
+    public void setNode(SkillNode node) {
+        this.node = node;
     }
 
-    public String getStatus() {
+    public ProgressStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ProgressStatus status) {
         this.status = status;
     }
 
