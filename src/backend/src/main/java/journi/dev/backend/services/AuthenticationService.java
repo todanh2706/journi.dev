@@ -65,7 +65,7 @@ public class AuthenticationService {
                         input.getUsername(),
                         input.getPassword()));
 
-        return userRepository.findByUsername(input.getUsername())
+        return userRepository.findByUsernameOrEmail(input.getUsername(), input.getUsername())
                 .orElseThrow(() -> new BadCredentialsException("Invalid Username or Password"));
     }
 }
