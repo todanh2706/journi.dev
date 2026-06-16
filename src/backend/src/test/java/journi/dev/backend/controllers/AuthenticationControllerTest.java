@@ -19,6 +19,7 @@ import journi.dev.backend.services.JwtService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +39,10 @@ import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
                 SecurityAutoConfiguration.class })
 @AutoConfigureRestTestClient
 public class AuthenticationControllerTest {
+        private static final UUID MOCK_USER_ID = UUID.fromString("cf6ee0a3-a316-4503-94b9-07fe230fe07d");
+        private static final String MOCK_JWT_TOKEN = "mocked-jwt-token";
+        private static final long MOCK_EXPIRATION_TIME = 3600000L;
+
         @Autowired
         private RestTestClient restTestClient;
 
@@ -63,7 +67,7 @@ public class AuthenticationControllerTest {
 
                 // Mock response
                 UserResponse mockUserResponse = new UserResponse(
-                                UUID.fromString("cf6ee0a3-a316-4503-94b9-07fe230fe07d"),
+                                MOCK_USER_ID,
                                 "test_user", "testuser@gmail.com", UserRole.USER, UserStatus.ACTIVE,
                                 LocalDateTime.now(), null, null);
 
@@ -125,6 +129,10 @@ public class AuthenticationControllerTest {
                                 .jsonPath("$.status").isEqualTo(400)
                                 .jsonPath("$.error").isEqualTo("Bad Request")
                                 .jsonPath("$.validationErrors").exists();
+
+                // Mockito verification to ensure invalid requests do not call signup
+                // function in AuthenticationService
+                verify(authenticationService, never()).signup(any(UserRequest.class));
         }
 
         @DisplayName("[TEST] Sign in with valid request")
@@ -146,11 +154,10 @@ public class AuthenticationControllerTest {
                 when(authenticationService.authenticate(any(LoginUserRequest.class))).thenReturn(mockAuthenticatedUser);
 
                 // Mock generateToken function
-                when(jwtService.generateToken(any(User.class))).thenReturn(
-                                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30");
+                when(jwtService.generateToken(any(User.class))).thenReturn(MOCK_JWT_TOKEN);
 
                 // Mock getExpirationTime function
-                when(jwtService.getExpirationTime()).thenReturn(3600000L);
+                when(jwtService.getExpirationTime()).thenReturn(MOCK_EXPIRATION_TIME);
 
                 // ==========================================
                 // ACT and ASSERT
@@ -163,8 +170,17 @@ public class AuthenticationControllerTest {
                                 .expectStatus().isOk()
                                 .expectBody()
                                 .jsonPath("$.token")
-                                .isEqualTo("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30")
-                                .jsonPath("$.expiresIn").isEqualTo(3600000L);
+                                .isEqualTo(MOCK_JWT_TOKEN)
+                                .jsonPath("$.expiresIn").isEqualTo(MOCK_EXPIRATION_TIME);
+
+                // Mockito verification to ensure the controller actually called to authenticate
+                // function in AuthenticationService
+                verify(authenticationService, times(1)).authenticate(any(LoginUserRequest.class));
+
+                // Mockito verification to ensure the controller generated JWT and returned
+                // expiration time through JwtService
+                verify(jwtService, times(1)).generateToken(any(User.class));
+                verify(jwtService, times(1)).getExpirationTime();
         }
 
         @DisplayName("[TEST] Sign in with ALL invalid requests")
@@ -199,9 +215,16 @@ public class AuthenticationControllerTest {
                                 .jsonPath("$.status").isEqualTo(400)
                                 .jsonPath("$.error").isEqualTo("Bad Request")
                                 .jsonPath("$.validationErrors").exists();
+
+                // Mockito verification to ensure invalid requests do not call authenticate
+                // function in AuthenticationService
+                verify(authenticationService, never()).authenticate(any(LoginUserRequest.class));
+
+                // Mockito verification to ensure JWT is not generated when validation fails
+                verify(jwtService, never()).generateToken(any(User.class));
+                verify(jwtService, never()).getExpirationTime();
         }
 
-        @Disabled
         @DisplayName("[TEST] Sign in with bad credentials")
         @Test
         void signInTestWithBadCredentials() {
@@ -212,9 +235,7 @@ public class AuthenticationControllerTest {
                 // Mock request
                 LoginUserRequest mockBadLoginRequest = new LoginUserRequest("test_user_wrong", "password");
 
-                // Mock authenticated user
-                User mockAuthenticatedUser = new User();
-                mockAuthenticatedUser.setUsername("test_user_right");
+                // We don't need mock authenticated user for this test
 
                 // Mock response
                 // Mock authenticate function
@@ -233,6 +254,13 @@ public class AuthenticationControllerTest {
                                 .expectBody()
                                 .jsonPath("$.status").isEqualTo(401)
                                 .jsonPath("$.error").isEqualTo("Unauthorized")
-                                .jsonPath("$.validationErrors").exists();
+                                .jsonPath("$.message").isEqualTo("Invalid username or password");
+
+                // Mockito verification to ensure the controller tried to authenticate once
+                verify(authenticationService, times(1)).authenticate(any(LoginUserRequest.class));
+
+                // Mockito verification to ensure JWT is not generated when credentials are invalid
+                verify(jwtService, never()).generateToken(any(User.class));
+                verify(jwtService, never()).getExpirationTime();
         }
 }
