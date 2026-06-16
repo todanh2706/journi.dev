@@ -41,291 +41,301 @@ import journi.dev.backend.utils.auth.SignupValidator;
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+        @Mock
+        private UserRepository userRepository;
 
-    @Mock
-    private AuthenticationManager authenticationManager;
+        @Mock
+        private AuthenticationManager authenticationManager;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+        @Mock
+        private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private UserMapper userMapper;
+        @Mock
+        private UserMapper userMapper;
 
-    @Mock
-    private SignupValidator signupValidator;
+        @Mock
+        private SignupValidator signupValidator;
 
-    private AuthenticationService authenticationService;
+        private AuthenticationService authenticationService;
 
-    @BeforeEach
-    void setUp() {
-        // Create service under test with all dependencies mocked by Mockito
-        authenticationService = new AuthenticationService(
-                userRepository,
-                authenticationManager,
-                passwordEncoder,
-                userMapper,
-                List.of(signupValidator));
-    }
+        @BeforeEach
+        void setUp() {
+                // Create service under test with all dependencies mocked by Mockito
+                authenticationService = new AuthenticationService(
+                                userRepository,
+                                authenticationManager,
+                                passwordEncoder,
+                                userMapper,
+                                List.of(signupValidator));
+        }
 
-    @DisplayName("[TEST] Signup validates request, stores encoded password, and returns mapped response")
-    @Test
-    void signupCreatesActiveUserWithEncodedPassword() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Signup validates request, stores encoded password, and returns mapped response")
+        @Test
+        void signupCreatesActiveUserWithEncodedPassword() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        UserRequest request = new UserRequest("test_user", "testuser@gmail.com", "testpassword");
+                // Mock request
+                UserRequest request = new UserRequest("test_user", "testuser@gmail.com", "testpassword");
 
-        // Mock entity that UserMapper creates from request
-        User mappedUser = new User();
-        mappedUser.setUsername(request.getUsername());
-        mappedUser.setEmail(request.getEmail());
+                // Mock entity that UserMapper creates from request
+                User mappedUser = new User();
+                mappedUser.setUsername(request.getUsername());
+                mappedUser.setEmail(request.getEmail());
 
-        // Mock saved entity that UserRepository returns after saving
-        User savedUser = new User();
-        savedUser.setUserId(UUID.fromString("cf6ee0a3-a316-4503-94b9-07fe230fe07d"));
-        savedUser.setUsername(request.getUsername());
-        savedUser.setEmail(request.getEmail());
-        savedUser.setPasswordHash("encoded-password");
-        savedUser.setRole(UserRole.USER);
-        savedUser.setStatus(UserStatus.ACTIVE);
-        savedUser.setEnabled(true);
+                // Mock saved entity that UserRepository returns after saving
+                User savedUser = new User();
+                savedUser.setUserId(UUID.fromString("cf6ee0a3-a316-4503-94b9-07fe230fe07d"));
+                savedUser.setUsername(request.getUsername());
+                savedUser.setEmail(request.getEmail());
+                savedUser.setPasswordHash("encoded-password");
+                savedUser.setRole(UserRole.USER);
+                savedUser.setStatus(UserStatus.ACTIVE);
+                savedUser.setEnabled(true);
 
-        // Mock response that UserMapper creates from saved entity
-        UserResponse expectedResponse = new UserResponse(
-                savedUser.getUserId(),
-                savedUser.getUsername(),
-                savedUser.getEmail(),
-                savedUser.getRole(),
-                savedUser.getStatus(),
-                LocalDateTime.now(),
-                null,
-                null);
+                // Mock response that UserMapper creates from saved entity
+                UserResponse expectedResponse = new UserResponse(
+                                savedUser.getUserId(),
+                                savedUser.getUsername(),
+                                savedUser.getEmail(),
+                                savedUser.getRole(),
+                                savedUser.getStatus(),
+                                LocalDateTime.now(),
+                                null,
+                                null);
 
-        // Mockito
-        when(userMapper.toEntity(request)).thenReturn(mappedUser);
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("encoded-password");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(userMapper.toResponse(savedUser)).thenReturn(expectedResponse);
+                // Mockito
+                when(userMapper.toEntity(request)).thenReturn(mappedUser);
+                when(passwordEncoder.encode(request.getPassword())).thenReturn("encoded-password");
+                when(userRepository.save(any(User.class))).thenReturn(savedUser);
+                when(userMapper.toResponse(savedUser)).thenReturn(expectedResponse);
 
-        // ==========================================
-        // ACT
-        // ==========================================
-        UserResponse actualResponse = authenticationService.signup(request);
+                // ==========================================
+                // ACT
+                // ==========================================
+                UserResponse actualResponse = authenticationService.signup(request);
 
-        // ==========================================
-        // ASSERT
-        // ==========================================
-        assertThat(actualResponse).isSameAs(expectedResponse);
+                // ==========================================
+                // ASSERT
+                // ==========================================
+                assertThat(actualResponse).isSameAs(expectedResponse);
 
-        // Mockito verification to ensure signup validation and password encoding are called
-        verify(signupValidator).validate(request);
-        verify(passwordEncoder).encode("testpassword");
+                // Mockito verification to ensure signup validation and password encoding are
+                // called
+                verify(signupValidator).validate(request);
+                verify(passwordEncoder).encode("testpassword");
 
-        // Mockito verification to inspect the actual User entity sent to repository
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        User userToSave = userCaptor.getValue();
-        assertThat(userToSave.getPasswordHash()).isEqualTo("encoded-password");
-        assertThat(userToSave.getRole()).isEqualTo(UserRole.USER);
-        assertThat(userToSave.getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(userToSave.getEnabled()).isTrue();
-    }
+                // Mockito verification to inspect the actual User entity sent to repository
+                ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+                verify(userRepository).save(userCaptor.capture());
+                User userToSave = userCaptor.getValue();
+                assertThat(userToSave.getPasswordHash()).isEqualTo("encoded-password");
+                assertThat(userToSave.getRole()).isEqualTo(UserRole.USER);
+                assertThat(userToSave.getStatus()).isEqualTo(UserStatus.ACTIVE);
+                assertThat(userToSave.getEnabled()).isTrue();
+        }
 
-    @DisplayName("[TEST] Signup stops when validator rejects request")
-    @Test
-    void signupStopsWhenValidatorRejectsRequest() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Signup stops when validator rejects request")
+        @Test
+        void signupStopsWhenValidatorRejectsRequest() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        UserRequest request = new UserRequest("bad_user", "baduser@gmail.com", "password");
+                // Mock request
+                UserRequest request = new UserRequest("bad_user", "baduser@gmail.com", "password");
 
-        // Mockito
-        doThrow(new BadRequestException("Signup request is invalid"))
-                .when(signupValidator).validate(request);
+                // Mockito
+                doThrow(new BadRequestException("Signup request is invalid"))
+                                .when(signupValidator).validate(request);
 
-        // ==========================================
-        // ACT and ASSERT
-        // ==========================================
-        assertThatThrownBy(() -> authenticationService.signup(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessage("Signup request is invalid");
+                // ==========================================
+                // ACT and ASSERT
+                // ==========================================
+                assertThatThrownBy(() -> authenticationService.signup(request))
+                                .isInstanceOf(BadRequestException.class)
+                                .hasMessage("Signup request is invalid");
 
-        // Mockito verification to ensure validator is called first
-        verify(signupValidator).validate(request);
+                // Mockito verification to ensure validator is called first
+                verify(signupValidator).validate(request);
 
-        // Mockito verification to ensure service stops before creating or saving User
-        verify(userMapper, never()).toEntity(any(UserRequest.class));
-        verify(passwordEncoder, never()).encode(any());
-        verify(userRepository, never()).save(any(User.class));
-        verify(userMapper, never()).toResponse(any(User.class));
-    }
+                // Mockito verification to ensure service stops before creating or saving User
+                verify(userMapper, never()).toEntity(any(UserRequest.class));
+                verify(passwordEncoder, never()).encode(any());
+                verify(userRepository, never()).save(any(User.class));
+                verify(userMapper, never()).toResponse(any(User.class));
+        }
 
-    @DisplayName("[TEST] Signup stops when username is already taken")
-    @Test
-    void signupStopsWhenUsernameAlreadyExists() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Signup stops when username is already taken")
+        @Test
+        void signupStopsWhenUsernameAlreadyExists() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        UserRequest request = new UserRequest("existing_user", "newemail@gmail.com", "password");
+                // Mock request
+                UserRequest request = new UserRequest("existing_user", "newemail@gmail.com", "password");
 
-        // Mockito
-        doThrow(new BadRequestException("Username is already taken"))
-                .when(signupValidator).validate(request);
+                // Mockito
+                doThrow(new BadRequestException("Username is already taken"))
+                                .when(signupValidator).validate(request);
 
-        // ==========================================
-        // ACT and ASSERT
-        // ==========================================
-        assertThatThrownBy(() -> authenticationService.signup(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessage("Username is already taken");
+                // ==========================================
+                // ACT and ASSERT
+                // ==========================================
+                assertThatThrownBy(() -> authenticationService.signup(request))
+                                .isInstanceOf(BadRequestException.class)
+                                .hasMessage("Username is already taken");
 
-        // Mockito verification to ensure duplicate username blocks signup
-        verify(signupValidator).validate(request);
+                // Mockito verification to ensure duplicate username blocks signup
+                verify(signupValidator).validate(request);
 
-        // Mockito verification to ensure duplicate username is not saved
-        verify(userMapper, never()).toEntity(any(UserRequest.class));
-        verify(passwordEncoder, never()).encode(any());
-        verify(userRepository, never()).save(any(User.class));
-        verify(userMapper, never()).toResponse(any(User.class));
-    }
+                // Mockito verification to ensure duplicate username is not saved
+                verify(userMapper, never()).toEntity(any(UserRequest.class));
+                verify(passwordEncoder, never()).encode(any());
+                verify(userRepository, never()).save(any(User.class));
+                verify(userMapper, never()).toResponse(any(User.class));
+        }
 
-    @DisplayName("[TEST] Signup stops when email is already taken")
-    @Test
-    void signupStopsWhenEmailAlreadyExists() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Signup stops when email is already taken")
+        @Test
+        void signupStopsWhenEmailAlreadyExists() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        UserRequest request = new UserRequest("new_user", "existing@gmail.com", "password");
+                // Mock request
+                UserRequest request = new UserRequest("new_user", "existing@gmail.com", "password");
 
-        // Mockito
-        doThrow(new BadRequestException("Email is already taken"))
-                .when(signupValidator).validate(request);
+                // Mockito
+                doThrow(new BadRequestException("Email is already taken"))
+                                .when(signupValidator).validate(request);
 
-        // ==========================================
-        // ACT and ASSERT
-        // ==========================================
-        assertThatThrownBy(() -> authenticationService.signup(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessage("Email is already taken");
+                // ==========================================
+                // ACT and ASSERT
+                // ==========================================
+                assertThatThrownBy(() -> authenticationService.signup(request))
+                                .isInstanceOf(BadRequestException.class)
+                                .hasMessage("Email is already taken");
 
-        // Mockito verification to ensure duplicate email blocks signup
-        verify(signupValidator).validate(request);
+                // Mockito verification to ensure duplicate email blocks signup
+                verify(signupValidator).validate(request);
 
-        // Mockito verification to ensure duplicate email is not saved
-        verify(userMapper, never()).toEntity(any(UserRequest.class));
-        verify(passwordEncoder, never()).encode(any());
-        verify(userRepository, never()).save(any(User.class));
-        verify(userMapper, never()).toResponse(any(User.class));
-    }
+                // Mockito verification to ensure duplicate email is not saved
+                verify(userMapper, never()).toEntity(any(UserRequest.class));
+                verify(passwordEncoder, never()).encode(any());
+                verify(userRepository, never()).save(any(User.class));
+                verify(userMapper, never()).toResponse(any(User.class));
+        }
 
-    @DisplayName("[TEST] Authenticate delegates credentials and returns stored user")
-    @Test
-    void authenticateReturnsUserWhenCredentialsAreValid() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Authenticate delegates credentials and returns stored user")
+        @Test
+        void authenticateReturnsUserWhenCredentialsAreValid() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        LoginUserRequest request = new LoginUserRequest("test_user", "password");
+                // Mock request
+                LoginUserRequest request = new LoginUserRequest("test_user", "password");
 
-        // Mock user returned by UserRepository after AuthenticationManager accepts credentials
-        User user = new User();
-        user.setUsername(request.getUsername());
+                // Mock user returned by UserRepository after AuthenticationManager accepts
+                // credentials
+                User user = new User();
+                user.setUsername(request.getUsername());
 
-        // Mockito
-        when(userRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(user));
+                // Mockito
+                when(userRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername()))
+                                .thenReturn(Optional.of(user));
 
-        // ==========================================
-        // ACT
-        // ==========================================
-        User actualUser = authenticationService.authenticate(request);
+                // ==========================================
+                // ACT
+                // ==========================================
+                User actualUser = authenticationService.authenticate(request);
 
-        // ==========================================
-        // ASSERT
-        // ==========================================
-        assertThat(actualUser).isSameAs(user);
+                // ==========================================
+                // ASSERT
+                // ==========================================
+                assertThat(actualUser).isSameAs(user);
 
-        // Mockito verification to ensure credentials are delegated to AuthenticationManager
-        verify(authenticationManager).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                // Mockito verification to ensure credentials are delegated to
+                // AuthenticationManager
+                verify(authenticationManager).authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        // Mockito verification to ensure service loads user by username after authentication
-        verify(userRepository).findByUsername("test_user");
+                // Mockito verification to ensure service loads user by username after
+                // authentication
+                verify(userRepository).findByUsernameOrEmail("test_user", "test_user");
 
-        // Mockito verification to ensure authentication happens before repository lookup
-        InOrder inOrder = inOrder(authenticationManager, userRepository);
-        inOrder.verify(authenticationManager).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        inOrder.verify(userRepository).findByUsername(request.getUsername());
-    }
+                // Mockito verification to ensure authentication happens before repository
+                // lookup
+                InOrder inOrder = inOrder(authenticationManager, userRepository);
+                inOrder.verify(authenticationManager).authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                inOrder.verify(userRepository).findByUsernameOrEmail(request.getUsername(), request.getUsername());
+        }
 
-    @DisplayName("[TEST] Authenticate throws BadCredentialsException when user cannot be loaded")
-    @Test
-    void authenticateThrowsBadCredentialsWhenUserDoesNotExist() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Authenticate throws BadCredentialsException when user cannot be loaded")
+        @Test
+        void authenticateThrowsBadCredentialsWhenUserDoesNotExist() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        LoginUserRequest request = new LoginUserRequest("missing_user", "password");
+                // Mock request
+                LoginUserRequest request = new LoginUserRequest("missing_user", "password");
 
-        // Mockito
-        when(userRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
+                // Mockito
+                when(userRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername()))
+                                .thenReturn(Optional.empty());
 
-        // ==========================================
-        // ACT and ASSERT
-        // ==========================================
-        assertThatThrownBy(() -> authenticationService.authenticate(request))
-                .isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid Username or Password");
+                // ==========================================
+                // ACT and ASSERT
+                // ==========================================
+                assertThatThrownBy(() -> authenticationService.authenticate(request))
+                                .isInstanceOf(BadCredentialsException.class)
+                                .hasMessage("Invalid Username or Password");
 
-        // Mockito verification to ensure credentials are still checked first
-        verify(authenticationManager).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                // Mockito verification to ensure credentials are still checked first
+                verify(authenticationManager).authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        // Mockito verification to ensure repository lookup only happens after credentials pass
-        InOrder inOrder = inOrder(authenticationManager, userRepository);
-        inOrder.verify(authenticationManager).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        inOrder.verify(userRepository).findByUsername(request.getUsername());
-    }
+                // Mockito verification to ensure repository lookup only happens after
+                // credentials pass
+                InOrder inOrder = inOrder(authenticationManager, userRepository);
+                inOrder.verify(authenticationManager).authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                inOrder.verify(userRepository).findByUsernameOrEmail(request.getUsername(), request.getUsername()); // username
+                                                                                                                    // and
+                                                                                                                    // email.
+        }
 
-    @DisplayName("[TEST] Authenticate does not query user repository when credentials are rejected")
-    @Test
-    void authenticateStopsWhenAuthenticationManagerRejectsCredentials() {
-        // ==========================================
-        // ARRANGE
-        // ==========================================
+        @DisplayName("[TEST] Authenticate does not query user repository when credentials are rejected")
+        @Test
+        void authenticateStopsWhenAuthenticationManagerRejectsCredentials() {
+                // ==========================================
+                // ARRANGE
+                // ==========================================
 
-        // Mock request
-        LoginUserRequest request = new LoginUserRequest("test_user", "wrongpassword");
+                // Mock request
+                LoginUserRequest request = new LoginUserRequest("test_user", "wrongpassword");
 
-        // Mock authentication token that should be sent to AuthenticationManager
-        UsernamePasswordAuthenticationToken token =
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
+                // Mock authentication token that should be sent to AuthenticationManager
+                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                                request.getUsername(), request.getPassword());
 
-        // Mockito
-        when(authenticationManager.authenticate(token))
-                .thenThrow(new BadCredentialsException("Invalid Username or Password"));
+                // Mockito
+                when(authenticationManager.authenticate(token))
+                                .thenThrow(new BadCredentialsException("Invalid Username or Password"));
 
-        // ==========================================
-        // ACT and ASSERT
-        // ==========================================
-        assertThatThrownBy(() -> authenticationService.authenticate(request))
-                .isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid Username or Password");
+                // ==========================================
+                // ACT and ASSERT
+                // ==========================================
+                assertThatThrownBy(() -> authenticationService.authenticate(request))
+                                .isInstanceOf(BadCredentialsException.class)
+                                .hasMessage("Invalid Username or Password");
 
-        // Mockito verification to ensure repository is not called when credentials fail
-        verify(userRepository, never()).findByUsername(any());
-    }
+                // Mockito verification to ensure repository is not called when credentials fail
+                verify(userRepository, never()).findByUsernameOrEmail(any(), any());
+        }
 }
