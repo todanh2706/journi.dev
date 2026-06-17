@@ -57,6 +57,13 @@ public class LearningRoadmapService {
     }
 
     @Transactional(readOnly = true)
+    public List<LearningRoadmapResponse> getAllRoadmaps() {
+        List<LearningRoadmap> roadmaps = roadmapRepository.findAll();
+
+        return roadmaps.stream().map(roadmapMapper::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<SkillNodeResponse> getRoadmapNodes(UUID roadmapId, User currentUser) {
         if (!roadmapRepository.existsById(roadmapId)) {
             throw new ResourceNotFoundException("Roadmap not found with id: " + roadmapId);

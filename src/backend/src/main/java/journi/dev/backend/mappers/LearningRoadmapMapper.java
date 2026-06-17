@@ -10,5 +10,6 @@ import journi.dev.backend.entities.LearningRoadmap;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LearningRoadmapMapper {
     LearningRoadmapResponse toResponse(LearningRoadmap entity);
+
     LearningRoadmap toEntity(LearningRoadmapRequest request);
 }

@@ -29,6 +29,13 @@ public class LearningRoadmapController {
         this.roadmapService = roadmapService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<LearningRoadmapResponse>> getRoadmaps() {
+        List<LearningRoadmapResponse> response = roadmapService.getAllRoadmaps();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping("/user/{userId}")
     public ResponseEntity<LearningRoadmapResponse> createRoadmap(
             @PathVariable UUID userId,
