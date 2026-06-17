@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Welcome from "./pages/Feed/Welcome";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
-import Dashboard from "./pages/Feed/Dashboard";
+import DashboardLayout from "./pages/Feed/DashboardLayout";
+import DashboardOverview from "./pages/Feed/DashboardOverview";
+import RoadmapsPage from "./pages/Roadmaps/RoadmapsPage";
 import NotFound from "./pages/NotFound";
 import { SlideUpTransition } from "./utils/transitions/SlideUpTransition";
 
@@ -18,7 +20,10 @@ function AnimatedRoutes() {
                 <Route path="/" element={<Welcome />} />
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                    <Route index element={<DashboardOverview />} />
+                    <Route path="roadmaps" element={<RoadmapsPage />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </SlideUpTransition>
