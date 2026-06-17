@@ -5,6 +5,7 @@ import SignUp from "./pages/Auth/SignUp";
 import DashboardLayout from "./pages/Feed/DashboardLayout";
 import DashboardOverview from "./pages/Feed/DashboardOverview";
 import RoadmapsPage from "./pages/Roadmaps/RoadmapsPage";
+import RoadmapDetailPage from "./pages/Roadmaps/RoadmapDetailPage";
 import NotFound from "./pages/NotFound";
 import { SlideUpTransition } from "./utils/transitions/SlideUpTransition";
 
@@ -23,6 +24,7 @@ function AnimatedRoutes() {
                 <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<DashboardOverview />} />
                     <Route path="roadmaps" element={<RoadmapsPage />} />
+                    <Route path="roadmaps/:roadmapId" element={<RoadmapDetailPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
             </Routes>

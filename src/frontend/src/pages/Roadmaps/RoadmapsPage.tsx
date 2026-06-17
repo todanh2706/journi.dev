@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Map, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import { roadmapService } from "../../services/roadmap.service";
 import { type Roadmap } from "../../types/roadmap";
@@ -7,6 +8,7 @@ export default function RoadmapsPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoadmaps = async () => {
@@ -15,9 +17,9 @@ export default function RoadmapsPage() {
         setError(null);
         const data = await roadmapService.getRoadmaps();
         // Fallback for API structure differences (if wrapped in data)
-        const roadmapsData = Array.isArray(data) ? data : (data as any).data || [];
+        const roadmapsData = Array.isArray(data) ? data : (data as { data?: Roadmap[] }).data || [];
         setRoadmaps(roadmapsData);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to fetch roadmaps:", err);
         // Note: the backend might return 404 if the endpoint is missing or no roadmaps exist yet.
         setError("Failed to load learning roadmaps. Please try again later.");
@@ -70,6 +72,7 @@ export default function RoadmapsPage() {
             {roadmaps.map((roadmap) => (
               <div 
                 key={roadmap.roadmapId} 
+                onClick={() => navigate(`/dashboard/roadmaps/${roadmap.roadmapId}`)}
                 className="bg-[#141527] hover:bg-[#1a1b30] border border-white/[0.06] hover:border-indigo-500/30 rounded-2xl p-6 transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col h-full"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
