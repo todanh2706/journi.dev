@@ -1,7 +1,10 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Logo } from "../components/Logo/Logo";
 
 export default function NotFound() {
+    const navigate = useNavigate();
+    const hasHistory = window.history.length > 2;
+    
     return (
         <div className="min-h-screen bg-[#0d0e1a] text-gray-300 flex flex-col font-sans relative overflow-hidden">
             {/* subtle radial glow */}
@@ -38,13 +41,12 @@ export default function NotFound() {
                         The resource you are looking for has been compiled away, deprecated, or moved to a different branch.
                     </p>
 
-                    <Link
-                        id="btn-back-home"
-                        to="/"
-                        className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 shadow-lg shadow-purple-500/25 active:scale-[0.98] no-underline"
+                    <button
+                        onClick={() => hasHistory ? navigate(-1) : navigate("/")}
+                        className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 shadow-lg shadow-purple-500/25 active:scale-[0.98]"
                     >
-                        Return to Homepage
-                    </Link>
+                        {hasHistory ? "Go Back" : "Go to Homepage"}
+                    </button>
                 </main>
 
                 {/* Footer Spacer */}
