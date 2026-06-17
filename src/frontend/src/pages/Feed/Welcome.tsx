@@ -7,10 +7,13 @@ import { PeerCodeReviewCard } from "./components/PeerCodeReviewCard";
 import { DailyStreakCard } from "./components/DailyStreakCard";
 import { StatsBar } from "./components/StatsBar";
 import { Footer } from "./components/Footer";
+import { useAuth } from "../../hooks/useAuth";
 
 /* ────────────────────────── main page ────────────────────────── */
 
 export default function Welcome() {
+    const { user } = useAuth();
+
     return (
         <div className="min-h-screen bg-[#0d0e1a] text-gray-300 flex flex-col font-sans relative overflow-hidden">
             {/* subtle radial glow behind hero */}
@@ -49,29 +52,44 @@ export default function Welcome() {
 
                         {/* auth buttons */}
                         <div className="flex flex-col sm:flex-row items-center gap-5 mb-12">
-                            <Link
-                                id="btn-signup"
-                                to="/signup"
-                                className="w-full sm:w-auto flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 shadow-lg shadow-purple-500/25 active:scale-[0.98] no-underline"
-                            >
-                                Sign Up
-                            </Link>
+                            {user ? (
+                                <div className="flex flex-col items-center sm:items-start gap-3">
+                                    <span className="text-gray-300 font-medium">Welcome back, {user.username}!</span>
+                                    <Link
+                                        id="btn-dashboard"
+                                        to="/dashboard"
+                                        className="w-full sm:w-auto flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 shadow-lg shadow-purple-500/25 active:scale-[0.98] no-underline"
+                                    >
+                                        Go to Dashboard
+                                    </Link>
+                                </div>
+                            ) : (
+                                <>
+                                    <Link
+                                        id="btn-signup"
+                                        to="/signup"
+                                        className="w-full sm:w-auto flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all duration-200 shadow-lg shadow-purple-500/25 active:scale-[0.98] no-underline"
+                                    >
+                                        Sign Up
+                                    </Link>
 
-                            <div className="flex items-center gap-3 select-none">
-                                <div className="w-6 h-px bg-white/[0.08]" />
-                                <span className="text-[11px] text-gray-600 uppercase tracking-widest font-bold">
-                                    or
-                                </span>
-                                <div className="w-6 h-px bg-white/[0.08]" />
-                            </div>
+                                    <div className="flex items-center gap-3 select-none">
+                                        <div className="w-6 h-px bg-white/[0.08]" />
+                                        <span className="text-[11px] text-gray-600 uppercase tracking-widest font-bold">
+                                            or
+                                        </span>
+                                        <div className="w-6 h-px bg-white/[0.08]" />
+                                    </div>
 
-                            <Link
-                                id="btn-signin"
-                                to="/signin"
-                                className="w-full sm:w-auto flex items-center justify-center bg-white/[0.03] border border-white/[0.08] text-gray-300 font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-200 active:scale-[0.98] no-underline"
-                            >
-                                Sign In
-                            </Link>
+                                    <Link
+                                        id="btn-signin"
+                                        to="/signin"
+                                        className="w-full sm:w-auto flex items-center justify-center bg-white/[0.03] border border-white/[0.08] text-gray-300 font-semibold text-[15px] px-8 py-3.5 rounded-xl hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-200 active:scale-[0.98] no-underline"
+                                    >
+                                        Sign In
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                         {/* stats */}
