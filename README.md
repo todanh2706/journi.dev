@@ -128,6 +128,37 @@ Access the applications on the following ports:
     ./mvnw spring-boot:run
     ```
 
+#### Seeding the Backend Java Spring Boot Roadmap
+
+Use the dedicated script from the repository root to seed the predefined roadmap locally:
+
+```bash
+python3 scripts/seed_backend_java_spring_roadmap.py
+```
+
+What this does:
+
+- Builds the backend jar locally
+- Starts the backend with `JOURNI_SEED_ROADMAPS_ENABLED=true`
+- Loads `classpath:seed-data/backend-java-spring-roadmap.json`
+- Reads local values from `src/.env` and `src/backend/.env` when available
+- Normalizes Docker-only hosts such as `database` to `localhost` for host-machine execution
+- Seeds or refreshes the `Backend Java Spring Boot Developer` roadmap
+- Exits automatically after the seeding pass finishes
+
+The seeder is idempotent, so you can rerun the same command after editing the dataset or backend seed logic.
+
+To use a different dataset location:
+
+```bash
+python3 scripts/seed_backend_java_spring_roadmap.py --dataset classpath:seed-data/backend-java-spring-roadmap.json
+```
+
+To fully reset the seeded roadmap in local development, either:
+
+- delete the seeded roadmap and the `system_roadmap_seed` user from the local database, then rerun the script, or
+- recreate the local database and rerun the script
+
 #### Running the Frontend Locally
 
 1. Navigate to the frontend directory:
