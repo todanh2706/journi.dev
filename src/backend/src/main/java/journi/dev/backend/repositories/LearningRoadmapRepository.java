@@ -1,9 +1,12 @@
 package journi.dev.backend.repositories;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import journi.dev.backend.entities.LearningRoadmap;
 
 public interface LearningRoadmapRepository extends JpaRepository<LearningRoadmap, UUID> {
     boolean existsBySlug(String slug);
+
+    Optional<LearningRoadmap> findBySlug(String slug);
 }

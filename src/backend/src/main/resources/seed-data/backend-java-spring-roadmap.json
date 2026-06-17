@@ -1,0 +1,634 @@
+{
+  "roadmap": {
+    "title": "Backend Java Spring Boot Developer",
+    "slug": "backend-java-spring-boot-developer",
+    "description": "A realistic beginner-to-junior backend roadmap focused on Java, Spring Boot, relational data, API design, testing, and deployment habits that matter in day-to-day product work.",
+    "visibility": "PUBLIC",
+    "isDynamic": false
+  },
+  "nodes": [
+    {
+      "title": "Programming Fundamentals",
+      "slug": "programming-fundamentals",
+      "orderIndex": 1,
+      "nodeType": "LESSON",
+      "summary": "Build the habits that make every later backend topic easier: control flow, functions, debugging, and problem decomposition.",
+      "level": "BEGINNER",
+      "estimatedHours": 12,
+      "note": "Treat this node as a thinking-skills foundation, not just a syntax checkpoint.",
+      "checklist": [
+        "Explain variables, conditions, loops, and functions in your own words.",
+        "Trace a small program line by line without running it.",
+        "Solve a few beginner algorithm problems with clear pseudocode first."
+      ],
+      "prerequisites": [],
+      "resources": [
+        {
+          "sourceType": "COURSE",
+          "title": "CS50 Introduction to Computer Science",
+          "sourceUrl": "https://pll.harvard.edu/course/cs50-introduction-computer-science",
+          "contentBody": "Use the early lectures to strengthen computational thinking and debugging discipline.",
+          "meta": {
+            "provider": "Harvard",
+            "format": "course",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "ARTICLE",
+          "title": "Problem Solving Strategies in Programming",
+          "sourceUrl": "https://www.geeksforgeeks.org/problem-solving-strategies-in-programming/",
+          "contentBody": "A lightweight reference for practicing problem breakdown before touching Java.",
+          "meta": {
+            "provider": "GeeksforGeeks",
+            "format": "article",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Java Basics",
+      "slug": "java-basics",
+      "orderIndex": 2,
+      "nodeType": "LESSON",
+      "summary": "Learn Java syntax, types, methods, and the standard toolchain so you can read and write simple console programs comfortably.",
+      "level": "BEGINNER",
+      "estimatedHours": 14,
+      "note": "Focus on writing many tiny examples instead of reading passively.",
+      "checklist": [
+        "Write and run Java classes from an IDE or the command line.",
+        "Use primitive types, strings, arrays, and methods correctly.",
+        "Read compiler errors and fix basic syntax mistakes without guessing."
+      ],
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "The Java Tutorials: Language Basics",
+          "sourceUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/",
+          "contentBody": "Covers variables, operators, statements, and other syntax essentials.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "GUIDE",
+          "title": "Dev.java Learn Java",
+          "sourceUrl": "https://dev.java/learn/",
+          "contentBody": "Modern Java learning material straight from the Java platform team.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "guide",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "OOP in Java",
+      "slug": "oop-in-java",
+      "orderIndex": 3,
+      "nodeType": "LESSON",
+      "summary": "Move from isolated syntax to real object modeling with classes, objects, encapsulation, inheritance, and polymorphism.",
+      "level": "BEGINNER",
+      "estimatedHours": 12,
+      "note": "The goal is not to memorize jargon; it is to model simple domains with clear responsibilities.",
+      "checklist": [
+        "Create classes with fields, constructors, and methods.",
+        "Explain the difference between inheritance and composition.",
+        "Refactor repetitive code into better object boundaries."
+      ],
+      "prerequisites": [
+        "java-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "The Java Tutorials: Object-Oriented Programming Concepts",
+          "sourceUrl": "https://docs.oracle.com/javase/tutorial/java/concepts/",
+          "contentBody": "A clean introduction to the object model used throughout Java codebases.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "REFERENCE",
+          "title": "Refactoring Guru: Design Patterns in Java",
+          "sourceUrl": "https://refactoring.guru/design-patterns/java",
+          "contentBody": "Skim the early examples to see how object design affects maintainability.",
+          "meta": {
+            "provider": "Refactoring Guru",
+            "format": "reference",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Collections and Generics",
+      "slug": "collections-and-generics",
+      "orderIndex": 4,
+      "nodeType": "PRACTICE",
+      "summary": "Understand lists, sets, maps, iterators, and generics so you can model collections safely and idiomatically.",
+      "level": "BEGINNER",
+      "estimatedHours": 10,
+      "note": "This node pays off everywhere in backend code because data almost always flows through collections.",
+      "checklist": [
+        "Choose between List, Set, and Map based on a use case.",
+        "Use generics to avoid raw types and unsafe casts.",
+        "Write small exercises that transform and filter collections."
+      ],
+      "prerequisites": [
+        "oop-in-java"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "The Java Tutorials: Collections",
+          "sourceUrl": "https://docs.oracle.com/javase/tutorial/collections/",
+          "contentBody": "Explains the core collection interfaces and common usage patterns.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "The Java Tutorials: Generics",
+          "sourceUrl": "https://docs.oracle.com/javase/tutorial/java/generics/",
+          "contentBody": "Shows how Java generics protect you from type bugs and noisy casts.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "docs",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "SQL Basics",
+      "slug": "sql-basics",
+      "orderIndex": 5,
+      "nodeType": "LESSON",
+      "summary": "Learn how relational data is stored and queried so your backend code can ask useful questions of a database.",
+      "level": "BEGINNER",
+      "estimatedHours": 10,
+      "note": "Stay grounded in tables, joins, and constraints before jumping into ORMs.",
+      "checklist": [
+        "Write SELECT, INSERT, UPDATE, and DELETE queries.",
+        "Explain primary keys, foreign keys, and joins.",
+        "Read a schema and predict what data shape a query will return."
+      ],
+      "prerequisites": [
+        "collections-and-generics"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "PostgreSQL Tutorial: SQL",
+          "sourceUrl": "https://www.postgresql.org/docs/current/tutorial-sql.html",
+          "contentBody": "A practical reference for real SQL syntax and relational concepts.",
+          "meta": {
+            "provider": "PostgreSQL",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "EXERCISE",
+          "title": "SQLBolt",
+          "sourceUrl": "https://sqlbolt.com/",
+          "contentBody": "Use the interactive lessons to make simple SQL muscle memory stick.",
+          "meta": {
+            "provider": "SQLBolt",
+            "format": "interactive",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "JDBC Basics",
+      "slug": "jdbc-basics",
+      "orderIndex": 6,
+      "nodeType": "PRACTICE",
+      "summary": "Connect Java code to a database directly so you understand what frameworks later automate for you.",
+      "level": "BEGINNER",
+      "estimatedHours": 8,
+      "note": "Do not aim for perfect architecture here; aim to understand the plumbing and pain points.",
+      "checklist": [
+        "Open a JDBC connection and run a query.",
+        "Map a ResultSet into a Java object manually.",
+        "Use prepared statements instead of string-concatenated SQL."
+      ],
+      "prerequisites": [
+        "sql-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "The Java Tutorials: JDBC Basics",
+          "sourceUrl": "https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html",
+          "contentBody": "Explains the database access flow that Spring Data eventually abstracts away.",
+          "meta": {
+            "provider": "Oracle",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "ARTICLE",
+          "title": "Baeldung JDBC Guide",
+          "sourceUrl": "https://www.baeldung.com/java-jdbc",
+          "contentBody": "A quick practical walkthrough for simple JDBC setup and usage.",
+          "meta": {
+            "provider": "Baeldung",
+            "format": "article",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Spring Core",
+      "slug": "spring-core",
+      "orderIndex": 7,
+      "nodeType": "LESSON",
+      "summary": "Understand dependency injection, beans, and application context fundamentals before relying on Spring Boot magic.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 10,
+      "note": "If you understand bean wiring and inversion of control, debugging Boot apps gets much easier.",
+      "checklist": [
+        "Explain what inversion of control means in practical backend terms.",
+        "Create simple beans and inject dependencies cleanly.",
+        "Understand component scanning and configuration classes."
+      ],
+      "prerequisites": [
+        "jdbc-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Framework Reference: Core Technologies",
+          "sourceUrl": "https://docs.spring.io/spring-framework/reference/core.html",
+          "contentBody": "The best long-term reference for the container and bean model.",
+          "meta": {
+            "provider": "Spring",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "GUIDE",
+          "title": "Spring Guide: Managing Components",
+          "sourceUrl": "https://spring.io/guides/gs/serving-web-content/",
+          "contentBody": "Read selectively to see how components are discovered and wired in a small application.",
+          "meta": {
+            "provider": "Spring",
+            "format": "guide",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Spring Boot Basics",
+      "slug": "spring-boot-basics",
+      "orderIndex": 8,
+      "nodeType": "LESSON",
+      "summary": "Learn the conventions, auto-configuration, starter dependencies, and application structure used in modern Spring Boot services.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 10,
+      "note": "Get comfortable reading configuration and understanding what Boot has already set up for you.",
+      "checklist": [
+        "Generate and run a Spring Boot application locally.",
+        "Understand application properties, profiles, and starters.",
+        "Explain what auto-configuration does at a high level."
+      ],
+      "prerequisites": [
+        "spring-core"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Boot Documentation",
+          "sourceUrl": "https://docs.spring.io/spring-boot/documentation.html",
+          "contentBody": "Use this as the main reference for Boot setup, configuration, and testing later on.",
+          "meta": {
+            "provider": "Spring",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "GUIDE",
+          "title": "Spring Guide: Building an Application with Spring Boot",
+          "sourceUrl": "https://spring.io/guides/gs/spring-boot/",
+          "contentBody": "A small, low-friction guide for seeing the framework pieces work together.",
+          "meta": {
+            "provider": "Spring",
+            "format": "guide",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "REST API Development",
+      "slug": "rest-api-development",
+      "orderIndex": 9,
+      "nodeType": "PROJECT",
+      "summary": "Build HTTP APIs with Spring MVC, request validation, clear responses, and resource-oriented endpoint design.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 16,
+      "note": "This is where the roadmap starts to feel like product development instead of framework study.",
+      "checklist": [
+        "Create controllers, request DTOs, and response DTOs cleanly.",
+        "Handle validation and return appropriate HTTP status codes.",
+        "Design CRUD-style API routes that are consistent and predictable."
+      ],
+      "prerequisites": [
+        "spring-boot-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "GUIDE",
+          "title": "Spring Guide: Building a RESTful Web Service",
+          "sourceUrl": "https://spring.io/guides/gs/rest-service/",
+          "contentBody": "A solid first pass at request handling, controllers, and response shaping.",
+          "meta": {
+            "provider": "Spring",
+            "format": "guide",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "REFERENCE",
+          "title": "REST API Tutorial",
+          "sourceUrl": "https://restfulapi.net/",
+          "contentBody": "Use this to sharpen naming, status-code, and payload design decisions.",
+          "meta": {
+            "provider": "RESTful API",
+            "format": "reference",
+            "recommendedOrder": 2
+          }
+        }
+      ],
+      "challenge": {
+        "title": "Build a Book Catalog REST API",
+        "description": "Create a Spring Boot API for books and authors with pagination, validation, exception handling, and consistent JSON responses. Include endpoints for listing, creating, updating, and deleting books, and document at least one tradeoff you made in the design.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true
+      }
+    },
+    {
+      "title": "Spring Data JPA",
+      "slug": "spring-data-jpa",
+      "orderIndex": 10,
+      "nodeType": "PRACTICE",
+      "summary": "Map Java objects to relational tables, define repositories, and reason about persistence without losing sight of SQL behavior.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 14,
+      "note": "JPA becomes much less mysterious if you keep checking the SQL shape underneath.",
+      "checklist": [
+        "Create JPA entities with relationships and constraints.",
+        "Write repository methods for common read and write flows.",
+        "Explain when lazy loading can surprise an API response."
+      ],
+      "prerequisites": [
+        "rest-api-development",
+        "sql-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "GUIDE",
+          "title": "Spring Guide: Accessing Data with JPA",
+          "sourceUrl": "https://spring.io/guides/gs/accessing-data-jpa/",
+          "contentBody": "A compact starting point for entities, repositories, and persistence wiring.",
+          "meta": {
+            "provider": "Spring",
+            "format": "guide",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Data JPA Reference",
+          "sourceUrl": "https://docs.spring.io/spring-data/jpa/reference/",
+          "contentBody": "Use this reference when you need repository patterns beyond the basics.",
+          "meta": {
+            "provider": "Spring",
+            "format": "docs",
+            "recommendedOrder": 2
+          }
+        }
+      ],
+      "challenge": {
+        "title": "Persist the Book Catalog with JPA",
+        "description": "Extend the REST API by storing books, authors, and categories in PostgreSQL using JPA entities and repository methods. Add at least one relationship, one uniqueness rule, and one query method that would matter in a real product.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true
+      }
+    },
+    {
+      "title": "Spring Security and JWT",
+      "slug": "spring-security-and-jwt",
+      "orderIndex": 11,
+      "nodeType": "PRACTICE",
+      "summary": "Protect APIs with authentication and authorization while understanding the request filter chain and token lifecycle.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 14,
+      "note": "Security work gets much easier when you can explain every step from login to protected endpoint access.",
+      "checklist": [
+        "Explain the difference between authentication and authorization.",
+        "Secure selected endpoints with JWT-based access control.",
+        "Avoid leaking sensitive fields or weak password handling in API responses."
+      ],
+      "prerequisites": [
+        "rest-api-development",
+        "spring-data-jpa"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Security Reference",
+          "sourceUrl": "https://docs.spring.io/spring-security/reference/",
+          "contentBody": "Keep this open while learning the filter chain and endpoint protection.",
+          "meta": {
+            "provider": "Spring",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "REFERENCE",
+          "title": "JWT Introduction",
+          "sourceUrl": "https://jwt.io/introduction",
+          "contentBody": "A concise primer on what JWTs are good at and what they are not.",
+          "meta": {
+            "provider": "JWT.io",
+            "format": "reference",
+            "recommendedOrder": 2
+          }
+        }
+      ],
+      "challenge": {
+        "title": "Add Auth to the Catalog API",
+        "description": "Implement signup and login for the catalog API, issue JWTs, protect write endpoints, and enforce at least one role-based rule. Document how an unauthenticated request and an authenticated request should differ.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true
+      }
+    },
+    {
+      "title": "Testing Basics",
+      "slug": "testing-basics",
+      "orderIndex": 12,
+      "nodeType": "PRACTICE",
+      "summary": "Write tests that protect behavior: repository tests for persistence rules, service tests for logic, and controller tests for contracts.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 10,
+      "note": "Aim for confidence around behavior, not coverage numbers for their own sake.",
+      "checklist": [
+        "Write focused unit tests with clear arrange-act-assert flow.",
+        "Use Spring test slices or integration tests where they add confidence.",
+        "Test failure paths, not only the happy path."
+      ],
+      "prerequisites": [
+        "spring-security-and-jwt"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "JUnit 5 User Guide",
+          "sourceUrl": "https://junit.org/junit5/docs/current/user-guide/",
+          "contentBody": "A durable reference for modern JUnit structure and assertions.",
+          "meta": {
+            "provider": "JUnit",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Boot Testing Reference",
+          "sourceUrl": "https://docs.spring.io/spring-boot/reference/testing/index.html",
+          "contentBody": "Covers the test slices and integration patterns most useful in Spring projects.",
+          "meta": {
+            "provider": "Spring",
+            "format": "docs",
+            "recommendedOrder": 2
+          }
+        }
+      ],
+      "challenge": {
+        "title": "Add Regression Tests for the Catalog API",
+        "description": "Create a test suite that covers at least one repository constraint, one service-level business rule, one validation failure, and one secured endpoint behavior. The suite should be fast enough to run regularly during development.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true
+      }
+    },
+    {
+      "title": "Docker Basics",
+      "slug": "docker-basics",
+      "orderIndex": 13,
+      "nodeType": "PRACTICE",
+      "summary": "Package the service and its dependencies so local setup and handoff become more predictable.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 8,
+      "note": "You do not need deep container theory yet; focus on running your app consistently.",
+      "checklist": [
+        "Build and run a Docker image for the backend service.",
+        "Use Docker Compose to wire the app to PostgreSQL and Redis locally.",
+        "Explain the difference between an image, a container, and a volume."
+      ],
+      "prerequisites": [
+        "testing-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Docker Get Started",
+          "sourceUrl": "https://docs.docker.com/get-started/",
+          "contentBody": "A practical introduction to images, containers, and local workflows.",
+          "meta": {
+            "provider": "Docker",
+            "format": "docs",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "Docker Compose Overview",
+          "sourceUrl": "https://docs.docker.com/compose/",
+          "contentBody": "Use this to understand service orchestration for app plus database setups.",
+          "meta": {
+            "provider": "Docker",
+            "format": "docs",
+            "recommendedOrder": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Deployment Basics",
+      "slug": "deployment-basics",
+      "orderIndex": 14,
+      "nodeType": "PROJECT",
+      "summary": "Learn the final mile of shipping: environment configuration, build artifacts, containers, and a simple deployment workflow.",
+      "level": "INTERMEDIATE",
+      "estimatedHours": 10,
+      "note": "The goal is a boring, repeatable release flow you can explain clearly.",
+      "checklist": [
+        "Externalize secrets and environment-specific configuration.",
+        "Describe the steps required to build, ship, and run the service.",
+        "Prepare a deployment checklist for health checks, logging, and rollback."
+      ],
+      "prerequisites": [
+        "docker-basics"
+      ],
+      "resources": [
+        {
+          "sourceType": "GUIDE",
+          "title": "Spring Boot with Docker",
+          "sourceUrl": "https://spring.io/guides/topicals/spring-boot-docker/",
+          "contentBody": "Shows a simple path from local Boot app to containerized deployment artifact.",
+          "meta": {
+            "provider": "Spring",
+            "format": "guide",
+            "recommendedOrder": 1
+          }
+        },
+        {
+          "sourceType": "DOCUMENTATION",
+          "title": "GitHub Actions Deployments",
+          "sourceUrl": "https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions",
+          "contentBody": "A lightweight reference for automating build and deployment steps.",
+          "meta": {
+            "provider": "GitHub",
+            "format": "docs",
+            "recommendedOrder": 2
+          }
+        }
+      ],
+      "challenge": {
+        "title": "Ship the Catalog API",
+        "description": "Containerize the catalog API, configure environment variables cleanly, and prepare a basic deployment workflow for a staging environment. Include a short release checklist covering migration safety, health verification, and rollback steps.",
+        "difficulty": "HARD",
+        "maxScore": 100,
+        "isRequired": true
+      }
+    }
+  ]
+}
