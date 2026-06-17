@@ -12,23 +12,18 @@ import { SlideUpTransition } from "./utils/transitions/SlideUpTransition";
 function AnimatedRoutes() {
     const location = useLocation();
     
-    // Keying the SlideUpTransition by pathname ensures React unmounts and remounts
-    // the entire component tree inside it on every navigation, 
-    // guaranteeing the initial transition effect fires flawlessly.
     return (
-        <SlideUpTransition key={location.pathname}>
-            <Routes location={location}>
-                <Route path="/" element={<Welcome />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                    <Route index element={<DashboardOverview />} />
-                    <Route path="roadmaps" element={<RoadmapsPage />} />
-                    <Route path="roadmaps/:roadmapId" element={<RoadmapDetailPage />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-            </Routes>
-        </SlideUpTransition>
+        <Routes location={location}>
+            <Route path="/" element={<SlideUpTransition key="home"><Welcome /></SlideUpTransition>} />
+            <Route path="/signin" element={<SlideUpTransition key="signin"><SignIn /></SlideUpTransition>} />
+            <Route path="/signup" element={<SlideUpTransition key="signup"><SignUp /></SlideUpTransition>} />
+            <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<DashboardOverview />} />
+                <Route path="roadmaps" element={<RoadmapsPage />} />
+                <Route path="roadmaps/:roadmapId" element={<RoadmapDetailPage />} />
+            </Route>
+            <Route path="*" element={<SlideUpTransition key="not-found"><NotFound /></SlideUpTransition>} />
+        </Routes>
     );
 }
 

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 interface SlideUpTransitionProps {
   children: React.ReactNode;
+  bgClass?: string;
 }
 
-export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children }) => {
+export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children, bgClass = "before:bg-[#0d0e1a]" }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children }
     <div
       className={`w-full transition-all duration-500 ease-out transform relative ${
         isVisible ? 'translate-y-0' : 'translate-y-4'
-      } before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-16 before:bg-[#0d0e1a]`}
+      } before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-16 ${bgClass}`}
     >
       {children}
     </div>
