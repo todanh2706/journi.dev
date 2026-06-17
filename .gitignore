@@ -45,3 +45,9 @@ logs/
 *.codex
 *.opencode
 *.agent
+
+
+# =========================
+# Python (for seeders)
+# =========================
+__pycache__/
