@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   GitBranch,
@@ -10,6 +10,7 @@ import {
 
 import { NavItem } from "./components/NavItem";
 import { useAuth } from "../../hooks/useAuth";
+import { Logo } from "../../components/Logo/Logo";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
@@ -19,15 +20,7 @@ export default function DashboardLayout() {
       {/* Sidebar */}
       <aside className="w-[260px] flex flex-col bg-[#0d0e1a]">
         <div className="p-6 pb-2">
-          <Link to="/" className="flex items-center gap-2.5 no-underline">
-            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm select-none shadow-lg shadow-purple-500/20">
-              {">_"}
-            </div>
-            <span className="text-lg tracking-tight">
-              <span className="font-semibold text-white">Journi</span>
-              <span className="text-purple-400 font-semibold">.dev</span>
-            </span>
-          </Link>
+          <Logo />
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-2">
