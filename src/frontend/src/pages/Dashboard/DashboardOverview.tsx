@@ -13,10 +13,8 @@ import {
   Box
 } from "lucide-react";
 
-import { ActionCard } from "./components/ActionCard";
-import { LeaderboardItem } from "./components/LeaderboardItem";
-import { MilestoneCard } from "./components/MilestoneCard";
-import { useAuth } from "../../hooks/useAuth";
+import { ActionCard, LeaderboardItem, MilestoneCard } from "../../features/dashboard";
+import { useAuth } from "../../features/auth";
 
 export default function DashboardOverview() {
   const { user } = useAuth();

@@ -8,7 +8,7 @@ import {
   Map,
 } from "lucide-react";
 import { Logo } from "../../../components/Logo/Logo";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../auth";
 import { NavItem } from "./NavItem";
 
 const navItems = [

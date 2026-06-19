@@ -2,19 +2,19 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 /* ──────────────────────── sub‑components ──────────────────────── */
-import { GitHubIcon } from "./components/Icons/GitHubIcon";
-import { GoogleIcon } from "./components/Icons/GoogleIcon";
-import { EyeIcon } from "./components/Icons/EyeIcon";
-import { EyeOffIcon } from "./components/Icons/EyeOffIcon";
-import { ArrowLeftIcon } from "./components/Icons/ArrowLeftIcon";
-import { MailIcon } from "./components/Icons/MailIcon";
-import { LockIcon } from "./components/Icons/LockIcon";
+import { GitHubIcon } from "../../features/auth/components/Icons/GitHubIcon";
+import { GoogleIcon } from "../../features/auth/components/Icons/GoogleIcon";
+import { EyeIcon } from "../../features/auth/components/Icons/EyeIcon";
+import { EyeOffIcon } from "../../features/auth/components/Icons/EyeOffIcon";
+import { ArrowLeftIcon } from "../../features/auth/components/Icons/ArrowLeftIcon";
+import { MailIcon } from "../../features/auth/components/Icons/MailIcon";
+import { LockIcon } from "../../features/auth/components/Icons/LockIcon";
 import { Logo } from "../../components/Logo/Logo";
-import { SocialButton } from "./components/Buttons/SocialButton";
+import { SocialButton } from "../../features/auth/components/Buttons/SocialButton";
 import { AxiosError } from "axios";
 
 /* ────────────────────────── api ────────────────────────── */
-import { login } from "./services/auth";
+import { login } from "../../features/auth";
 
 
 

@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar } from "../../features/dashboard";
 import { SlideUpTransition } from "../../utils/transitions/SlideUpTransition";
 
 export default function DashboardLayout() {

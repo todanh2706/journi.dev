@@ -1,5 +1,5 @@
 import { MarkerType, Position } from "@xyflow/react";
-import type { SkillNode } from "../../../types/roadmap";
+import type { SkillNode } from "../../types/roadmap";
 import type { RoadmapGraph, RoadmapSkillGraphEdge, RoadmapSkillGraphNode } from "../types";
 
 const NODE_WIDTH = 280;

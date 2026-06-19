@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Map, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
-import { RoadmapCanvas } from "../../features/roadmap-canvas";
-import { roadmapService } from "../../services/roadmap.service";
-import { type RoadmapWithNodes } from "../../types/roadmap";
+import { RoadmapCanvas, roadmapService, type RoadmapWithNodes } from "../../features/roadmaps";
 
 export default function RoadmapDetailPage() {
   const { roadmapId } = useParams<{ roadmapId: string }>();

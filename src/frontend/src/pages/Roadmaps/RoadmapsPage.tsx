@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Map, Loader2, AlertCircle, ArrowRight } from "lucide-react";
-import { roadmapService } from "../../services/roadmap.service";
-import { type Roadmap } from "../../types/roadmap";
+import { roadmapService, type Roadmap } from "../../features/roadmaps";
 
 export default function RoadmapsPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);

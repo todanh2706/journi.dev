@@ -2,12 +2,14 @@ import { Link } from "react-router-dom";
 
 /* ──────────────────────── sub‑components ──────────────────────── */
 import { Logo } from "../../components/Logo/Logo";
-import { SkillTreeCard } from "./components/SkillTreeCard";
-import { PeerCodeReviewCard } from "./components/PeerCodeReviewCard";
-import { DailyStreakCard } from "./components/DailyStreakCard";
-import { StatsBar } from "./components/StatsBar";
-import { Footer } from "./components/Footer";
-import { useAuth } from "../../hooks/useAuth";
+import {
+    DailyStreakCard,
+    Footer,
+    PeerCodeReviewCard,
+    SkillTreeCard,
+    StatsBar,
+} from "../../features/dashboard";
+import { useAuth } from "../../features/auth";
 
 /* ────────────────────────── main page ────────────────────────── */
 

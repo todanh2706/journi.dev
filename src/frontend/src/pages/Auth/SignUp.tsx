@@ -2,19 +2,19 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 
 /* ──────────────────────── icons ──────────────────────── */
-import { GitHubIcon } from "./components/Icons/GitHubIcon";
-import { GoogleIcon } from "./components/Icons/GoogleIcon";
-import { EyeIcon } from "./components/Icons/EyeIcon";
-import { EyeOffIcon } from "./components/Icons/EyeOffIcon";
-import { ArrowLeftIcon } from "./components/Icons/ArrowLeftIcon";
-import { MailIcon } from "./components/Icons/MailIcon";
-import { LockIcon } from "./components/Icons/LockIcon";
-import { UserIcon } from "./components/Icons/UserIcon";
+import { GitHubIcon } from "../../features/auth/components/Icons/GitHubIcon";
+import { GoogleIcon } from "../../features/auth/components/Icons/GoogleIcon";
+import { EyeIcon } from "../../features/auth/components/Icons/EyeIcon";
+import { EyeOffIcon } from "../../features/auth/components/Icons/EyeOffIcon";
+import { ArrowLeftIcon } from "../../features/auth/components/Icons/ArrowLeftIcon";
+import { MailIcon } from "../../features/auth/components/Icons/MailIcon";
+import { LockIcon } from "../../features/auth/components/Icons/LockIcon";
+import { UserIcon } from "../../features/auth/components/Icons/UserIcon";
 
 /* ──────────────────────── sub‑components ──────────────────────── */
 import { Logo } from "../../components/Logo/Logo";
-import { SocialButton } from "./components/Buttons/SocialButton";
-import { getSignupErrorMessage, signup } from "./services/auth";
+import { SocialButton } from "../../features/auth/components/Buttons/SocialButton";
+import { getSignupErrorMessage, signup } from "../../features/auth";
 
 /* ────────────────────────── main page ────────────────────────── */
 export default function SignUp() {

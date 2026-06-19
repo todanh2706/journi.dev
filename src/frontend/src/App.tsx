@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Welcome from "./pages/Feed/Welcome";
+import Welcome from "./pages/Home/Welcome";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
-import DashboardLayout from "./pages/Feed/DashboardLayout";
-import DashboardOverview from "./pages/Feed/DashboardOverview";
+import DashboardLayout from "./pages/Dashboard/DashboardLayout";
+import DashboardOverview from "./pages/Dashboard/DashboardOverview";
 import RoadmapsPage from "./pages/Roadmaps/RoadmapsPage";
 import RoadmapDetailPage from "./pages/Roadmaps/RoadmapDetailPage";
 import NotFound from "./pages/NotFound";

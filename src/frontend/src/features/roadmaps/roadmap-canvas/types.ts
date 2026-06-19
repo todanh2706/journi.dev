@@ -1,5 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
-import type { RoadmapWithNodes, SkillNode } from "../../types/roadmap";
+import type { RoadmapWithNodes, SkillNode } from "../types/roadmap";
 
 export type RoadmapCanvasProps = {
   roadmap: RoadmapWithNodes;

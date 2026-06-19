@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "../../../services/axios";
 import { type Roadmap, type SkillNode, type RoadmapWithNodes } from "../types/roadmap";
 
 export const roadmapService = {
