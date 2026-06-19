@@ -80,7 +80,7 @@ Important directories:
 
 ```text
 journi.dev/
-├── doc/
+├── docs/
 │   ├── ERD.md
 │   ├── ERD.png
 │   └── SRS.md
@@ -110,8 +110,8 @@ Dependency versions:
 Product/domain direction:
 
 - `README.md`
-- `doc/SRS.md`
-- `doc/ERD.md`
+- `docs/SRS.md`
+- `docs/ERD.md`
 - `openspec/specs/*/spec.md`
 
 Existing implementation patterns:
@@ -273,23 +273,20 @@ src/frontend/src
 Expected frontend responsibilities:
 
 ```text
-pages/           route-level screens
-components/      reusable UI components
-services/        API clients and HTTP calls
-types/           shared TypeScript types
-hooks/           reusable React hooks
-contexts/        global React contexts
-utils/           pure helper functions
+pages/           route-level screens and route wrappers
+features/        domain-owned UI, services, hooks, types, and utilities
+components/      cross-feature reusable UI components
+services/        app-wide service infrastructure, such as the shared Axios client
+utils/           cross-feature pure helper functions
 assets/          static assets
 ```
 
 Frontend dependency direction:
 
 ```text
-Page -> Component
-Page -> Service
-Component -> Hook/Util
-Service -> Shared Axios instance
+Page -> Feature
+Feature -> Shared Component/Hook/Util
+Feature Service -> Shared Axios instance
 ```
 
 Forbidden frontend patterns:
@@ -304,10 +301,10 @@ New global state added before local state/context is insufficient
 
 When adding or changing a frontend feature, follow this order:
 
-1. Check existing route/page/component/service/type patterns.
+1. Check existing route/page and feature folder patterns.
 2. Add or update API request/response types.
 3. Add or update service function.
-4. Add or update page/component.
+4. Add or update feature component.
 5. Connect route if needed.
 6. Add loading, error, and empty states.
 7. Run the most relevant frontend check.
@@ -328,8 +325,9 @@ dtos/auth-related request and response classes
 Frontend auth files should stay around:
 
 ```text
-services/auth-related API functions
-contexts/auth-related context if present
+features/auth/services/auth-related API functions
+features/auth/hooks/auth-related hooks
+features/auth/components/auth-specific components and icons
 pages/sign-in or sign-up pages
 protected route components
 ```
@@ -356,9 +354,9 @@ Frontend roadmap files should stay around:
 
 ```text
 pages/roadmap-related pages
-components/roadmap-related components
-services/roadmap-related API functions
-types/roadmap-related types
+features/roadmaps/components or feature-specific UI
+features/roadmaps/services/roadmap-related API functions
+features/roadmaps/types/roadmap-related types
 ```
 
 ### User Progress
@@ -379,8 +377,8 @@ mappers/progress-related mappers
 Frontend progress files should stay around:
 
 ```text
-services/progress-related API functions
-types/progress-related types
+features/progress or features/roadmaps progress-related API functions
+features/progress or features/roadmaps progress-related types
 roadmap/node pages that consume progress state
 ```
 
@@ -550,8 +548,8 @@ Recommended context loading order:
 
 1. For product direction:
     - `README.md`
-    - `doc/SRS.md`
-    - `doc/ERD.md`
+    - `docs/SRS.md`
+    - `docs/ERD.md`
     - relevant `openspec/specs/*/spec.md`
 
 2. For frontend tasks:

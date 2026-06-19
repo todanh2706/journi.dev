@@ -8,8 +8,8 @@ context: |
 
   Existing source-of-truth documents:
   - README.md for repo layout and local setup
-  - doc/SRS.md for product scope and feature intent
-  - doc/ERD.md for data model expectations
+  - docs/SRS.md for product scope and feature intent
+  - docs/ERD.md for data model expectations
 
   Frontend:
   - Located in src/frontend
@@ -17,7 +17,9 @@ context: |
   - React Router 7 for routing
   - Tailwind CSS 4 for styling
   - Axios for API calls
-  - Current UI structure uses pages/, components/, and services/
+  - Current UI structure keeps route-level screens in pages/
+  - Domain-owned code lives in features/<domain> such as auth, dashboard, and roadmaps
+  - Shared primitives stay in components/, services/, utils/, and assets/ only when cross-feature
 
   Backend:
   - Located in src/backend

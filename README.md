@@ -34,7 +34,7 @@ Journi.dev is a comprehensive, gamified Learning Management System (LMS) and Soc
 
 ```text
 journi.dev/
-├── doc/
+├── docs/
 │   ├── ERD.md          # Entity-Relationship Diagram specifications
 │   ├── ERD.png          # Visual entity diagram
 │   └── SRS.md          # Software Requirements Specification (PRD)
@@ -44,9 +44,28 @@ journi.dev/
 │   │   └── src/        # Java package sources
 │   ├── frontend/       # React / Vite SPA
 │   │   ├── package.json
-│   │   └── src/        # React components and pages
+│   │   └── src/        # Route pages, feature domains, and shared frontend primitives
 │   └── docker-compose.yml
 └── README.md           # Project documentation
+```
+
+### Frontend Source Layout
+
+```text
+src/frontend/src/
+├── pages/              # Route-level screens only
+│   ├── Auth/
+│   ├── Dashboard/
+│   ├── Home/
+│   └── Roadmaps/
+├── features/           # Domain-owned frontend code
+│   ├── auth/
+│   ├── dashboard/
+│   └── roadmaps/
+├── components/         # Cross-feature reusable UI
+├── services/           # App-wide service infrastructure, such as the shared Axios client
+├── utils/              # Cross-feature utilities
+└── assets/             # Static frontend assets
 ```
 
 ## System Architecture and Database Schema
@@ -60,7 +79,7 @@ Key entities include:
 - **Submission, CodeReview, & AIReviewTask**: Track the lifecycle of pushed code challenges, AI evaluation feedback, and processing tasks.
 - **CommunityClusters & ClusterMembership**: Support social network functionalities and discussions.
 
-For a full specification of fields, types, and schema relationships, refer to the [ERD Documentation](file:///Users/todanh/Downloads/journi.dev/doc/ERD.md).
+For a full specification of fields, types, and schema relationships, refer to the [ERD Documentation](docs/ERD.md).
 
 ## Getting Started
 
