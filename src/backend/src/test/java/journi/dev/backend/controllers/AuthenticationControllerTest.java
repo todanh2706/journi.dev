@@ -263,4 +263,15 @@ public class AuthenticationControllerTest {
                 verify(jwtService, never()).generateToken(any(User.class));
                 verify(jwtService, never()).getExpirationTime();
         }
+
+        @DisplayName("[TEST] Logout ends the authenticated client session")
+        @Test
+        void logoutReturnsNoContent() {
+                restTestClient.post()
+                                .uri("/api/v1/auth/logout")
+                                .header("Authorization", "Bearer " + MOCK_JWT_TOKEN)
+                                .exchange()
+                                .expectStatus().isNoContent()
+                                .expectBody().isEmpty();
+        }
 }

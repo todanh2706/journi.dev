@@ -42,4 +42,9 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(loginResponse);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return ResponseEntity.noContent().build();
+    }
 }
