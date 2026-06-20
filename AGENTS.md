@@ -160,7 +160,7 @@ Use this as the project design constitution for frontend work:
 - Primary experience: authenticated product UI, not a marketing landing page.
 - Visual mood: premium dark learning OS, calm, technical, focused, and credible.
 - Base surfaces: off-black backgrounds, subtle panels, thin borders, restrained depth, and soft glass only when it improves readability.
-- Accent system: use one primary accent from the indigo, violet, or cyan family. Use green, amber, and red only for semantic states such as completed, available, locked, warning, and error.
+- Accent system: use gold as the single brand and primary-action accent on black and warm-neutral surfaces. Use green for completed/success, red for error/destructive, neutral gray for locked/disabled, and gold for selected, available, or current learning focus. Do not reintroduce purple, indigo, violet, or cyan as competing brand accents.
 - Typography: keep Inter unless the project explicitly adopts a new type system. Use clear hierarchy, compact spacing, and readable body text.
 - Shape: use a consistent radius scale. Prefer `rounded-xl` and `rounded-2xl` for panels and `rounded-lg` or `rounded-xl` for controls. Avoid random pill-heavy UI.
 - Components: prioritize roadmap nodes, side drawers, toolbars, tabs, command/search bars, badges, checklist rows, progress states, and empty/error/loading states.

@@ -1,83 +1,173 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "../node_modules/@xyflow/react/dist/style.css";
 
-/* ─── theme overrides ─── */
 @theme {
-    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-    --animate-float-slow: float-slow 6s ease-in-out infinite;
-    --animate-float-medium: float-medium 5s ease-in-out infinite;
-    --animate-float-fast: float-fast 4s ease-in-out infinite;
+    --color-canvas: #080806;
+    --color-shell: #0d0c09;
+    --color-surface: #14120d;
+    --color-surface-elevated: #1a1710;
+    --color-line: #302a1d;
+    --color-line-strong: #4a3c20;
+    --color-ink: #f5f1e8;
+    --color-muted: #aaa397;
+    --color-subtle: #7c756a;
+    --color-gold: #e6b94f;
+    --color-gold-strong: #f1cc72;
+    --color-gold-soft: #8f712f;
+    --color-gold-ink: #171205;
+    --color-success: #63c38a;
+    --color-danger: #ef7b77;
+    --color-warning: #dcae4b;
 }
 
-/* ─── keyframes ─── */
-@keyframes float-slow {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-12px);
-    }
+:root {
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    color-scheme: dark;
+    font-family: var(--font-sans);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
 }
 
-@keyframes float-medium {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-@keyframes float-fast {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-/* ─── base resets ─── */
 *,
 *::before,
 *::after {
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+html {
+    min-width: 320px;
+    background: var(--color-canvas);
     scrollbar-gutter: stable;
 }
 
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a,
+input {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+    cursor: not-allowed;
+}
+
+::selection {
+    background: rgb(230 185 79 / 0.28);
+    color: var(--color-ink);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-gold-strong);
+    outline-offset: 3px;
+}
+
+@layer components {
+    .app-panel {
+        @apply rounded-2xl border border-line bg-surface;
+        box-shadow: 0 20px 55px rgb(0 0 0 / 0.18);
+    }
+
+    .app-panel-elevated {
+        @apply rounded-2xl border border-line bg-surface-elevated;
+        box-shadow: 0 24px 70px rgb(0 0 0 / 0.28);
+    }
+
+    .primary-button {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink transition-colors hover:bg-gold-strong disabled:opacity-45;
+    }
+
+    .secondary-button {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-line-strong hover:bg-surface-elevated disabled:opacity-45;
+    }
+
+    .icon-button {
+        @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-muted transition-colors hover:border-line-strong hover:bg-surface-elevated hover:text-ink disabled:opacity-45;
+    }
+
+    .app-input {
+        @apply min-h-11 w-full rounded-xl border border-line bg-canvas px-3.5 py-3 text-sm text-ink outline-none transition-colors placeholder:text-subtle hover:border-line-strong focus:border-gold;
+    }
+
+    .eyebrow {
+        @apply text-xs font-semibold uppercase tracking-[0.16em] text-gold;
+    }
+}
+
 .roadmap-canvas .react-flow__minimap {
-    width: 220px;
-    height: 150px;
+    width: 208px;
+    height: 138px;
     overflow: hidden;
-    border: 1px solid rgb(255 255 255 / 0.1);
-    border-radius: 18px;
-    background:
-        radial-gradient(circle at 28% 18%, rgb(56 189 248 / 0.14), transparent 34%),
-        linear-gradient(145deg, rgb(2 6 23 / 0.98), rgb(15 23 42 / 0.94));
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    background: var(--color-shell);
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0.28);
 }
 
 .roadmap-canvas .react-flow__minimap-svg {
-    background:
-        radial-gradient(circle at 70% 30%, rgb(139 92 246 / 0.16), transparent 36%),
-        linear-gradient(180deg, rgb(15 23 42 / 0.78), rgb(2 6 23 / 0.94));
+    background: var(--color-shell);
 }
 
 .roadmap-canvas .react-flow__minimap-mask {
-    fill: rgb(8 13 31 / 0.62);
-    stroke: rgb(103 232 249 / 0.9);
+    fill: rgb(8 8 6 / 0.7);
+    stroke: var(--color-gold);
 }
 
 .roadmap-canvas .react-flow__minimap-node {
-    filter: drop-shadow(0 0 5px rgb(99 102 241 / 0.28));
+    filter: none;
+}
+
+.roadmap-canvas .react-flow__controls {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-shell);
+    box-shadow: 0 16px 38px rgb(0 0 0 / 0.24);
+}
+
+.roadmap-canvas .react-flow__controls-button {
+    border-bottom-color: var(--color-line);
+    background: transparent;
+    color: var(--color-muted);
+}
+
+.roadmap-canvas .react-flow__controls-button:hover {
+    background: var(--color-surface-elevated);
+    color: var(--color-gold-strong);
+}
+
+@media (max-width: 639px) {
+    .roadmap-canvas .react-flow__minimap {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
