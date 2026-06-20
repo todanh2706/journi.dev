@@ -8,15 +8,15 @@ interface AccountInformationPanelProps {
 
 export function AccountInformationPanel({ username }: AccountInformationPanelProps) {
   return (
-    <section className="rounded-2xl border border-white/[0.06] bg-[#141522] p-5 sm:p-6">
+    <section className="app-panel p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-400/10 bg-indigo-400/[0.07] text-indigo-300">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line-strong bg-surface-elevated text-gold">
             <UserRound aria-hidden="true" size={19} strokeWidth={1.8} />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-100">Personal information</h2>
-            <p className="mt-1 max-w-xl text-sm leading-6 text-gray-500">
+            <h2 className="text-base font-semibold text-ink">Personal information</h2>
+            <p className="mt-1 max-w-xl text-sm leading-6 text-muted">
               Review the account fields that will be editable when the self-service API is available.
             </p>
           </div>
@@ -48,15 +48,15 @@ export function AccountInformationPanel({ username }: AccountInformationPanelPro
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-xs text-amber-300/70">
+      <div className="mt-6 flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-xs text-warning">
           <LockKeyhole aria-hidden="true" size={15} strokeWidth={1.8} />
           Editing is unavailable until a self-service profile API is added.
         </div>
         <button
           type="button"
           disabled
-          className="rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-gray-600 disabled:cursor-not-allowed"
+          className="secondary-button"
         >
           Save changes
         </button>

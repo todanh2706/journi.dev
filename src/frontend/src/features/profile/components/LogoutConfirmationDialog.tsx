@@ -71,7 +71,7 @@ export function LogoutConfirmationDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#080912]/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !pending) onCancel();
       }}
@@ -83,10 +83,10 @@ export function LogoutConfirmationDialog({
         aria-labelledby="logout-dialog-title"
         aria-describedby="logout-dialog-description"
         tabIndex={-1}
-        className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#151622] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:p-6"
+        className="w-full max-w-md rounded-2xl border border-line bg-shell p-5 shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/15 bg-red-400/[0.08] text-red-300">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-danger/25 bg-danger/10 text-danger">
             <AlertTriangle aria-hidden="true" size={21} strokeWidth={1.8} />
           </div>
           <button
@@ -94,21 +94,21 @@ export function LogoutConfirmationDialog({
             onClick={onCancel}
             disabled={pending}
             aria-label="Close logout confirmation"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-white/[0.05] hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/50 disabled:cursor-not-allowed disabled:opacity-40"
+            className="icon-button h-9 w-9 disabled:opacity-40"
           >
             <X aria-hidden="true" size={18} strokeWidth={1.8} />
           </button>
         </div>
 
-        <h2 id="logout-dialog-title" className="mt-5 text-xl font-semibold tracking-[-0.02em] text-gray-100">
+        <h2 id="logout-dialog-title" className="mt-5 text-xl font-semibold tracking-[-0.02em] text-ink">
           Log out of Journi.dev?
         </h2>
-        <p id="logout-dialog-description" className="mt-2 text-sm leading-6 text-gray-500">
+        <p id="logout-dialog-description" className="mt-2 text-sm leading-6 text-muted">
           This ends your current browser session and removes its locally stored access token. You will need to sign in again.
         </p>
 
         {error && (
-          <div role="alert" className="mt-4 rounded-xl border border-red-400/15 bg-red-400/[0.07] px-3.5 py-3 text-sm leading-5 text-red-200">
+          <div role="alert" className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3.5 py-3 text-sm leading-5 text-red-200">
             {error}
           </div>
         )}
@@ -119,7 +119,7 @@ export function LogoutConfirmationDialog({
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="secondary-button disabled:opacity-50"
           >
             Cancel
           </button>
@@ -127,7 +127,7 @@ export function LogoutConfirmationDialog({
             type="button"
             onClick={onConfirm}
             disabled={pending}
-            className="inline-flex min-w-32 cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/60 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 min-w-32 items-center justify-center gap-2 rounded-xl bg-danger px-4 py-2.5 text-sm font-semibold text-[#190b09] transition-colors hover:bg-red-300 disabled:opacity-60"
           >
             {pending ? (
               <>

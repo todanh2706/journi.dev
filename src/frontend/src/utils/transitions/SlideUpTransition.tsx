@@ -5,7 +5,7 @@ interface SlideUpTransitionProps {
   bgClass?: string;
 }
 
-export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children, bgClass = "before:bg-[#0d0e1a]" }) => {
+export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children, bgClass = "before:bg-canvas" }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const SlideUpTransition: React.FC<SlideUpTransitionProps> = ({ children, 
   // translated down, the gap at the top is covered by the component itself.
   return (
     <div
-      className={`w-full transition-all duration-500 ease-out transform relative ${
+      className={`relative w-full transform transition-all duration-300 ease-out ${
         isVisible ? 'translate-y-0' : 'translate-y-4'
       } before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-16 ${bgClass}`}
     >

@@ -1,111 +1,106 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Map, Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, ArrowRight, LoaderCircle, Map, Route } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import { roadmapService, type Roadmap } from "../../features/roadmaps";
 
 export default function RoadmapsPage() {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchRoadmaps = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await roadmapService.getRoadmaps();
-        // Fallback for API structure differences (if wrapped in data)
-        const roadmapsData = Array.isArray(data) ? data : (data as { data?: Roadmap[] }).data || [];
-        setRoadmaps(roadmapsData);
-      } catch (err: unknown) {
-        console.error("Failed to fetch roadmaps:", err);
-        // Note: the backend might return 404 if the endpoint is missing or no roadmaps exist yet.
-        setError("Failed to load learning roadmaps. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRoadmaps();
+  const loadRoadmaps = useCallback(async () => {
+    try {
+      const response = await roadmapService.getRoadmaps();
+      setRoadmaps(Array.isArray(response) ? response : []);
+    } catch {
+      setError("The roadmap catalog could not be loaded. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    roadmapService.getRoadmaps()
+      .then((response) => {
+        if (active) setRoadmaps(Array.isArray(response) ? response : []);
+      })
+      .catch(() => {
+        if (active) setError("The roadmap catalog could not be loaded. Check your connection and try again.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const retryRoadmaps = () => {
+    setLoading(true);
+    setError(null);
+    void loadRoadmaps();
+  };
+
   return (
-    <>
-      <header className="px-12 pt-12 pb-8">
-        <h1 className="text-[28px] font-bold mb-2">Learning Roadmaps</h1>
-        <p className="text-gray-400 text-[15px]">Select a path to master new skills and advance your career.</p>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+      <header className="max-w-3xl">
+        <p className="eyebrow">Roadmap catalog</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-ink sm:text-4xl">Choose your learning path</h1>
+        <p className="mt-3 text-sm leading-6 text-muted sm:text-base">
+          Open a predefined career path, inspect every skill, and keep the sequence visible while you learn.
+        </p>
       </header>
 
-      <div className="px-12 pb-12">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <Loader2 size={32} className="animate-spin text-indigo-400 mb-4" />
-            <p>Loading your pathways...</p>
+      {loading ? (
+        <section className="app-panel mt-8 flex min-h-64 items-center justify-center p-8" aria-live="polite">
+          <div className="text-center text-muted">
+            <LoaderCircle aria-hidden="true" size={27} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />
+            <p className="mt-3 text-sm">Loading roadmap catalog…</p>
           </div>
-        ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
-            <AlertCircle size={32} className="text-red-400 mb-3" />
-            <h3 className="text-lg font-semibold text-red-300 mb-1">Houston, we have a problem</h3>
-            <p className="text-red-400/80 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors text-sm font-medium"
+        </section>
+      ) : error ? (
+        <section role="alert" className="mt-8 rounded-2xl border border-danger/30 bg-danger/10 p-6 sm:p-8">
+          <AlertCircle aria-hidden="true" size={24} className="text-danger" />
+          <h2 className="mt-4 text-xl font-semibold text-ink">Unable to load roadmaps</h2>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-muted">{error}</p>
+          <button type="button" onClick={retryRoadmaps} className="secondary-button mt-5">Try again</button>
+        </section>
+      ) : roadmaps.length === 0 ? (
+        <section className="app-panel mt-8 p-7 text-center sm:p-10">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-line-strong bg-surface-elevated text-gold">
+            <Map aria-hidden="true" size={22} />
+          </div>
+          <h2 className="mt-5 text-xl font-semibold text-ink">No published roadmaps</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">The catalog is connected but does not currently contain a path.</p>
+        </section>
+      ) : (
+        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Available roadmaps">
+          {roadmaps.map((roadmap) => (
+            <Link
+              key={roadmap.roadmapId}
+              to={`/dashboard/roadmaps/${roadmap.roadmapId}`}
+              className="app-panel group flex min-h-64 flex-col p-5 transition-colors hover:border-line-strong hover:bg-surface-elevated sm:p-6"
             >
-              Try Again
-            </button>
-          </div>
-        ) : roadmaps.length === 0 ? (
-          <div className="bg-[#141527] border border-white/[0.06] rounded-2xl p-12 text-center relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
-             <div className="relative z-10 flex flex-col items-center">
-               <div className="w-16 h-16 bg-white/[0.03] border border-white/[0.05] rounded-full flex items-center justify-center mb-4">
-                 <Map size={24} className="text-indigo-400" />
-               </div>
-               <h3 className="text-xl font-bold mb-2">No Roadmaps Found</h3>
-               <p className="text-gray-400 max-w-md">There are currently no active roadmaps available. Please check back later or contact an administrator.</p>
-             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {roadmaps.map((roadmap) => (
-              <div 
-                key={roadmap.roadmapId} 
-                onClick={() => navigate(`/dashboard/roadmaps/${roadmap.roadmapId}`)}
-                className="bg-[#141527] hover:bg-[#1a1b30] border border-white/[0.06] hover:border-indigo-500/30 rounded-2xl p-6 transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col h-full"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
-                
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
-                      <Map size={20} />
-                    </div>
-                    {roadmap.visibility === 'PUBLIC' && (
-                      <span className="text-[11px] font-bold px-2 py-1 bg-white/[0.05] text-gray-300 rounded-md">
-                        PUBLIC
-                      </span>
-                    )}
-                  </div>
-                  
-                  <h3 className="text-lg font-bold text-gray-100 mb-2 group-hover:text-indigo-300 transition-colors">
-                    {roadmap.title}
-                  </h3>
-                  
-                  <p className="text-[14px] text-gray-400 mb-6 flex-1 line-clamp-3">
-                    {roadmap.description || "Start this learning path to achieve mastery in this domain."}
-                  </p>
-                  
-                  <div className="flex items-center text-[13px] font-medium text-indigo-400 group-hover:text-indigo-300 mt-auto">
-                    View Path 
-                    <ArrowRight size={14} className="ml-1.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-line-strong bg-surface-elevated text-gold">
+                  <Route aria-hidden="true" size={19} />
                 </div>
+                {roadmap.visibility === "PUBLIC" ? <span className="rounded-lg border border-line px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">Public</span> : null}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+
+              <h2 className="mt-6 text-lg font-semibold leading-snug text-ink group-hover:text-gold-strong">{roadmap.title}</h2>
+              {roadmap.description ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{roadmap.description}</p> : null}
+              <span className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-medium text-gold">
+                Open roadmap <ArrowRight aria-hidden="true" size={16} />
+              </span>
+            </Link>
+          ))}
+        </section>
+      )}
+    </div>
   );
 }

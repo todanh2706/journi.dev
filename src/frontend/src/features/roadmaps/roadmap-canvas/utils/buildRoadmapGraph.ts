@@ -3,7 +3,7 @@ import type { SkillNode } from "../../types/roadmap";
 import type { RoadmapGraph, RoadmapSkillGraphEdge, RoadmapSkillGraphNode } from "../types";
 
 const NODE_WIDTH = 280;
-const NODE_HEIGHT = 96;
+const NODE_HEIGHT = 138;
 
 const slugToSummary = (slug: string) =>
   slug
@@ -25,6 +25,7 @@ export const buildRoadmapGraph = (skillNodes: SkillNode[]): RoadmapGraph => {
     initialHeight: NODE_HEIGHT,
     targetPosition: Position.Top,
     sourcePosition: Position.Bottom,
+    ariaLabel: `Step ${skillNode.orderIndex}: ${skillNode.title}. ${skillNode.isLocked ? "Locked" : skillNode.progressStatus === "COMPLETED" ? "Completed" : skillNode.progressStatus === "IN_PROGRESS" ? "In progress" : "Available"}. Press Enter to inspect.`,
     data: {
       skillNode,
       title: skillNode.title,
@@ -47,12 +48,12 @@ export const buildRoadmapGraph = (skillNodes: SkillNode[]): RoadmapGraph => {
       type: "smoothstep",
       animated: isActiveTarget,
       style: {
-        stroke: isActiveTarget ? "#8b5cf6" : "rgba(148, 163, 184, 0.36)",
+        stroke: isActiveTarget ? "#e6b94f" : "rgba(170, 163, 151, 0.34)",
         strokeWidth: isActiveTarget ? 2.25 : 1.7,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: isActiveTarget ? "#8b5cf6" : "rgba(148, 163, 184, 0.5)",
+        color: isActiveTarget ? "#e6b94f" : "rgba(170, 163, 151, 0.5)",
       },
     };
   });

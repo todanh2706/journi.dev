@@ -1,90 +1,104 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Map, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, ArrowLeft, LoaderCircle, Map } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+
 import { RoadmapCanvas, roadmapService, type RoadmapWithNodes } from "../../features/roadmaps";
 
 export default function RoadmapDetailPage() {
   const { roadmapId } = useParams<{ roadmapId: string }>();
-  const navigate = useNavigate();
   const [data, setData] = useState<RoadmapWithNodes | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(roadmapId));
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRoadmapDetails = async () => {
-      if (!roadmapId) return;
-      try {
-        setLoading(true);
-        setError(null);
-        const roadmapWithNodes = await roadmapService.getRoadmapWithNodes(roadmapId);
-        setData(roadmapWithNodes);
-      } catch (err: unknown) {
-        console.error("Failed to fetch roadmap details:", err);
-        setError("Failed to load the learning path. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadRoadmap = useCallback(async () => {
+    if (!roadmapId) return;
 
-    fetchRoadmapDetails();
+    try {
+      setData(await roadmapService.getRoadmapWithNodes(roadmapId));
+    } catch {
+      setError("This learning path could not be loaded. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [roadmapId]);
 
+  useEffect(() => {
+    if (!roadmapId) return;
+    let active = true;
+
+    roadmapService.getRoadmapWithNodes(roadmapId)
+      .then((roadmap) => {
+        if (active) setData(roadmap);
+      })
+      .catch(() => {
+        if (active) setError("This learning path could not be loaded. Check your connection and try again.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [roadmapId]);
+
+  const retryRoadmap = () => {
+    setLoading(true);
+    setError(null);
+    void loadRoadmap();
+  };
+
+  const displayError = roadmapId ? error : "This roadmap link is missing its identifier.";
+
   return (
-    <>
-      <header className="px-12 pt-12 pb-8">
-        <button 
-          onClick={() => navigate('/dashboard/roadmaps')}
-          className="flex items-center text-gray-400 hover:text-indigo-400 transition-colors mb-6 text-sm font-medium"
-        >
-          <ArrowLeft size={16} className="mr-2" />
-          Back to Roadmaps
-        </button>
-        
+    <div className="w-full px-4 py-7 sm:px-6 sm:py-9 lg:px-10 lg:py-10">
+      <header className="mx-auto mb-7 w-full max-w-[1500px]">
+        <Link to="/dashboard/roadmaps" className="inline-flex items-center gap-2 rounded-lg text-sm font-medium text-muted transition-colors hover:text-gold-strong">
+          <ArrowLeft aria-hidden="true" size={16} />
+          Back to roadmaps
+        </Link>
+
         {loading ? (
-           <div className="h-10 w-64 bg-white/5 rounded-lg animate-pulse mb-2"></div>
+          <div className="mt-6 space-y-3" aria-hidden="true">
+            <div className="h-8 w-72 max-w-full animate-pulse rounded-lg bg-surface-elevated motion-reduce:animate-none" />
+            <div className="h-4 w-[34rem] max-w-full animate-pulse rounded bg-surface motion-reduce:animate-none" />
+          </div>
         ) : data ? (
-           <>
-             <h1 className="text-[28px] font-bold mb-2 flex items-center">
-                {data.title}
-             </h1>
-             <p className="text-gray-400 text-[15px] max-w-3xl">{data.description}</p>
-           </>
+          <div className="mt-6 max-w-4xl">
+            <p className="eyebrow">Learning roadmap</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-ink sm:text-4xl">{data.title}</h1>
+            {data.description ? <p className="mt-3 text-sm leading-6 text-muted sm:text-base">{data.description}</p> : null}
+          </div>
         ) : null}
       </header>
 
-      <div className="px-4 pb-12 sm:px-8 xl:px-12">
+      <div className="mx-auto w-full max-w-[1500px]">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <Loader2 size={32} className="animate-spin text-indigo-400 mb-4" />
-            <p>Loading your path...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
-            <AlertCircle size={32} className="text-red-400 mb-3" />
-            <h3 className="text-lg font-semibold text-red-300 mb-1">Houston, we have a problem</h3>
-            <p className="text-red-400/80 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors text-sm font-medium"
-            >
-              Try Again
-            </button>
-          </div>
+          <section className="app-panel flex min-h-[560px] items-center justify-center p-8" aria-live="polite">
+            <div className="text-center text-muted">
+              <LoaderCircle aria-hidden="true" size={27} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />
+              <p className="mt-3 text-sm">Building roadmap workspace…</p>
+            </div>
+          </section>
+        ) : displayError ? (
+          <section role="alert" className="rounded-2xl border border-danger/30 bg-danger/10 p-6 sm:p-8">
+            <AlertCircle aria-hidden="true" size={24} className="text-danger" />
+            <h2 className="mt-4 text-xl font-semibold text-ink">Unable to load this roadmap</h2>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-muted">{displayError}</p>
+            {roadmapId ? <button type="button" onClick={retryRoadmap} className="secondary-button mt-5">Try again</button> : null}
+          </section>
         ) : !data || data.nodes.length === 0 ? (
-          <div className="bg-[#141527] border border-white/[0.06] rounded-2xl p-12 text-center relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
-             <div className="relative z-10 flex flex-col items-center">
-               <div className="w-16 h-16 bg-white/[0.03] border border-white/[0.05] rounded-full flex items-center justify-center mb-4">
-                 <Map size={24} className="text-indigo-400" />
-               </div>
-               <h3 className="text-xl font-bold mb-2">No Content Yet</h3>
-               <p className="text-gray-400 max-w-md">This roadmap doesn't have any skill nodes configured yet.</p>
-             </div>
-          </div>
+          <section className="app-panel p-7 text-center sm:p-10">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-line-strong bg-surface-elevated text-gold">
+              <Map aria-hidden="true" size={22} />
+            </div>
+            <h2 className="mt-5 text-xl font-semibold text-ink">No skill nodes yet</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">This roadmap exists, but its learning sequence has not been published.</p>
+          </section>
         ) : (
           <RoadmapCanvas roadmap={data} />
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -1,88 +1,101 @@
+import { useEffect, useRef } from "react";
 import { BookOpen, CheckCircle2, ClipboardList, Lock, X } from "lucide-react";
+
 import type { RoadmapSkillNodeData } from "../types";
 
-type RoadmapNodeDrawerProps = {
+interface RoadmapNodeDrawerProps {
   node: RoadmapSkillNodeData | null;
   onClose: () => void;
-};
+}
 
 const statusText: Record<RoadmapSkillNodeData["progressStatus"], string> = {
-  NOT_STARTED: "Not started",
+  NOT_STARTED: "Available",
   IN_PROGRESS: "In progress",
   COMPLETED: "Completed",
 };
 
 export function RoadmapNodeDrawer({ node, onClose }: RoadmapNodeDrawerProps) {
+  const panelRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!node) return;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [node, onClose]);
+
   if (!node) return null;
 
   return (
-    <aside className="absolute bottom-3 right-3 top-3 z-20 flex w-[min(24rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-950/92 shadow-2xl shadow-black/50 backdrop-blur-2xl">
-      <div className="border-b border-white/[0.06] p-5">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-violet-200/70">
-              Step {node.orderIndex}
-            </p>
-            <h2 className="text-xl font-bold leading-tight text-slate-50">{node.title}</h2>
+    <div className="absolute inset-0 z-30 flex items-end justify-end bg-black/55 p-0 sm:items-stretch sm:p-3" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <aside
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="node-detail-title"
+        className="flex max-h-[82%] w-full flex-col overflow-hidden rounded-t-2xl border border-line bg-shell shadow-2xl shadow-black/55 sm:max-h-none sm:w-[min(24rem,calc(100%-1.5rem))] sm:rounded-2xl"
+      >
+        <header className="border-b border-line p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="eyebrow">Step {node.orderIndex}</p>
+              <h2 id="node-detail-title" className="mt-2 text-xl font-semibold leading-tight text-ink">{node.title}</h2>
+            </div>
+            <button ref={closeButtonRef} type="button" onClick={onClose} className="icon-button" aria-label="Close node details">
+              <X aria-hidden="true" size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-300 transition hover:border-rose-300/30 hover:bg-rose-400/10 hover:text-rose-100"
-            aria-label="Close node details"
-            title="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-violet-100">
-            {node.nodeType}
-          </span>
-          <span className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-100">
-            {statusText[node.progressStatus]}
-          </span>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-muted">{node.nodeType}</span>
+            <span className="rounded-lg border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-medium text-gold-strong">{statusText[node.progressStatus]}</span>
+            {node.isLocked ? <span className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2.5 py-1 text-xs font-medium text-muted"><Lock aria-hidden="true" size={12} /> Locked</span> : null}
+          </div>
+        </header>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
           {node.isLocked ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-slate-400/20 bg-slate-400/10 px-3 py-1 text-xs font-semibold text-slate-300">
-              <Lock size={12} />
-              Locked
-            </span>
+            <section className="rounded-xl border border-line bg-surface p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-ink"><Lock aria-hidden="true" size={16} className="text-muted" /> Not available yet</div>
+              <p className="mt-2 text-sm leading-6 text-muted">Complete the prerequisite skills before starting this node.</p>
+            </section>
           ) : null}
+
+          <section className="rounded-xl border border-line bg-surface p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink"><BookOpen aria-hidden="true" size={16} className="text-gold" /> Summary</div>
+            <p className="mt-2 text-sm leading-6 text-muted">{node.summary}</p>
+          </section>
+
+          <section className="rounded-xl border border-line bg-surface p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink"><ClipboardList aria-hidden="true" size={16} className="text-gold" /> Checklist</div>
+            <p className="mt-2 text-sm leading-6 text-muted">No checklist has been published for this skill yet.</p>
+          </section>
+
+          <section className="rounded-xl border border-line bg-surface p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink"><CheckCircle2 aria-hidden="true" size={16} className="text-success" /> Learning resources</div>
+            <p className="mt-2 text-sm leading-6 text-muted">No learning resources have been published for this skill yet.</p>
+          </section>
         </div>
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto p-5">
-        <section className="mb-5 rounded-2xl border border-white/[0.06] bg-white/[0.035] p-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-100">
-            <BookOpen size={16} className="text-cyan-200" />
-            Summary
-          </div>
-          <p className="text-sm leading-6 text-slate-400">{node.summary}</p>
-        </section>
-
-        <section className="mb-5 rounded-2xl border border-white/[0.06] bg-white/[0.035] p-4">
-          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-100">
-            <ClipboardList size={16} className="text-violet-200" />
-            Checklist
-          </div>
-          <div className="space-y-2 text-sm text-slate-400">
-            <p className="rounded-xl border border-dashed border-white/[0.08] bg-slate-900/50 px-3 py-2">
-              Checklist content will appear here when this node includes learning content.
-            </p>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/[0.06] bg-white/[0.035] p-4">
-          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-100">
-            <CheckCircle2 size={16} className="text-emerald-200" />
-            Learning Resources
-          </div>
-          <p className="rounded-xl border border-dashed border-white/[0.08] bg-slate-900/50 px-3 py-2 text-sm text-slate-400">
-            Resource links will appear here when they are available for this skill node.
-          </p>
-        </section>
-      </div>
-    </aside>
+      </aside>
+    </div>
   );
 }

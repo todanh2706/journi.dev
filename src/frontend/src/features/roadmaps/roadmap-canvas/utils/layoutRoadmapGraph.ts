@@ -2,7 +2,7 @@ import dagre from "@dagrejs/dagre";
 import type { RoadmapGraph, RoadmapSkillGraphNode } from "../types";
 
 const NODE_WIDTH = 280;
-const NODE_HEIGHT = 96;
+const NODE_HEIGHT = 138;
 
 export const layoutRoadmapGraph = ({ nodes, edges }: RoadmapGraph): RoadmapGraph => {
   const graph = new dagre.graphlib.Graph();

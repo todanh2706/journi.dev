@@ -43,13 +43,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+    <div className="mx-auto w-full max-w-[1180px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
       <header className="mb-7">
-        <p className="text-sm font-medium text-indigo-300">Account</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-gray-100 sm:text-[34px]">
+        <p className="eyebrow">Account</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-ink sm:text-4xl">
           Profile settings
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
           Review your account identity, see upcoming profile controls, and manage your current session.
         </p>
       </header>
