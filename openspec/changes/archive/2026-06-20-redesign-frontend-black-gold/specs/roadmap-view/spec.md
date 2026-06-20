@@ -1,33 +1,4 @@
-## Purpose
-
-Define roadmap catalog retrieval and the responsive, read-only learning canvas used to inspect progress-aware skill nodes.
-
-## Requirements
-
-### Requirement: Fetch and Display Roadmaps
-The system SHALL retrieve available learning roadmaps from the backend API and display them in the Roadmap Page.
-
-#### Scenario: Successful roadmap load
-- **WHEN** a user navigates to the Roadmap Page
-- **THEN** the system makes a GET request to `/api/v1/roadmaps`
-- **THEN** the system displays the returned roadmaps as styled cards showing available roadmap metadata
-
-#### Scenario: Empty roadmap list
-- **WHEN** the backend returns an empty list of roadmaps
-- **THEN** the system displays a clear empty state indicating that no roadmaps are currently available
-
-#### Scenario: API error
-- **WHEN** the backend request fails
-- **THEN** the system displays an error message with an inline retry action
-
-### Requirement: Serve Roadmaps from Backend
-The system SHALL provide a REST endpoint to retrieve all learning roadmaps.
-
-#### Scenario: Requesting all roadmaps
-- **WHEN** a GET request is made to `/api/v1/roadmaps`
-- **THEN** the backend service queries the repository for all roadmaps
-- **THEN** the backend maps the entities to `LearningRoadmapResponse` objects
-- **THEN** it returns a 200 OK with the list of roadmaps
+## ADDED Requirements
 
 ### Requirement: Responsive Roadmap Workspace
 The roadmap workspace SHALL remain usable on desktop and narrow viewports without horizontal page overflow. Graph controls SHALL avoid overlapping essential content, and the node-detail surface SHALL adapt from a side drawer on wide viewports to a full-width bottom sheet or modal surface on narrow viewports.
@@ -40,6 +11,8 @@ The roadmap workspace SHALL remain usable on desktop and narrow viewports withou
 #### Scenario: Return focus after closing details
 - **WHEN** a keyboard user closes the node-detail surface
 - **THEN** focus returns to the roadmap node that opened it
+
+## MODIFIED Requirements
 
 ### Requirement: Interactive Roadmap Detail Canvas
 The system SHALL render roadmap detail skill nodes as an interactive, read-only learning canvas when roadmap nodes are available. The canvas SHALL retain pan, zoom, minimap, controls, and fit view while allowing pointer and keyboard users to inspect nodes without enabling graph editing.
@@ -84,18 +57,6 @@ The system SHALL display each roadmap skill node with its order, title, node typ
 #### Scenario: Focus or select a node
 - **WHEN** a node is keyboard-focused, search-matched, or selected
 - **THEN** each interaction state is visually distinct and is not communicated by color alone
-
-### Requirement: Roadmap Canvas Edges
-The system SHALL connect roadmap skill nodes with smooth visual edges derived from available node ordering when prerequisite edge data is unavailable.
-
-#### Scenario: Build sequential fallback edges
-- **WHEN** the frontend has roadmap nodes without prerequisite edge data
-- **THEN** the system sorts nodes by `orderIndex`
-- **THEN** the system creates a smooth edge from each node to the next node in sorted order
-
-#### Scenario: Highlight active target edge
-- **WHEN** a sequential edge targets a node with progress status `IN_PROGRESS`
-- **THEN** the edge is animated to indicate the current learning focus
 
 ### Requirement: Roadmap Canvas Toolbar
 The system SHALL provide a compact responsive toolbar for progress context, fit view, and node search. The toolbar SHALL remain operable with a keyboard, SHALL avoid obscuring essential graph content, and SHALL communicate search results without removing unmatched nodes.
