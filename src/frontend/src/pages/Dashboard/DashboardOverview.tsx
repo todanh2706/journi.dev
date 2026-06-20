@@ -1,223 +1,126 @@
-import {
-  Trophy,
-  Map,
-  Flame,
-  Play,
-  Grid,
-  Zap,
-  Database,
-  TerminalSquare,
-  MessageSquare,
-  Users,
-  Atom,
-  Box
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, ArrowRight, LoaderCircle, Map, Route } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import { ActionCard, LeaderboardItem, MilestoneCard } from "../../features/dashboard";
 import { useAuth } from "../../features/auth";
+import { roadmapService, type Roadmap } from "../../features/roadmaps";
 
 export default function DashboardOverview() {
   const { user } = useAuth();
-  
+  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+  const [loading, setLoading] = useState(Boolean(user));
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRoadmaps = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await roadmapService.getRoadmaps();
+      setRoadmaps(Array.isArray(response) ? response : []);
+    } catch {
+      setError("Roadmaps could not be loaded. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+
+    roadmapService.getRoadmaps()
+      .then((response) => {
+        if (active) setRoadmaps(Array.isArray(response) ? response : []);
+      })
+      .catch(() => {
+        if (active) setError("Roadmaps could not be loaded. Check your connection and try again.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  const retryRoadmaps = () => {
+    setLoading(true);
+    setError(null);
+    void loadRoadmaps();
+  };
+
   return (
-    <>
-      {/* Header */}
-      <header className="px-12 pt-12 pb-8 flex items-end justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold mb-2">Welcome back{user ? `, ${user.username}` : ""}</h1>
-          <p className="text-gray-400 text-[15px]">{user ? "Your learning journey continues. Let's hit that daily goal." : "Sign in to track your learning journey and hit your daily goals."}</p>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-400 bg-white/[0.03] px-4 py-2.5 rounded-xl border border-white/[0.05]">
-            <Flame size={18} className="text-indigo-400" />
-            14 Day Streak
-          </div>
-          <button className="bg-indigo-500 hover:bg-indigo-400 transition-colors text-white px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg shadow-indigo-500/25">
-            <Play size={16} fill="currentColor" />
-            Resume Learning
-          </button>
-        </div>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+      <header className="max-w-3xl">
+        <p className="eyebrow">Learning workspace</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-ink sm:text-4xl">
+          {user ? `Welcome back, ${user.username}` : "Your roadmap starts here"}
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-muted sm:text-base">
+          {user
+            ? "Choose a roadmap, inspect the next skill, and keep the full path in view."
+            : "Sign in to open the roadmap catalog and keep your learning workspace tied to your account."}
+        </p>
       </header>
 
-      <div className="px-12 pb-12 flex gap-8">
-        {/* Left Column */}
-        <div className="flex-1 space-y-8 min-w-0">
-          {/* Heatmap Section */}
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2 text-[15px] font-semibold text-gray-200">
-                <Grid size={18} className="text-indigo-400" />
-                Contribution Heatmap
-              </div>
-              <div className="flex bg-[#161729] rounded-lg p-1 text-[13px] font-medium border border-white/[0.03]">
-                <button className="px-4 py-1.5 rounded-md bg-indigo-500/20 text-indigo-300">30 Days</button>
-                <button className="px-4 py-1.5 rounded-md text-gray-500 hover:text-gray-300 transition-colors">6 Months</button>
-                <button className="px-4 py-1.5 rounded-md text-gray-500 hover:text-gray-300 transition-colors">1 Year</button>
-              </div>
-            </div>
-            <div className="bg-[#141527] border border-white/[0.06] rounded-2xl p-7 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
-              <div className="flex gap-2.5 mb-8 overflow-x-auto pb-2">
-                {/* Generate dummy heatmap columns */}
-                {Array.from({ length: 24 }).map((_, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-2.5">
-                    {Array.from({ length: 5 }).map((_, rowIndex) => {
-                      const intensity = Math.random();
-                      const bgClass = 
-                        intensity > 0.95 ? "bg-indigo-400" :
-                        intensity > 0.8 ? "bg-indigo-500" :
-                        intensity > 0.5 ? "bg-indigo-600/60" :
-                        intensity > 0.3 ? "bg-indigo-900/40" : 
-                        "bg-[#1c1d33]";
-
-                      return (
-                        <div 
-                          key={rowIndex} 
-                          className={`w-[14px] h-[14px] rounded-[3px] ${bgClass}`} 
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center justify-between border-t border-white/[0.06] pt-5 mt-2">
-                <div className="flex gap-10">
-                  <div>
-                    <div className="text-2xl font-bold">245</div>
-                    <div className="text-[13px] text-gray-500 mt-1">Total Commits</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-indigo-400">22</div>
-                    <div className="text-[13px] text-gray-500 mt-1">Best Day</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-[13px] text-gray-500">
-                  Less
-                  <div className="flex gap-1.5">
-                    <div className="w-[14px] h-[14px] rounded-[3px] bg-[#1c1d33]" />
-                    <div className="w-[14px] h-[14px] rounded-[3px] bg-indigo-900/40" />
-                    <div className="w-[14px] h-[14px] rounded-[3px] bg-indigo-600/60" />
-                    <div className="w-[14px] h-[14px] rounded-[3px] bg-indigo-500" />
-                    <div className="w-[14px] h-[14px] rounded-[3px] bg-indigo-400" />
-                  </div>
-                  More
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Next Milestones */}
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2 text-[15px] font-semibold text-gray-200">
-                <Map size={18} className="text-indigo-400" />
-                Next Milestones
-              </div>
-              <button className="text-indigo-400 text-[13px] font-medium hover:text-indigo-300">
-                View Full Roadmap
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <MilestoneCard
-                title="React Hooks Mastery"
-                id="MS-042"
-                progress={75}
-                status="In Progress"
-                icon={<Atom size={20} className="text-indigo-400" />}
-              />
-              <MilestoneCard
-                title="Node.js API Design"
-                id="MS-043"
-                progress={0}
-                status="Up Next"
-                icon={<Box size={20} className="text-gray-400" />}
-              />
-              <MilestoneCard
-                title="Postgres Optimization"
-                id="MS-044"
-                progress={0}
-                status="Locked"
-                icon={<Database size={20} className="text-gray-500" />}
-                locked
-              />
-            </div>
-          </section>
-
-          {/* Quick Actions */}
-          <section>
-            <div className="flex items-center gap-2 text-[15px] font-semibold text-gray-200 mb-5">
-              <Zap size={18} className="text-indigo-400" />
-              Quick Actions
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <ActionCard
-                title="Start Challenge"
-                subtitle="Daily algorithm"
-                icon={<TerminalSquare size={20} className="text-indigo-400" />}
-              />
-              <ActionCard
-                title="Review Feedback"
-                subtitle="3 pending reviews"
-                icon={<MessageSquare size={20} className="text-purple-400" />}
-              />
-              <ActionCard
-                title="Find Team"
-                subtitle="For hackathon"
-                icon={<Users size={20} className="text-emerald-400" />}
-              />
-            </div>
-          </section>
-        </div>
-
-        {/* Right Column */}
-        <div className="w-[360px] shrink-0">
-          <div className="bg-[#141527] border border-white/[0.06] rounded-2xl p-7 h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
-            
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <div className="flex items-center gap-2 text-[15px] font-semibold text-gray-200">
-                <Trophy size={18} className="text-indigo-400" />
-                Leaderboard
-              </div>
-              <div className="flex bg-[#161729] rounded-lg p-1 text-[13px] font-medium border border-white/[0.03]">
-                <button className="px-4 py-1.5 rounded-md bg-indigo-500/20 text-indigo-300">Friends</button>
-                <button className="px-4 py-1.5 rounded-md text-gray-500 hover:text-gray-300 transition-colors">Team</button>
-              </div>
-            </div>
-
-            {/* User Rank Card */}
-            <div className="bg-[#1a1b30] border border-white/[0.04] rounded-2xl p-6 flex flex-col items-center mb-8 relative overflow-hidden z-10">
-              <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none" />
-              
-              <div className="relative mb-4">
-                <img src={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"} alt={user ? user.username : "Guest"} className="w-[72px] h-[72px] rounded-full border-[3px] border-[#141527] ring-2 ring-indigo-500/50" />
-                <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full border-[3px] border-[#1a1b30]">
-                  {user ? "12" : "-"}
-                </div>
-              </div>
-              <div className="font-semibold text-lg relative z-10 text-gray-100">{user ? user.username : "Guest"}</div>
-              <div className="text-[13px] text-gray-400 mt-1.5 relative z-10 flex items-center gap-2">
-                Rank {user ? "12" : "-"} <span className="w-1 h-1 rounded-full bg-gray-600" /> <span className="text-indigo-300 font-medium">{user ? "2,450 pts" : "0 pts"}</span>
-              </div>
-            </div>
-
-            {/* Leaderboard List */}
-            <div className="flex-1 space-y-5 mb-8 relative z-10">
-              <LeaderboardItem rank={1} name="Sarah_Codes" handle="@sarahc" pts="3,200" avatar="https://i.pravatar.cc/150?u=1" />
-              <LeaderboardItem rank={2} name="MikeBuilder" handle="@mikeb" pts="3,050" avatar="https://i.pravatar.cc/150?u=2" />
-              <LeaderboardItem rank={3} name="ElenaTech" handle="@elena_t" pts="2,980" avatar="https://i.pravatar.cc/150?u=3" />
-              
-              <div className="h-px bg-white/[0.04] my-2" />
-              
-              <LeaderboardItem rank={12} name={user ? user.username : "Guest"} handle={user ? "You" : ""} pts={user ? "2,450" : "0"} avatar={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"} isUser />
-            </div>
-
-            <button className="w-full py-3.5 rounded-xl border border-white/[0.06] text-[13px] font-medium text-gray-400 hover:text-white hover:bg-white/[0.03] transition-colors relative z-10">
-              View Full Standings
-            </button>
+      {!user ? (
+        <section className="app-panel mt-8 flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Sign in to continue</h2>
+            <p className="mt-1 text-sm text-muted">Your authenticated session unlocks the roadmap workspace.</p>
           </div>
-        </div>
-      </div>
-    </>
+          <Link to="/signin" className="primary-button shrink-0">Sign in <ArrowRight aria-hidden="true" size={17} /></Link>
+        </section>
+      ) : loading ? (
+        <section className="app-panel mt-8 flex min-h-56 items-center justify-center p-8" aria-live="polite">
+          <div className="text-center text-muted">
+            <LoaderCircle aria-hidden="true" size={26} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />
+            <p className="mt-3 text-sm">Loading available roadmaps…</p>
+          </div>
+        </section>
+      ) : error ? (
+        <section role="alert" className="mt-8 rounded-2xl border border-danger/30 bg-danger/10 p-6">
+          <AlertCircle aria-hidden="true" size={23} className="text-danger" />
+          <h2 className="mt-4 text-lg font-semibold text-ink">Roadmaps are temporarily unavailable</h2>
+          <p className="mt-2 text-sm text-muted">{error}</p>
+          <button type="button" onClick={retryRoadmaps} className="secondary-button mt-5">Try again</button>
+        </section>
+      ) : roadmaps.length === 0 ? (
+        <section className="app-panel mt-8 p-6 sm:p-8">
+          <Map aria-hidden="true" size={24} className="text-gold" />
+          <h2 className="mt-4 text-xl font-semibold text-ink">No roadmaps are available yet</h2>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-muted">The catalog is connected, but it does not currently contain a published path.</p>
+        </section>
+      ) : (
+        <section className="mt-9" aria-labelledby="available-roadmaps-heading">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="eyebrow">Available now</p>
+              <h2 id="available-roadmaps-heading" className="mt-2 text-2xl font-semibold tracking-[-0.035em] text-ink">Choose a path</h2>
+            </div>
+            <Link to="/dashboard/roadmaps" className="inline-flex items-center gap-2 rounded-lg text-sm font-medium text-gold hover:text-gold-strong">
+              View all roadmaps <ArrowRight aria-hidden="true" size={16} />
+            </Link>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {roadmaps.slice(0, 4).map((roadmap) => (
+              <Link key={roadmap.roadmapId} to={`/dashboard/roadmaps/${roadmap.roadmapId}`} className="app-panel group flex min-h-48 flex-col p-5 transition-colors hover:border-line-strong hover:bg-surface-elevated sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-line-strong bg-surface-elevated text-gold">
+                    <Route aria-hidden="true" size={19} />
+                  </div>
+                  <span className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Structured path</span>
+                </div>
+                <h3 className="mt-6 text-lg font-semibold text-ink group-hover:text-gold-strong">{roadmap.title}</h3>
+                {roadmap.description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{roadmap.description}</p> : null}
+                <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-medium text-gold">Open roadmap <ArrowRight aria-hidden="true" size={16} /></span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

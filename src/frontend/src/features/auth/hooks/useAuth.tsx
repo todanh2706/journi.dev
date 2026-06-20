@@ -34,8 +34,7 @@ function getInitialUser(): AuthUser | null {
             localStorage.removeItem("access_token");
             return null;
         }
-    } catch (error) {
-        console.error("Invalid token:", error);
+    } catch {
         localStorage.removeItem("access_token");
         return null;
     }

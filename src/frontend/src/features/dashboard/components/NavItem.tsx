@@ -1,23 +1,31 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-export function NavItem({ icon, label, to }: { icon: ReactNode; label: string; to: string }) {
+interface NavItemProps {
+  icon: ReactNode;
+  label: string;
+  to: string;
+  onNavigate?: () => void;
+}
+
+export function NavItem({ icon, label, to, onNavigate }: NavItemProps) {
   const location = useLocation();
-  // Exact match for dashboard root, otherwise check prefix
-  const active = to === "/dashboard" 
-    ? location.pathname === "/dashboard" 
+  const active = to === "/dashboard"
+    ? location.pathname === "/dashboard"
     : location.pathname.startsWith(to);
 
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3.5 px-4 h-12 rounded-[14px] text-[15px] font-medium transition-colors ${
-        active 
-          ? "text-indigo-300" 
-          : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.03]"
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={`flex h-11 items-center gap-3 rounded-xl border px-3.5 text-sm font-medium transition-colors ${
+        active
+          ? "border-line-strong bg-surface-elevated text-ink"
+          : "border-transparent text-muted hover:border-line hover:bg-surface hover:text-ink"
       }`}
     >
-      <span className={active ? "text-indigo-400" : "text-gray-500"}>{icon}</span>
+      <span className={active ? "text-gold" : "text-subtle"}>{icon}</span>
       {label}
     </Link>
   );
