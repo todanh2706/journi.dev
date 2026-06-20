@@ -152,6 +152,25 @@ Frontend dependency rules:
 8. Do not duplicate API base URLs inside components.
 9. Do not add dependencies for problems that can be solved with existing project tools.
 
+### Journi.dev UI Direction
+
+Use this as the project design constitution for frontend work:
+
+- Product type: developer learning platform, roadmap tracker, and skill-tree LMS.
+- Primary experience: authenticated product UI, not a marketing landing page.
+- Visual mood: premium dark learning OS, calm, technical, focused, and credible.
+- Base surfaces: off-black backgrounds, subtle panels, thin borders, restrained depth, and soft glass only when it improves readability.
+- Accent system: use one primary accent from the indigo, violet, or cyan family. Use green, amber, and red only for semantic states such as completed, available, locked, warning, and error.
+- Typography: keep Inter unless the project explicitly adopts a new type system. Use clear hierarchy, compact spacing, and readable body text.
+- Shape: use a consistent radius scale. Prefer `rounded-xl` and `rounded-2xl` for panels and `rounded-lg` or `rounded-xl` for controls. Avoid random pill-heavy UI.
+- Components: prioritize roadmap nodes, side drawers, toolbars, tabs, command/search bars, badges, checklist rows, progress states, and empty/error/loading states.
+- Icons: use `lucide-react`, because it is already installed. Keep stroke width consistent and do not mix icon families without an explicit reason.
+- Motion: use subtle hover, focus, drawer, and state transitions. Avoid excessive bounce, cinematic scroll effects, or animation libraries not already present.
+- Avoid generic AI UI tells: three-card marketing sections, purple mesh blobs, fake dashboards, decorative status dots, random gradients, and placeholder product screenshots.
+- Prefer reusable components and small design tokens over one-off Tailwind class soup when the pattern is repeated.
+- Preserve the MVP flow first: login, choose roadmap, view nodes, open node, complete node, unlock next node.
+- When updating Taste Skill, preserve the `Journi.dev Project Override` section in `.agents/skills/design-taste-frontend/SKILL.md`.
+
 ### Backend Stack
 
 Main backend technologies are defined in `src/backend/pom.xml`.
