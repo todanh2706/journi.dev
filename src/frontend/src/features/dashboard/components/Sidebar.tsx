@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   GitBranch,
@@ -6,6 +6,7 @@ import {
   Code,
   Trophy,
   Map,
+  ChevronRight,
 } from "lucide-react";
 import { Logo } from "../../../components/Logo/Logo";
 import { useAuth } from "../../auth";
@@ -23,6 +24,7 @@ const navItems = [
 export function Sidebar() {
   const { user } = useAuth();
   const location = useLocation();
+  const profileActive = location.pathname === "/dashboard/profile";
 
   const activeIndex = navItems.findIndex((item) =>
     item.path === "/dashboard"
@@ -58,21 +60,45 @@ export function Sidebar() {
       </nav>
 
       <div className="p-6 pb-8">
-        <div className="flex items-center gap-3 px-2">
-          <img
-            src={user ? `https://i.pravatar.cc/150?u=${user.username}` : "https://i.pravatar.cc/150?u=guest"}
-            alt={user ? user.username : "Guest"}
-            className="w-9 h-9 rounded-full border border-white/10"
-          />
-          <div>
-            <div className="text-sm font-medium text-gray-200">
-              {user ? user.username : "Guest"}
+        {user ? (
+          <Link
+            to="/dashboard/profile"
+            aria-label={`Open profile for ${user.username}`}
+            className={`group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/50 ${
+              profileActive
+                ? "border-indigo-400/20 bg-indigo-400/[0.09]"
+                : "border-transparent hover:border-white/[0.06] hover:bg-white/[0.035]"
+            }`}
+          >
+            <img
+              src={`https://i.pravatar.cc/150?u=${user.username}`}
+              alt={`${user.username}'s avatar`}
+              className="h-9 w-9 rounded-xl border border-white/10 object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-gray-200">{user.username}</div>
+              <div className="truncate text-xs text-gray-500">@{user.username}</div>
             </div>
-            <div className="text-xs text-gray-500">
-              {user ? `@${user.username}` : "Not logged in"}
+            <ChevronRight
+              aria-hidden="true"
+              size={16}
+              strokeWidth={1.8}
+              className={`transition-colors ${profileActive ? "text-indigo-300" : "text-gray-600 group-hover:text-gray-400"}`}
+            />
+          </Link>
+        ) : (
+          <div className="flex items-center gap-3 px-2 py-2.5">
+            <img
+              src="https://i.pravatar.cc/150?u=guest"
+              alt="Guest avatar"
+              className="h-9 w-9 rounded-xl border border-white/10 object-cover"
+            />
+            <div>
+              <div className="text-sm font-medium text-gray-200">Guest</div>
+              <div className="text-xs text-gray-500">Not logged in</div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

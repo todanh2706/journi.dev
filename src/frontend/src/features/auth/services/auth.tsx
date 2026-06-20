@@ -46,6 +46,10 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
     return response.data;
 }
 
+export async function logout(): Promise<void> {
+    await api.post("/auth/logout");
+}
+
 export function getSignupErrorMessage(error: unknown): string {
     if (error instanceof AxiosError) {
         const data = error.response?.data as ApiErrorPayload | string | undefined;

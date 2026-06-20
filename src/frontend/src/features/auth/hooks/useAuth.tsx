@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logout as requestLogout } from '../services/auth';
 
 export interface AuthUser {
     username: string;
@@ -54,10 +55,10 @@ export function useAuth() {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    const logout = () => {
+    const logout = async () => {
+        await requestLogout();
         localStorage.removeItem("access_token");
         setUser(null);
-        window.location.href = '/signin';
     };
 
     return { user, isLoading, logout };
