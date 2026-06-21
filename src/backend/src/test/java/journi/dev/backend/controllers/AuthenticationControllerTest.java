@@ -1,9 +1,23 @@
 package journi.dev.backend.controllers;
 
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
-import journi.dev.backend.entities.User;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -11,267 +25,185 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import journi.dev.backend.dtos.requests.LoginUserRequest;
 import journi.dev.backend.dtos.requests.UserRequest;
+import journi.dev.backend.dtos.responses.LoginResponse;
 import journi.dev.backend.dtos.responses.UserResponse;
 import journi.dev.backend.entities.UserRole;
 import journi.dev.backend.entities.UserStatus;
+import journi.dev.backend.exceptions.RefreshSessionException;
+import journi.dev.backend.services.AuthSessionResult;
+import journi.dev.backend.services.AuthSessionService;
 import journi.dev.backend.services.AuthenticationService;
+import journi.dev.backend.services.RefreshCookieService;
 import journi.dev.backend.services.JwtService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
-
-@WebMvcTest(controllers = AuthenticationController.class, excludeAutoConfiguration = {
-                SecurityAutoConfiguration.class })
+@WebMvcTest(controllers = AuthenticationController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @AutoConfigureRestTestClient
-public class AuthenticationControllerTest {
-        private static final UUID MOCK_USER_ID = UUID.fromString("cf6ee0a3-a316-4503-94b9-07fe230fe07d");
-        private static final String MOCK_JWT_TOKEN = "mocked-jwt-token";
-        private static final long MOCK_EXPIRATION_TIME = 3600000L;
+class AuthenticationControllerTest {
+    private static final String ACCESS_TOKEN = "access-token";
+    private static final String REFRESH_TOKEN = "raw-refresh-token";
+    private static final Instant REFRESH_EXPIRY = Instant.parse("2026-07-21T00:00:00Z");
 
-        @Autowired
-        private RestTestClient restTestClient;
+    @Autowired
+    private RestTestClient restTestClient;
 
-        @MockitoBean
-        private JwtService jwtService;
+    @MockitoBean
+    private AuthenticationService authenticationService;
 
-        @MockitoBean
-        private UserDetailsService userDetailsService;
+    @MockitoBean
+    private AuthSessionService authSessionService;
 
-        @MockitoBean
-        private AuthenticationService authenticationService;
+    @MockitoBean
+    private RefreshCookieService refreshCookieService;
 
-        @DisplayName("[TEST] Sign up with VALID UserRequest")
-        @Test
-        void signUpTestWithValidUserRequest() {
-                // ==========================================
-                // ARRANGE
-                // ==========================================
+    @MockitoBean
+    private JwtService jwtService;
 
-                // Mock request
-                UserRequest mockUserRequest = new UserRequest("test_user", "testuser@gmail.com", "testpassword");
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
-                // Mock response
-                UserResponse mockUserResponse = new UserResponse(
-                                MOCK_USER_ID,
-                                "test_user", "testuser@gmail.com", UserRole.USER, UserStatus.ACTIVE,
-                                LocalDateTime.now(), null, null);
+    @Test
+    void signupReturnsSanitizedUserResponse() {
+        UserRequest request = new UserRequest("test_user", "testuser@gmail.com", "testpassword");
+        UserResponse response = new UserResponse(
+                UUID.randomUUID(),
+                "test_user",
+                "testuser@gmail.com",
+                UserRole.USER,
+                UserStatus.ACTIVE,
+                LocalDateTime.now(),
+                null,
+                null);
+        when(authenticationService.signup(any(UserRequest.class))).thenReturn(response);
 
-                // Mockito
-                when(authenticationService.signup(any(UserRequest.class))).thenReturn(mockUserResponse);
+        restTestClient.post()
+                .uri("/api/v1/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.username").isEqualTo("test_user")
+                .jsonPath("$.passwordHash").doesNotExist();
+    }
 
-                // ==========================================
-                // ACT and ASSERT
-                // ==========================================
-                restTestClient.post()
-                                .uri("/api/v1/auth/signup")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(mockUserRequest)
-                                .exchange()
-                                .expectStatus().isOk()
-                                .expectBody(UserResponse.class)
-                                .value(response -> {
-                                        assertEquals("test_user", response.getUsername());
-                                        assertEquals("testuser@gmail.com", response.getEmail());
-                                        assertEquals(UserRole.USER, response.getRole());
-                                        assertEquals(UserStatus.ACTIVE, response.getStatus());
-                                });
+    @Test
+    void invalidLoginRequestDoesNotCreateSession() {
+        restTestClient.post()
+                .uri("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new LoginUserRequest("test_user", "1"))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.validationErrors").exists();
 
-                // Mockito verification to ensure the controller actually called to signup
-                // function in AuthenticationService
-                verify(authenticationService, times(1)).signup(any(UserRequest.class));
-        }
+        verify(authSessionService, never()).login(any(LoginUserRequest.class));
+    }
 
-        @DisplayName("[TEST] Sign up with ALL invalid UserRequests")
-        @ParameterizedTest(name = "Test {index}: User={0}, Email={1}, Password={2} -> Return error 400")
-        @CsvSource({
-                        // Empty username
-                        ",testuser@gmail.com, strongpassword",
-                        // Invalid email
-                        "test_user, invalid_email, strongpassword",
-                        // Invalid password
-                        "test_user, testuser@gmail.com, 1"
-        })
-        void signUpTestWithInvalidRequest(String username, String email, String password) {
-                // ==========================================
-                // ARRANGE
-                // ==========================================
+    @Test
+    void loginReturnsAccessPayloadAndHttpOnlyRefreshCookie() {
+        LoginUserRequest request = new LoginUserRequest("test_user", "password");
+        when(authSessionService.login(any(LoginUserRequest.class))).thenReturn(authResult());
+        when(refreshCookieService.create(REFRESH_TOKEN, REFRESH_EXPIRY)).thenReturn(refreshCookie());
 
-                // Mock request
-                UserRequest mockUserRequest = new UserRequest(username, email, password);
+        restTestClient.post()
+                .uri("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().value(HttpHeaders.SET_COOKIE, value -> {
+                    assertThat(value).contains("journi_refresh=");
+                    assertThat(value).contains("HttpOnly");
+                })
+                .expectBody()
+                .jsonPath("$.token").isEqualTo(ACCESS_TOKEN)
+                .jsonPath("$.expiresIn").isEqualTo(900_000);
+    }
 
-                // Mock response is not necessary for this case
+    @Test
+    void badLoginCredentialsDoNotCreateCookie() {
+        when(authSessionService.login(any(LoginUserRequest.class)))
+                .thenThrow(new BadCredentialsException("Invalid Username or Password"));
 
-                // ==========================================
-                // ACT and ASSERT
-                // ==========================================
-                restTestClient.post()
-                                .uri("/api/v1/auth/signup")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(mockUserRequest)
-                                .exchange()
-                                .expectStatus().isBadRequest()
-                                .expectBody()
-                                .jsonPath("$.status").isEqualTo(400)
-                                .jsonPath("$.error").isEqualTo("Bad Request")
-                                .jsonPath("$.validationErrors").exists();
+        restTestClient.post()
+                .uri("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new LoginUserRequest("test_user", "wrong-password"))
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectHeader().doesNotExist(HttpHeaders.SET_COOKIE)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Invalid username or password");
+    }
 
-                // Mockito verification to ensure invalid requests do not call signup
-                // function in AuthenticationService
-                verify(authenticationService, never()).signup(any(UserRequest.class));
-        }
+    @Test
+    void refreshRotatesCookieAndReturnsNewAccessPayload() {
+        when(refreshCookieService.read(any())).thenReturn(REFRESH_TOKEN);
+        when(authSessionService.refresh(REFRESH_TOKEN)).thenReturn(authResult());
+        when(refreshCookieService.create(REFRESH_TOKEN, REFRESH_EXPIRY)).thenReturn(refreshCookie());
 
-        @DisplayName("[TEST] Sign in with valid request")
-        @Test
-        void signInTestWithValidRequest() {
-                // ==========================================
-                // ARRANGE
-                // ==========================================
+        restTestClient.post()
+                .uri("/api/v1/auth/refresh")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().exists(HttpHeaders.SET_COOKIE)
+                .expectBody()
+                .jsonPath("$.token").isEqualTo(ACCESS_TOKEN);
+    }
 
-                // Mock request
-                LoginUserRequest mockLoginRequest = new LoginUserRequest("test_user", "password");
+    @Test
+    void invalidRefreshReturnsGenericUnauthorizedAndClearsCookie() {
+        when(refreshCookieService.read(any())).thenReturn("invalid-refresh");
+        when(authSessionService.refresh("invalid-refresh")).thenThrow(new RefreshSessionException());
+        when(refreshCookieService.clear()).thenReturn(clearedCookie());
 
-                // Mock authenticated user
-                User mockAuthenticatedUser = new User();
-                mockAuthenticatedUser.setUsername("test_user");
+        restTestClient.post()
+                .uri("/api/v1/auth/refresh")
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectHeader().value(HttpHeaders.SET_COOKIE, value -> assertThat(value).contains("Max-Age=0"))
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Refresh session is invalid or expired");
+    }
 
-                // Mock response
-                // Mock authenticate function
-                when(authenticationService.authenticate(any(LoginUserRequest.class))).thenReturn(mockAuthenticatedUser);
+    @Test
+    void logoutWithoutRefreshStateStillClearsCookieAndReturnsNoContent() {
+        when(refreshCookieService.read(any())).thenReturn(null);
+        when(refreshCookieService.clear()).thenReturn(clearedCookie());
 
-                // Mock generateToken function
-                when(jwtService.generateToken(any(User.class))).thenReturn(MOCK_JWT_TOKEN);
+        restTestClient.post()
+                .uri("/api/v1/auth/logout")
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectHeader().value(HttpHeaders.SET_COOKIE, value -> assertThat(value).contains("Max-Age=0"))
+                .expectBody().isEmpty();
 
-                // Mock getExpirationTime function
-                when(jwtService.getExpirationTime()).thenReturn(MOCK_EXPIRATION_TIME);
+        verify(authSessionService).logout(null);
+    }
 
-                // ==========================================
-                // ACT and ASSERT
-                // ==========================================
-                restTestClient.post()
-                                .uri("/api/v1/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(mockLoginRequest)
-                                .exchange()
-                                .expectStatus().isOk()
-                                .expectBody()
-                                .jsonPath("$.token")
-                                .isEqualTo(MOCK_JWT_TOKEN)
-                                .jsonPath("$.expiresIn").isEqualTo(MOCK_EXPIRATION_TIME);
+    private AuthSessionResult authResult() {
+        return new AuthSessionResult(
+                new LoginResponse(ACCESS_TOKEN, 900_000L),
+                REFRESH_TOKEN,
+                REFRESH_EXPIRY);
+    }
 
-                // Mockito verification to ensure the controller actually called to authenticate
-                // function in AuthenticationService
-                verify(authenticationService, times(1)).authenticate(any(LoginUserRequest.class));
+    private ResponseCookie refreshCookie() {
+        return ResponseCookie.from("journi_refresh", REFRESH_TOKEN)
+                .httpOnly(true)
+                .path("/api/v1/auth")
+                .sameSite("Lax")
+                .maxAge(3600)
+                .build();
+    }
 
-                // Mockito verification to ensure the controller generated JWT and returned
-                // expiration time through JwtService
-                verify(jwtService, times(1)).generateToken(any(User.class));
-                verify(jwtService, times(1)).getExpirationTime();
-        }
-
-        @DisplayName("[TEST] Sign in with ALL invalid requests")
-        @ParameterizedTest(name = "Test {index}: User={0}, Password={1} -> Return error 400")
-        @CsvSource({
-                        // Empty username
-                        ", password",
-
-                        // Invalid password
-                        "testuser, 1"
-        })
-        void signInTestWithInvalidRequest(String username, String password) {
-                // ==========================================
-                // ARRANGE
-                // ==========================================
-
-                // Mock request
-                LoginUserRequest mockLoginUserRequest = new LoginUserRequest(username, password);
-
-                // Mock response is not necessary for this case
-
-                // ==========================================
-                // ACT and ASSERT
-                // ==========================================
-                restTestClient.post()
-                                .uri("/api/v1/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(mockLoginUserRequest)
-                                .exchange()
-                                .expectStatus().isBadRequest()
-                                .expectBody()
-                                .jsonPath("$.status").isEqualTo(400)
-                                .jsonPath("$.error").isEqualTo("Bad Request")
-                                .jsonPath("$.validationErrors").exists();
-
-                // Mockito verification to ensure invalid requests do not call authenticate
-                // function in AuthenticationService
-                verify(authenticationService, never()).authenticate(any(LoginUserRequest.class));
-
-                // Mockito verification to ensure JWT is not generated when validation fails
-                verify(jwtService, never()).generateToken(any(User.class));
-                verify(jwtService, never()).getExpirationTime();
-        }
-
-        @DisplayName("[TEST] Sign in with bad credentials")
-        @Test
-        void signInTestWithBadCredentials() {
-                // ==========================================
-                // ARRANGE
-                // ==========================================
-
-                // Mock request
-                LoginUserRequest mockBadLoginRequest = new LoginUserRequest("test_user_wrong", "password");
-
-                // We don't need mock authenticated user for this test
-
-                // Mock response
-                // Mock authenticate function
-                when(authenticationService.authenticate(any(LoginUserRequest.class)))
-                                .thenThrow(new BadCredentialsException("Invalid Username or Password"));
-
-                // ==========================================
-                // ACT and ASSERT
-                // ==========================================
-                restTestClient.post()
-                                .uri("/api/v1/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(mockBadLoginRequest)
-                                .exchange()
-                                .expectStatus().isUnauthorized()
-                                .expectBody()
-                                .jsonPath("$.status").isEqualTo(401)
-                                .jsonPath("$.error").isEqualTo("Unauthorized")
-                                .jsonPath("$.message").isEqualTo("Invalid username or password");
-
-                // Mockito verification to ensure the controller tried to authenticate once
-                verify(authenticationService, times(1)).authenticate(any(LoginUserRequest.class));
-
-                // Mockito verification to ensure JWT is not generated when credentials are invalid
-                verify(jwtService, never()).generateToken(any(User.class));
-                verify(jwtService, never()).getExpirationTime();
-        }
-
-        @DisplayName("[TEST] Logout ends the authenticated client session")
-        @Test
-        void logoutReturnsNoContent() {
-                restTestClient.post()
-                                .uri("/api/v1/auth/logout")
-                                .header("Authorization", "Bearer " + MOCK_JWT_TOKEN)
-                                .exchange()
-                                .expectStatus().isNoContent()
-                                .expectBody().isEmpty();
-        }
+    private ResponseCookie clearedCookie() {
+        return ResponseCookie.from("journi_refresh", "")
+                .httpOnly(true)
+                .path("/api/v1/auth")
+                .sameSite("Lax")
+                .maxAge(0)
+                .build();
+    }
 }

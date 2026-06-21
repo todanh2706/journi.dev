@@ -7,10 +7,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
+
+import io.jsonwebtoken.JwtException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,29 +23,22 @@ import lombok.NonNull;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    public JwtFilter(HandlerExceptionResolver handlerExceptionResolver, JwtService jwtService,
-            UserDetailsService userDetailsService) {
-        this.handlerExceptionResolver = handlerExceptionResolver;
+    public JwtFilter(JwtService jwtService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-        } catch (IOException ioe) {
-            handlerExceptionResolver.resolveException(request, response, null, ioe);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
         try {
@@ -63,9 +58,10 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            handlerExceptionResolver.resolveException(request, response, null, e);
+        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException exception) {
+            SecurityContextHolder.clearContext();
         }
+
+        filterChain.doFilter(request, response);
     }
 }

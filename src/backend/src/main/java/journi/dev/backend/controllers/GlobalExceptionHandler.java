@@ -14,7 +14,10 @@ import journi.dev.backend.dtos.responses.ErrorResponse;
 import journi.dev.backend.dtos.responses.ValidationErrorResponse;
 import journi.dev.backend.exceptions.ResourceNotFoundException;
 import journi.dev.backend.exceptions.BadRequestException;
+import journi.dev.backend.exceptions.RefreshSessionException;
+import journi.dev.backend.services.RefreshCookieService;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.HttpHeaders;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -22,6 +25,11 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private final RefreshCookieService refreshCookieService;
+
+    public GlobalExceptionHandler(RefreshCookieService refreshCookieService) {
+        this.refreshCookieService = refreshCookieService;
+    }
 
     @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
     public ResponseEntity<ErrorResponse> handleNoHandlerFound(Exception ex, HttpServletRequest request) {
@@ -71,6 +79,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(RefreshSessionException.class)
+    public ResponseEntity<ErrorResponse> handleRefreshSession(
+            RefreshSessionException ex,
+            HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message("Refresh session is invalid or expired")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.SET_COOKIE, refreshCookieService.clear().toString())
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> errors = new HashMap<>();
@@ -97,7 +121,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message("An unexpected error occurred: " + ex.getMessage())
+                .message("An unexpected error occurred")
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();

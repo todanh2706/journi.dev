@@ -14,14 +14,22 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import journi.dev.backend.configurations.AuthSessionProperties;
 
 @Service
 public class JwtService {
-    @Value("${security.jwt.secret-key}")
-    private String secretKey;
+    private static final String TOKEN_TYPE_CLAIM = "token_type";
+    private static final String ACCESS_TOKEN_TYPE = "access";
 
-    @Value("${security.jwt.expiration-time}")
-    private long jwtExpiration;
+    private final String secretKey;
+    private final AuthSessionProperties properties;
+
+    public JwtService(
+            @Value("${security.jwt.secret-key}") String secretKey,
+            AuthSessionProperties properties) {
+        this.secretKey = secretKey;
+        this.properties = properties;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -37,11 +45,13 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        Map<String, Object> accessClaims = new HashMap<>(extraClaims);
+        accessClaims.put(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE);
+        return buildToken(accessClaims, userDetails, getExpirationTime());
     }
 
     public long getExpirationTime() {
-        return jwtExpiration;
+        return properties.getAccessTokenLifetime().toMillis();
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
@@ -56,16 +66,12 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date(System.currentTimeMillis()));
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+        Claims claims = extractAllClaims(token);
+        String username = claims.getSubject();
+        String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+        return username.equals(userDetails.getUsername())
+                && ACCESS_TOKEN_TYPE.equals(tokenType)
+                && !claims.getExpiration().before(new Date(System.currentTimeMillis()));
     }
 
     private Claims extractAllClaims(String token) {

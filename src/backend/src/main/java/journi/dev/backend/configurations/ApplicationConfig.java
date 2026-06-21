@@ -1,5 +1,8 @@
 package journi.dev.backend.configurations;
 
+import java.security.SecureRandom;
+import java.time.Clock;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -48,5 +51,17 @@ public class ApplicationConfig {
     @Bean
     ObjectMapper objectMapper() {
         return new ObjectMapper().findAndRegisterModules();
+    }
+
+    // Mock time logic for unit test
+    @Bean
+    Clock clock() {
+        return Clock.systemUTC();
+    }
+
+    // Refresh token generator
+    @Bean
+    SecureRandom secureRandom() {
+        return new SecureRandom();
     }
 }
