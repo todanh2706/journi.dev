@@ -6,9 +6,9 @@ import { useAuth } from "../../features/auth";
 import { roadmapService, type Roadmap } from "../../features/roadmaps";
 
 export default function DashboardOverview() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
-  const [loading, setLoading] = useState(Boolean(user));
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadRoadmaps = useCallback(async () => {
@@ -64,7 +64,14 @@ export default function DashboardOverview() {
         </p>
       </header>
 
-      {!user ? (
+      {authLoading ? (
+        <section className="app-panel mt-8 flex min-h-56 items-center justify-center p-8" aria-live="polite">
+          <div className="text-center text-muted">
+            <LoaderCircle aria-hidden="true" size={26} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />
+            <p className="mt-3 text-sm">Restoring your session…</p>
+          </div>
+        </section>
+      ) : !user ? (
         <section className="app-panel mt-8 flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-ink">Sign in to continue</h2>

@@ -11,15 +11,19 @@ const steps = [
 ];
 
 export default function Welcome() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-10">
         <Logo />
-        <Link to={user ? "/dashboard" : "/signin"} className="secondary-button">
-          {user ? "Open workspace" : "Sign in"}
-        </Link>
+        {isLoading ? (
+          <span className="secondary-button cursor-wait text-muted">Restoring session…</span>
+        ) : (
+          <Link to={user ? "/dashboard" : "/signin"} className="secondary-button">
+            {user ? "Open workspace" : "Sign in"}
+          </Link>
+        )}
       </header>
 
       <main className="mx-auto grid w-full max-w-7xl gap-12 px-5 pb-16 pt-12 sm:px-8 sm:pt-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.75fr)] lg:items-center lg:px-10 lg:pb-24 lg:pt-28">
@@ -33,11 +37,15 @@ export default function Welcome() {
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link to={user ? "/dashboard/roadmaps" : "/signup"} className="primary-button">
-              {user ? "Browse roadmaps" : "Create an account"}
-              <ArrowRight aria-hidden="true" size={17} />
-            </Link>
-            {!user ? (
+            {isLoading ? (
+              <span className="primary-button cursor-wait opacity-70">Restoring session…</span>
+            ) : (
+              <Link to={user ? "/dashboard/roadmaps" : "/signup"} className="primary-button">
+                {user ? "Browse roadmaps" : "Create an account"}
+                <ArrowRight aria-hidden="true" size={17} />
+              </Link>
+            )}
+            {!isLoading && !user ? (
               <Link to="/signin" className="secondary-button">I already have an account</Link>
             ) : null}
           </div>

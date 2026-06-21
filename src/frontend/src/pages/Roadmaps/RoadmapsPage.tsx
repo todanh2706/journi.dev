@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, ArrowRight, LoaderCircle, Map, Route } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { useAuth } from "../../features/auth";
 import { roadmapService, type Roadmap } from "../../features/roadmaps";
 
 export default function RoadmapsPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +23,7 @@ export default function RoadmapsPage() {
   }, []);
 
   useEffect(() => {
+    if (authLoading || !user) return;
     let active = true;
 
     roadmapService.getRoadmaps()
@@ -37,7 +40,7 @@ export default function RoadmapsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [authLoading, user]);
 
   const retryRoadmaps = () => {
     setLoading(true);
@@ -55,7 +58,20 @@ export default function RoadmapsPage() {
         </p>
       </header>
 
-      {loading ? (
+      {authLoading ? (
+        <section className="app-panel mt-8 flex min-h-64 items-center justify-center p-8" aria-live="polite">
+          <div className="text-center text-muted">
+            <LoaderCircle aria-hidden="true" size={27} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />
+            <p className="mt-3 text-sm">Restoring your session…</p>
+          </div>
+        </section>
+      ) : !user ? (
+        <section className="app-panel mt-8 p-6 sm:p-8">
+          <h2 className="text-xl font-semibold text-ink">Sign in to browse roadmaps</h2>
+          <p className="mt-2 text-sm text-muted">Your roadmap catalog is tied to your learning session.</p>
+          <Link to="/signin" className="primary-button mt-5">Sign in <ArrowRight aria-hidden="true" size={17} /></Link>
+        </section>
+      ) : loading ? (
         <section className="app-panel mt-8 flex min-h-64 items-center justify-center p-8" aria-live="polite">
           <div className="text-center text-muted">
             <LoaderCircle aria-hidden="true" size={27} className="mx-auto animate-spin text-gold motion-reduce:animate-none" />

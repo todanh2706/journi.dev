@@ -1,6 +1,8 @@
 import { AxiosError } from "axios";
 
-import api from "../../../services/axios";
+import api, { registerAuthRefreshHandler } from "../../../services/axios";
+import { AUTH_ENDPOINTS } from "../../../services/authEndpoints";
+import { setAccessToken } from "../../../services/authSession";
 
 export interface SignupRequest {
     username: string;
@@ -36,19 +38,85 @@ export interface LoginResponse {
     expiresIn: number;
 }
 
+export interface CsrfResponse {
+    headerName: string;
+    token: string;
+}
+
+interface LockManagerLike {
+    request<T>(name: string, callback: () => Promise<T>): Promise<T>;
+}
+
+let csrfMaterial: CsrfResponse | null = null;
+let refreshPromise: Promise<string> | null = null;
+
 export async function signup(payload: SignupRequest): Promise<SignupResponse> {
-    const response = await api.post<SignupResponse>("/auth/signup", payload);
+    const response = await api.post<SignupResponse>(AUTH_ENDPOINTS.signup, payload, {
+        skipAuthRefresh: true,
+    });
     return response.data;
 }
 
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>("/auth/login", payload);
+    const csrf = await getCsrfMaterial();
+    const response = await api.post<LoginResponse>(AUTH_ENDPOINTS.login, payload, authMutationConfig(csrf));
+    setAccessToken(response.data.token);
     return response.data;
 }
 
 export async function logout(): Promise<void> {
-    await api.post("/auth/logout");
+    const csrf = await getCsrfMaterial();
+    await api.post(AUTH_ENDPOINTS.logout, undefined, authMutationConfig(csrf));
 }
+
+export function refreshAccessToken(): Promise<string> {
+    refreshPromise ??= withCrossTabRefreshLock(async () => {
+        const csrf = await getCsrfMaterial();
+        const response = await api.post<LoginResponse>(
+            AUTH_ENDPOINTS.refresh,
+            undefined,
+            authMutationConfig(csrf),
+        );
+        setAccessToken(response.data.token);
+        return response.data.token;
+    }).finally(() => {
+        refreshPromise = null;
+    });
+
+    return refreshPromise;
+}
+
+async function getCsrfMaterial(): Promise<CsrfResponse> {
+    if (csrfMaterial) return csrfMaterial;
+
+    const response = await api.get<CsrfResponse>(AUTH_ENDPOINTS.csrf, {
+        withCredentials: true,
+        skipAuthRefresh: true,
+    });
+    csrfMaterial = response.data;
+    return csrfMaterial;
+}
+
+function authMutationConfig(csrf: CsrfResponse) {
+    return {
+        withCredentials: true,
+        skipAuthRefresh: true,
+        headers: {
+            [csrf.headerName]: csrf.token,
+        },
+    };
+}
+
+async function withCrossTabRefreshLock<T>(operation: () => Promise<T>): Promise<T> {
+    const lockManager = typeof navigator === "undefined"
+        ? undefined
+        : (navigator as Navigator & { locks?: LockManagerLike }).locks;
+    return lockManager
+        ? lockManager.request("journi-refresh-session", operation)
+        : operation();
+}
+
+registerAuthRefreshHandler(refreshAccessToken);
 
 export function getSignupErrorMessage(error: unknown): string {
     if (error instanceof AxiosError) {

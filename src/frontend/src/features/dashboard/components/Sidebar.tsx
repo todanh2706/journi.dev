@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobile = false, onClose }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
   const profileActive = location.pathname === "/dashboard/profile";
 
@@ -53,7 +53,11 @@ export function Sidebar({ mobile = false, onClose }: SidebarProps) {
       </nav>
 
       <div className="border-t border-line p-4">
-        {user ? (
+        {isLoading ? (
+          <div className="rounded-xl border border-line bg-surface px-3 py-3 text-sm text-muted">
+            Restoring session…
+          </div>
+        ) : user ? (
           <Link
             to="/dashboard/profile"
             onClick={onClose}

@@ -9,6 +9,7 @@ import RoadmapsPage from "./pages/Roadmaps/RoadmapsPage";
 import RoadmapDetailPage from "./pages/Roadmaps/RoadmapDetailPage";
 import NotFound from "./pages/NotFound";
 import { SlideUpTransition } from "./utils/transitions/SlideUpTransition";
+import { AuthProvider } from "./features/auth";
 
 function AnimatedRoutes() {
     const location = useLocation();
@@ -31,9 +32,11 @@ function AnimatedRoutes() {
 
 function App() {
     return (
-        <BrowserRouter>
-            <AnimatedRoutes />
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <AnimatedRoutes />
+            </BrowserRouter>
+        </AuthProvider>
     );
 }
 

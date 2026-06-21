@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../features/auth";
@@ -12,7 +13,7 @@ import {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
@@ -29,14 +30,23 @@ export default function ProfilePage() {
     setLogoutPending(true);
     setLogoutError(null);
 
-    try {
-      await logout();
-      navigate("/signin", { replace: true });
-    } catch {
-      setLogoutError("We couldn't log you out right now. Check your connection and try again.");
-      setLogoutPending(false);
-    }
+    const serverRevoked = await logout();
+    navigate("/signin", {
+      replace: true,
+      state: serverRevoked
+        ? undefined
+        : { logoutWarning: "You are signed out locally, but server revocation could not be confirmed. Avoid this device until connectivity returns." },
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center text-muted" aria-live="polite">
+        <LoaderCircle aria-hidden="true" size={24} className="animate-spin text-gold motion-reduce:animate-none" />
+        <span className="ml-3 text-sm">Restoring your session…</span>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/signin" replace />;

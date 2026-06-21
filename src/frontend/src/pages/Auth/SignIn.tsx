@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AxiosError } from "axios";
 import { Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { AuthShell } from "../../features/auth/components/AuthShell";
-import { login } from "../../features/auth";
+import { useAuth } from "../../features/auth";
+
+interface SignInLocationState {
+  logoutWarning?: string;
+}
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const errorRef = useRef<HTMLDivElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -27,8 +33,7 @@ export default function SignIn() {
     setIsSubmitting(true);
 
     try {
-      const response = await login({ username, password });
-      localStorage.setItem("access_token", response.token);
+      await login({ username, password });
       navigate("/dashboard", { replace: true });
     } catch (requestError) {
       setError(
@@ -51,6 +56,12 @@ export default function SignIn() {
       {error ? (
         <div ref={errorRef} tabIndex={-1} role="alert" className="mb-5 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm leading-5 text-red-200">
           {error}
+        </div>
+      ) : null}
+
+      {(location.state as SignInLocationState | null)?.logoutWarning ? (
+        <div role="status" className="mb-5 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm leading-5 text-gold">
+          {(location.state as SignInLocationState).logoutWarning}
         </div>
       ) : null}
 
