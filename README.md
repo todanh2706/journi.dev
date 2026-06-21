@@ -70,11 +70,12 @@ src/frontend/src/
 
 ## System Architecture and Database Schema
 
-The database relies on 17 interconnected tables designed to represent user metrics, progress states, submissions, community clusters, and AI review configurations.
+The database includes an authentication-session table alongside the roadmap, progress, submission, community, and AI-oriented domain tables.
 
 Key entities include:
 
 - **User**: General profile and role settings.
+- **RefreshSession**: Stores only refresh-token digests and rotation-family state for revocation and replay detection.
 - **LearningRoadmap & SkillNode**: Represent roadmap hierarchies.
 - **Submission, CodeReview, & AIReviewTask**: Track the lifecycle of pushed code challenges, AI evaluation feedback, and processing tasks.
 - **CommunityClusters & ClusterMembership**: Support social network functionalities and discussions.
@@ -93,7 +94,18 @@ For a full specification of fields, types, and schema relationships, refer to th
 
 ### Environment Setup
 
-Create a `.env` file inside the `src/` directory containing the following variables:
+Copy both checked-in examples before starting the local stack:
+
+```bash
+cp src/.env.example src/.env
+cp src/backend/.env.example src/backend/.env
+```
+
+The root file contains database and Redis settings. The backend file contains the JWT secret and non-secret auth-session settings. Generate the JWT secret locally with `openssl rand -base64 32`; never commit the generated value.
+
+`FRONTEND_ALLOWED_ORIGINS` is required and has no source-code fallback. When the backend is started from `src/backend`, Spring imports `src/backend/.env`; Docker Compose supplies the same file through the backend service's `env_file` setting.
+
+Relevant settings are:
 
 ```ini
 # Database Configuration
@@ -108,10 +120,29 @@ SPRING_DB_URL=jdbc:postgresql://database:5432/journi_db
 REDIS_HOST=cache
 REDIS_PORT=6379
 
-# Integrations
-JWT_SECRET_KEY=your_secure_jwt_secret
-GEMINI_API_KEY=your_gemini_api_key
+# src/backend/.env
+JWT_SECRET_KEY=replace_with_a_base64_encoded_32_byte_secret
+ACCESS_TOKEN_LIFETIME=PT15M
+REFRESH_TOKEN_LIFETIME=P30D
+REFRESH_COOKIE_NAME=journi_refresh
+REFRESH_COOKIE_SECURE=false
+REFRESH_COOKIE_SAME_SITE=Lax
+CSRF_COOKIE_NAME=journi_csrf
+CSRF_HEADER_NAME=X-CSRF-TOKEN
+FRONTEND_ALLOWED_ORIGINS=http://localhost:3000
 ```
+
+Set `REFRESH_COOKIE_SECURE=true` behind production HTTPS. `SameSite=None` is rejected unless the secure flag is enabled. The origin allowlist is comma-separated and must contain exact frontend origins; credentialed CORS does not support a wildcard origin.
+
+### Authentication Session Flow
+
+- `POST /api/v1/auth/login` returns the existing short-lived access-token JSON and sets an opaque refresh token in a host-only, `HttpOnly` cookie.
+- The SPA keeps the access token in memory only. On startup or an eligible API `401`, it obtains CSRF material from `GET /api/v1/auth/csrf` and calls `POST /api/v1/auth/refresh` with credentials.
+- Every refresh rotates the cookie. Its `Max-Age` is the remaining absolute session-family lifetime, so rotation never extends the original session deadline.
+- Reuse of a rotated token revokes its active family. Logout validates CSRF, remains idempotent for absent or stale refresh cookies, clears the cookie, and returns `204`.
+- Browser tabs coordinate refresh with Web Locks where available and broadcast only session-ended events; raw access and refresh tokens are never sent through cross-tab channels.
+
+The refresh-token lookup is protected by a pessimistic write lock. H2 exercises this path only as a best-effort development check; verify concurrent rotation and replay behavior against PostgreSQL before production rollout.
 
 ### Running with Docker Compose
 

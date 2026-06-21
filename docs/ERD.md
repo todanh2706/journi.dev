@@ -12,6 +12,22 @@
 - `updated_at`: Timestamp
 - `deleted_at`: Timestamp
 
+### REFRESH_SESSION
+
+- `refresh_session_id`: UUID PK
+- `user_id`: UUID FK NOT_NULL
+- `family_id`: UUID NOT_NULL, indexed
+- `token_hash`: Char(64) NOT_NULL UNIQUE
+- `created_at`: Timestamp NOT_NULL
+- `last_used_at`: Timestamp
+- `expires_at`: Timestamp NOT_NULL, indexed
+- `revoked_at`: Timestamp
+- `revocation_reason`: Varchar(20)
+- `replaced_by_session_id`: UUID FK to REFRESH_SESSION
+- `version`: Bigint NOT_NULL
+
+Only a SHA-256 digest of the opaque refresh credential is persisted. All rows in a rotation family share one absolute `expires_at`; successor creation does not extend it.
+
 ### COMMUNITY_CLUSTER
 
 - `cluster_id`: UUID PK
@@ -260,6 +276,11 @@
 - USER(user_id) 1---n DEPLOYMENT_ENVIRONMENT(user_id) (owns)
 - USER(user_id) 1---n USER_NODE_PROGRESS(user_id) (tracks progress)
 - USER(user_id) 1---n CLUSTER_NODE_MAPPING(added_by) (manages)
+- USER(user_id) 1---n REFRESH_SESSION(user_id) (owns sessions) (implemented)
+
+### REFRESH_SESSION
+
+- REFRESH_SESSION(refresh_session_id) 0---1 REFRESH_SESSION(replaced_by_session_id) (rotates to) (implemented)
 
 ### COMMUNITY_CLUSTER
 
@@ -322,6 +343,18 @@ erDiagram
         Varchar email
         Varchar role
         Varchar status
+    }
+
+    REFRESH_SESSION {
+        UUID refresh_session_id PK
+        UUID user_id FK
+        UUID family_id
+        Char token_hash UK
+        Timestamp expires_at
+        Timestamp revoked_at
+        Varchar revocation_reason
+        UUID replaced_by_session_id FK
+        Bigint version
     }
 
     COMMUNITY_CLUSTER {
@@ -493,6 +526,8 @@ erDiagram
     USER ||--o{ REMINDER_NOTIFICATION : "receives"
     USER ||--o{ AI_ASSISTANT_CONVERSATION : "uses"
     USER ||--o{ DEPLOYMENT_ENVIRONMENT : "owns"
+    USER ||--o{ REFRESH_SESSION : "owns_sessions"
+    REFRESH_SESSION |o--o| REFRESH_SESSION : "rotates_to"
 
     %% Roadmap & Nodes
     LEARNING_ROADMAP ||--o{ SKILL_NODE : "contains"
