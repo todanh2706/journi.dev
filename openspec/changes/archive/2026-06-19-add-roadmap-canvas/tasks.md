@@ -29,3 +29,7 @@
 
 - [x] 6.1 Run `npm install` in `src/frontend`.
 - [x] 6.2 Run `npm run build` in `src/frontend` and fix any TypeScript or build issues.
+
+## Documentation Amendment (2026-06-23)
+
+The archived “read-only canvas” task refers only to graph editing. The target product behavior now includes an authenticated **Mark as complete** action in the drawer for unlocked `LESSON` nodes; implementation is tracked separately and is not retroactively claimed by these completed tasks.

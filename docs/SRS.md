@@ -23,22 +23,29 @@ Journi.dev is an Interactive Learning Management System (LMS) combined with a So
 The system utilizes a directed graph representation to illustrate the hierarchical structure of skills.
 
 **Skill Tree Progression:**
-Each skill is represented as a "Node". Users are required to complete prerequisite Nodes before unlocking advanced ones. The initial static data structure is aggregated from standard open-source repositories; subsequently, users can use prompts for the AI to personalize their learning branch (Dynamic Generation).
+Each skill is represented as a "Node". A Node is `LOCKED` while any prerequisite remains incomplete and becomes `AVAILABLE` when all prerequisites are `COMPLETED`. For theory-oriented `LESSON` Nodes, the learner explicitly confirms completion with a **Mark as complete** action after reading the material. The backend stores completion per user and recalculates dependent Node states; the frontend then refreshes the roadmap so newly available Nodes are visible immediately. The initial MVP uses predefined roadmap data rather than AI-generated learning branches.
 
 **Integrated Learning Space:**
-Each Node provides a self-contained learning environment. Lesson data is automatically extracted from official documentation and video platforms. An AI Virtual Assistant is integrated directly to answer theoretical questions closely related to the context of the current Node.
+Each unlocked Node provides a self-contained learning environment with a summary, estimated effort, checklist, notes, and external learning resources. Checklist items are read-only guidance in the MVP and are not individually persisted. An unlocked `LESSON` displays the manual completion action; a locked Node displays prerequisite guidance without learning details or completion controls. Completed lessons retain their completed status and completion timestamp.
+
+**Manual Lesson Completion Rules:**
+* Only authenticated users can update their own progress.
+* Only `AVAILABLE` or `IN_PROGRESS` Nodes of type `LESSON` can be manually completed.
+* Repeating the completion request is idempotent and does not create duplicate progress records or replace the original completion time.
+* Completing a locked Node is rejected.
+* `PRACTICE`, `PROJECT`, `QUIZ`, and `CHALLENGE` Nodes do not use self-reported completion; they require a type-specific assessment flow when that flow is implemented.
 
 ### 2.2 AI-Powered Code Review
 Competency assessment is based on "Proof of Work" rather than theoretical multiple-choice tests.
 
 **Challenge-based Learning:**
-At the end of each Node, the system generates a practical challenge. For example, in a Backend Node, the requirement might be to initialize a complete RESTful API system meeting specific endpoint criteria.
+Challenge-oriented Nodes can require practical proof of work instead of self-reported completion. For example, a Backend `CHALLENGE` Node might require a complete RESTful API system meeting specific endpoint criteria. This assessment workflow is separate from the MVP manual-completion flow used by theory `LESSON` Nodes.
 
 **Submission & Automated Evaluation Process:**
 Users push their source code to a personal GitHub repository and provide the link to the system. The AI Agent interacts directly with the GitHub API to pull individual source code files for Static Analysis. The system scores based on directory structure, clean code principles, design patterns, and basic security (e.g., XSS and SQL Injection prevention configurations).
 
 **Feedback & Decision:**
-The AI provides detailed feedback in natural language. The returned status is either "Pass" (Unlocks the next Node) or "Request Changes" (Requires refinement of sub-standard code segments).
+When the later AI assessment workflow is implemented, it can return "Pass" to complete an assessment Node or "Request Changes" to require revision. This future decision path does not replace learner-confirmed completion for theory `LESSON` Nodes.
 
 ### 2.3 Milestone Communities
 Avoids fragmenting the community by individual Nodes, which leads to disjointed interactions.
@@ -82,7 +89,7 @@ Dynamically ranks users by niche (Backend, Frontend, Security). Scores are calcu
 ---
 
 ## 4. ESTIMATED DEVELOPMENT ROADMAP
-* **Phase 1:** Build the static Roadmap framework, learning graph UI, and integrate theoretical documentation.
+* **Phase 1:** Build the predefined Roadmap framework, learning graph UI, theoretical learning content, manual lesson completion, and prerequisite-based unlocking.
 * **Phase 2:** Implement the AI Agent Code Review, connect the GitHub API, and finalize the submission flow (Proof of Work).
 * **Phase 3:** Expand community features (Clusters), Leaderboards, Heatmaps, and the Email Reminder system.
 * **Phase 4:** Upgrade the context-aware dynamic Roadmap generation AI (Prompt-based) and expand the node library.

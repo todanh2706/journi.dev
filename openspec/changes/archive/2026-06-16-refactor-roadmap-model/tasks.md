@@ -31,3 +31,7 @@
 - [x] 5.1 Run all backend unit and integration tests (`./mvnw test`).
 - [x] 5.2 Fix failing tests due to entity and mapping changes.
 - [x] 5.3 Verify the MVP flow manually if possible or via tests (roadmap fetch -> compute node status -> user marks complete).
+
+## Documentation Amendment (2026-06-23)
+
+The archived model is clarified to treat “user marks complete” as an authenticated, idempotent self-confirmation for unlocked `LESSON` nodes only. Single-node validation must query all prerequisite progress, and assessment-oriented node types are excluded from manual completion.

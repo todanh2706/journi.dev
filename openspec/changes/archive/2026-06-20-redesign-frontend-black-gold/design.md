@@ -91,7 +91,7 @@ Alternative considered: preserve a different accent for every node type. Rejecte
 
 The drawer keeps the currently available node title, summary, type, status, lock state, resource placeholder, and checklist placeholder. On desktop it remains a right-side panel. On narrow viewports it becomes a bottom sheet or full-width modal surface with a visible close action, contained scrolling, focus management, Escape dismissal, and an overlay that separates it from the graph.
 
-No completion CTA is added until the corresponding progress endpoint and frontend contract exist. Locked content remains inspectable for context but must be clearly identified as unavailable.
+The original redesign did not add a completion CTA because the frontend progress contract was not connected at that time. As of the 2026-06-23 design amendment, an unlocked `LESSON` must expose a gold primary **Mark as complete** action backed by the authenticated progress endpoint. Locked nodes and assessment-oriented node types remain non-completable through this action.
 
 Alternative considered: navigate to a new node-detail route. Rejected for this change because it alters the current route model and would broaden the proposal beyond a visual/UX redesign.
 
@@ -126,5 +126,4 @@ Alternative considered: defer accessibility until after the visual pass. Rejecte
 ## Open Questions
 
 - The exact production gold token may be tuned during visual QA within the specified contrast and semantic constraints; this does not change the black-and-gold direction.
-- A future progress API should determine how “resume learning” and completion summaries are introduced. This redesign intentionally leaves those values absent rather than defining a fake interim contract.
-
+- Completion summaries and “resume learning” must be derived from the real user-progress API. Manual completion is defined only for unlocked `LESSON` nodes; broader resume behavior remains future work.

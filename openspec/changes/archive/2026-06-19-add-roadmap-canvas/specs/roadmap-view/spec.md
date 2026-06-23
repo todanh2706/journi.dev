@@ -62,7 +62,7 @@ The system SHALL provide a compact toolbar for progress context, fit view, and n
 - **THEN** matching node titles are visually highlighted without removing non-matching nodes from the graph
 
 ### Requirement: Roadmap Node Drawer
-The system SHALL open a responsive node detail drawer when a user clicks a roadmap skill node.
+The system SHALL open a responsive node detail drawer when a user clicks a roadmap skill node. The graph structure remains read-only, while the drawer SHALL allow authenticated learners to update progress for unlocked theory lessons.
 
 #### Scenario: Open node drawer
 - **WHEN** the user clicks a roadmap skill node
@@ -75,6 +75,15 @@ The system SHALL open a responsive node detail drawer when a user clicks a roadm
 #### Scenario: Display placeholder learning details
 - **WHEN** checklist or resource content is not available from the node data
 - **THEN** the drawer displays a clear placeholder for checklist and learning resources without failing
+
+#### Scenario: Complete an unlocked lesson
+- **WHEN** the selected node is an `AVAILABLE` or `IN_PROGRESS` `LESSON` and the learner activates **Mark as complete**
+- **THEN** the frontend calls `POST /api/v1/users/me/progress/nodes/{nodeId}/complete`
+- **THEN** it reloads roadmap-node state so the completed lesson and newly unlocked dependent nodes are visible
+
+#### Scenario: Do not self-complete unsupported nodes
+- **WHEN** the selected node is `LOCKED` or has type `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE`
+- **THEN** the drawer does not expose an enabled manual completion action
 
 ### Requirement: Preserve Roadmap Detail States
 The system SHALL preserve existing roadmap detail loading, error, and empty states while replacing the populated node view with the canvas.

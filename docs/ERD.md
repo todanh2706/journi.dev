@@ -93,11 +93,10 @@ Only a SHA-256 digest of the opaque refresh credential is persisted. All rows in
 - `node_id`: UUID PK
 - `roadmap_id`: UUID FK
 - `title`: Varchar(150) NOT_NULL
-- `slug`: Varchar(150) NOT_NULL UNIQUE
+- `slug`: Varchar(150) NOT_NULL
 - `order_index`: Integer NOT_NULL
 - `node_type`: Varchar(30) NOT_NULL
 - `content_json`: Jsonb
-- `is_locked`: Boolean
 - `created_by`: UUID FK
 - `updated_by`: UUID FK
 - `created_at`: Timestamp
@@ -120,6 +119,15 @@ Only a SHA-256 digest of the opaque refresh credential is persisted. All rows in
 - `unlocked_at`: Timestamp
 - `completed_at`: Timestamp
 - `last_accessed_at`: Timestamp
+- Unique constraint: (`user_id`, `node_id`)
+
+Progress-state semantics:
+
+- `COMPLETED` and `IN_PROGRESS` are persisted per user in `USER_NODE_PROGRESS`.
+- `AVAILABLE` and `LOCKED` are computed from the user's persisted progress and the node's prerequisite edges; lock state is not stored globally on `SKILL_NODE`.
+- An authenticated learner can explicitly complete an `AVAILABLE` or `IN_PROGRESS` `LESSON`. The completion operation upserts the single user-node progress row and preserves the original `completed_at` value when repeated.
+- Dependent nodes become `AVAILABLE` when every parent node in `NODE_PREREQUISITE` is completed. No separate progress row is required merely to represent availability.
+- Manual completion is not the assessment mechanism for `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE` nodes.
 
 ### LEARNING_CONTENT
 
@@ -402,7 +410,6 @@ erDiagram
         Varchar slug
         Integer order_index
         Jsonb content_json
-        Boolean is_locked
     }
 
     NODE_PREREQUISITE {
@@ -416,6 +423,9 @@ erDiagram
         UUID user_id FK
         UUID node_id FK
         Varchar status
+        Timestamp unlocked_at
+        Timestamp completed_at
+        Timestamp last_accessed_at
     }
 
     LEARNING_CONTENT {

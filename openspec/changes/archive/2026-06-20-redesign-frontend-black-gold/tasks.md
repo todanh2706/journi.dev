@@ -42,6 +42,8 @@
 - [x] 6.3 Update the roadmap toolbar to show responsive progress, fit-view focus states, search match count or no-results feedback, and unobstructed graph placement.
 - [x] 6.4 Refactor the node drawer into a desktop side panel and narrow-screen bottom sheet/modal with overlay, contained scrolling, initial focus, Escape close, and focus return.
 - [x] 6.5 Keep checklist/resources placeholders concise and non-interactive, and ensure locked nodes do not expose enabled start or completion actions.
+
+> Documentation amendment (2026-06-23): locked nodes remain non-completable, while unlocked `LESSON` nodes now require a real progress-backed **Mark as complete** action. This later behavior is not retroactively claimed as part of the archived redesign implementation.
 - [ ] 6.6 Verify graph pan, zoom, fit view, minimap, search dimming, selection, and sequential edge behavior remain intact after the visual and accessibility changes.
 
 ## 7. Remaining Route Consistency and Cleanup

@@ -7,6 +7,22 @@ The backend SHALL compute and return the progress state of a skill node on a per
 - **WHEN** a client retrieves a node for a specific user
 - **THEN** the system evaluates if all prerequisite nodes are completed to return `AVAILABLE` or `COMPLETED`, or `LOCKED` otherwise
 
+#### Scenario: Evaluate one dependent node consistently
+- **WHEN** the system computes a single dependent node outside a full-roadmap query
+- **THEN** it loads progress for every prerequisite node and returns the same state as the full-roadmap computation
+
+### Requirement: Learner-Confirmed Lesson Completion
+The backend SHALL allow an authenticated learner to mark their own `AVAILABLE` or `IN_PROGRESS` `LESSON` as completed through `POST /api/v1/users/me/progress/nodes/{nodeId}/complete`. The operation SHALL be idempotent, SHALL preserve the first completion timestamp, and SHALL reject `LOCKED` lessons and non-lesson assessment nodes.
+
+#### Scenario: Complete an unlocked lesson
+- **WHEN** an authenticated learner completes an unlocked `LESSON`
+- **THEN** the backend upserts the unique user-node progress row as `COMPLETED`
+- **THEN** any dependent node whose prerequisites are now complete is returned as `AVAILABLE`
+
+#### Scenario: Reject an unsupported manual completion
+- **WHEN** the learner attempts to manually complete a `LOCKED`, `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE` node
+- **THEN** the backend rejects the request without changing progress
+
 ### Requirement: Relational Integrity Constraints
 The backend SHALL enforce strict relational constraints across roadmap entities using PostgreSQL constraints and JPA `@ManyToOne` relationships, preventing duplicate prerequisite edges and multiple progress records per node for a single user.
 

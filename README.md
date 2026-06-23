@@ -4,7 +4,7 @@ Journi.dev is a comprehensive, gamified Learning Management System (LMS) and Soc
 
 ## Core Features
 
-- **Interactive Roadmap System**: A directed-acyclic-graph (DAG) visualization representing hierarchical skill nodes. Users must complete prerequisite nodes to unlock advanced technologies, with options for dynamic, prompt-based AI roadmap personalization.
+- **Interactive Roadmap System**: A directed-acyclic-graph (DAG) visualization representing hierarchical skill nodes. For unlocked theory lessons, learners explicitly mark the lesson as completed after reading it; completing every prerequisite unlocks the dependent node.
 - **AI-Powered Code Review**: Practical, submission-based evaluation rather than standard multiple-choice testing. Users push their work to personal GitHub repositories, which are processed via GitHub Webhooks. The AI agent performs static code analysis to evaluate directory structures, clean code practices, security configurations, and design patterns.
 - **Milestone Communities**: Discussions organized around major milestones (e.g., Database Cluster, DevOps Cluster) to foster interactions among peers at similar stages of learning.
 - **Gamification and Retention**: Activity heatmaps, learning streak tracking, automated inactive-user reminders, and specialized niche leaderboards (Frontend, Backend, Security) based on code quality and contributions.
@@ -144,6 +144,18 @@ Set `REFRESH_COOKIE_SECURE=true` behind production HTTPS. `SameSite=None` is rej
 
 The refresh-token lookup is protected by a pessimistic write lock. H2 exercises this path only as a best-effort development check; verify concurrent rotation and replay behavior against PostgreSQL before production rollout.
 
+### MVP Lesson Completion Flow
+
+Journi.dev uses explicit learner confirmation for theory-oriented `LESSON` nodes:
+
+1. A `LESSON` with no incomplete prerequisites is returned as `AVAILABLE` and its drawer shows an enabled **Mark as complete** action.
+2. Activating the action sends `POST /api/v1/users/me/progress/nodes/{nodeId}/complete` for the authenticated user.
+3. The backend validates the node against all of its prerequisites, upserts the user's `(user_id, node_id)` progress as `COMPLETED`, and preserves the first completion timestamp on repeated requests.
+4. The frontend reloads the roadmap-node data. Any dependent node whose prerequisites are now all completed becomes `AVAILABLE` immediately; no separate unlock row is required.
+5. `LOCKED` nodes never expose an enabled completion action. Already completed lessons show a completed state instead of another active button.
+
+Checklist items remain read-only guidance in the MVP. They help the learner decide when to self-confirm completion but are not stored individually and do not block the completion request. Manual lesson completion does not apply to `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE` nodes; those node types require their own assessment workflow when implemented.
+
 ### Running with Docker Compose
 
 To start the complete local environment (frontend, backend, database, and cache) concurrently, run:
@@ -226,7 +238,7 @@ To fully reset the seeded roadmap in local development, either:
 
 ## Development Roadmap
 
-- **Phase 1**: Construct learning roadmaps, construct visual interactive graph interfaces, and link reference materials.
+- **Phase 1**: Construct learning roadmaps, visual interactive graph interfaces, linked learning materials, learner-confirmed lesson completion, and prerequisite-based unlocking.
 - **Phase 2**: Implement the AI reviewer agent pipeline, integrate GitHub webhooks, and finalize challenge submissions.
 - **Phase 3**: Roll out cluster-based community boards, leaderboards, heatmap updates, and automated email reminders.
 - **Phase 4**: Add context-aware prompt personalization for dynamic roadmap customization.

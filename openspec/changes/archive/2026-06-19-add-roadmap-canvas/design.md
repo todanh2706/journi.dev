@@ -51,3 +51,7 @@ This change is frontend-only. It must keep the existing `/dashboard/roadmaps/:ro
 - Sequential fallback edges may not represent real prerequisites. Mitigation: Keep graph building isolated so prerequisite-based edges can replace fallback logic later.
 - Large roadmaps could feel tall on small screens. Mitigation: Use fit view, zoom/pan, minimap, and a responsive drawer that does not fully cover mobile.
 - New dependencies increase frontend bundle size. Mitigation: Limit usage to the roadmap detail route feature and avoid additional UI libraries.
+
+## Documentation Amendment (2026-06-23)
+
+“Read-only” applies to graph structure: learners cannot drag nodes, edit edges, or persist layout changes. It does not make the learning surface progress-read-only. The drawer for an unlocked `LESSON` is expected to expose **Mark as complete**, call the authenticated progress endpoint, and refresh roadmap state after success. Locked nodes and assessment-oriented node types do not expose that manual action.

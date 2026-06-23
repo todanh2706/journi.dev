@@ -19,6 +19,11 @@ The frontend SHALL reserve non-brand colors for semantic communication and SHALL
 - **WHEN** completed, current or available, and locked nodes are visible together
 - **THEN** each state is distinguishable by an explicit label or icon in addition to its color treatment
 
+#### Scenario: Display lesson completion action
+- **WHEN** an unlocked `LESSON` can be manually completed
+- **THEN** **Mark as complete** uses the shared gold primary-action treatment and visible keyboard focus
+- **THEN** pending and completed states remain explicit without relying on color alone
+
 #### Scenario: Display an error
 - **WHEN** a form or data request fails
 - **THEN** the interface uses the shared error treatment and communicates the failure in text without relying on red alone
@@ -65,4 +70,3 @@ The frontend SHALL meet WCAG AA contrast for essential text and controls, SHALL 
 #### Scenario: Prefer reduced motion
 - **WHEN** the operating system reports `prefers-reduced-motion: reduce`
 - **THEN** page transitions, graph emphasis, and hover effects avoid nonessential movement and animated decoration
-

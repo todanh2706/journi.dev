@@ -75,7 +75,7 @@ The system SHALL provide a compact responsive toolbar for progress context, fit 
 - **THEN** the toolbar communicates the number of matches or a clear no-results state
 
 ### Requirement: Roadmap Node Drawer
-The system SHALL open a responsive node-detail surface when a user activates a roadmap skill node. The surface SHALL display only data available from the current node contract, SHALL distinguish locked and progress states, and SHALL provide accessible close, scroll, focus, and Escape-key behavior.
+The system SHALL open a responsive node-detail surface when a user activates a roadmap skill node. The surface SHALL display only data available from the current node contract, SHALL distinguish locked and progress states, SHALL provide accessible close, scroll, focus, and Escape-key behavior, and SHALL allow authenticated manual completion of unlocked theory lessons.
 
 #### Scenario: Open node details
 - **WHEN** a user activates a roadmap skill node
@@ -88,7 +88,15 @@ The system SHALL open a responsive node-detail surface when a user activates a r
 
 #### Scenario: Display unavailable learning details
 - **WHEN** checklist or resource content is not available from the node data
-- **THEN** the detail surface displays concise non-interactive empty copy and does not fabricate resource links, checklist progress, or completion behavior
+- **THEN** the detail surface displays concise non-interactive empty copy and does not fabricate resource links or persisted checklist progress
+
+#### Scenario: Complete an unlocked lesson
+- **WHEN** an authenticated learner activates **Mark as complete** for an `AVAILABLE` or `IN_PROGRESS` `LESSON`
+- **THEN** the action calls the authenticated completion endpoint, prevents duplicate submission while pending, and refreshes roadmap-node state after success
+
+#### Scenario: Inspect a completed or assessment-oriented node
+- **WHEN** the selected node is already `COMPLETED` or has type `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE`
+- **THEN** the detail surface does not present another enabled manual lesson-completion action
 
 #### Scenario: Inspect a locked node
 - **WHEN** the selected node is locked

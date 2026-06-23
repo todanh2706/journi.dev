@@ -1,6 +1,6 @@
 ## Purpose
 
-Define roadmap catalog retrieval and the responsive, read-only learning canvas used to inspect progress-aware skill nodes.
+Define roadmap catalog retrieval and the responsive learning canvas used to inspect progress-aware skill nodes and explicitly complete unlocked theory lessons without enabling graph editing.
 
 ## Requirements
 
@@ -114,7 +114,7 @@ The system SHALL provide a compact responsive toolbar for progress context, fit 
 - **THEN** the toolbar communicates the number of matches or a clear no-results state
 
 ### Requirement: Roadmap Node Drawer
-The system SHALL open a responsive node-detail surface when a user activates a roadmap skill node. The surface SHALL display only data available from the current node contract, SHALL distinguish locked and progress states, and SHALL provide accessible close, scroll, focus, and Escape-key behavior.
+The system SHALL open a responsive node-detail surface when a user activates a roadmap skill node. The surface SHALL display only data available from the current node contract, SHALL distinguish locked and progress states, and SHALL provide accessible close, scroll, focus, Escape-key, and manual lesson-completion behavior.
 
 #### Scenario: Open node details
 - **WHEN** a user activates a roadmap skill node
@@ -127,7 +127,26 @@ The system SHALL open a responsive node-detail surface when a user activates a r
 
 #### Scenario: Display unavailable learning details
 - **WHEN** checklist or resource content is not available from the node data
-- **THEN** the detail surface displays concise non-interactive empty copy and does not fabricate resource links, checklist progress, or completion behavior
+- **THEN** the detail surface displays concise non-interactive empty copy and does not fabricate resource links or persisted checklist progress
+
+#### Scenario: Complete an available theory lesson
+- **WHEN** an authenticated learner activates **Mark as complete** for a `LESSON` with status `AVAILABLE` or `IN_PROGRESS`
+- **THEN** the frontend sends `POST /api/v1/users/me/progress/nodes/{nodeId}/complete` through the shared authenticated API client
+- **THEN** the action is disabled while the request is pending to prevent duplicate submissions
+- **THEN** after success the frontend refreshes or reconciles roadmap-node data so the lesson is `COMPLETED`, the completed count updates, and newly satisfied dependent nodes become `AVAILABLE`
+
+#### Scenario: Completion request fails
+- **WHEN** the lesson-completion request fails
+- **THEN** the drawer keeps the prior node state and displays an inline retryable error without closing the drawer
+
+#### Scenario: Inspect a completed lesson
+- **WHEN** the selected `LESSON` is already `COMPLETED`
+- **THEN** the drawer displays an explicit completed state and does not present another enabled completion action
+
+#### Scenario: Inspect a non-lesson node
+- **WHEN** the selected node type is `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE`
+- **THEN** the drawer does not present the manual lesson-completion action
+- **THEN** it does not claim that read-only checklist completion can satisfy the node's assessment
 
 #### Scenario: Inspect a locked node
 - **WHEN** the selected node is locked
