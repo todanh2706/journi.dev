@@ -1,6 +1,7 @@
 package journi.dev.backend.dtos.responses;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import journi.dev.backend.entities.NodeType;
@@ -14,6 +15,12 @@ public class SkillNodeResponse {
     private Integer orderIndex;
     private NodeType nodeType;
     private String contentJson;
+    private String summary;
+    private String level;
+    private Integer estimatedHours;
+    private String note;
+    private List<String> checklist;
+    private List<LearningResourceResponse> learningResources;
     private ProgressStatus progressStatus;
     private Boolean isLocked;
     private UUID createdBy;
@@ -76,6 +83,54 @@ public class SkillNodeResponse {
 
     public void setContentJson(String contentJson) {
         this.contentJson = contentJson;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public Integer getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(Integer estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public List<String> getChecklist() {
+        return checklist;
+    }
+
+    public void setChecklist(List<String> checklist) {
+        this.checklist = checklist;
+    }
+
+    public List<LearningResourceResponse> getLearningResources() {
+        return learningResources;
+    }
+
+    public void setLearningResources(List<LearningResourceResponse> learningResources) {
+        this.learningResources = learningResources;
     }
 
     public ProgressStatus getProgressStatus() {

@@ -13,6 +13,12 @@ public interface SkillNodeMapper {
     @Mapping(source = "roadmap.roadmapId", target = "roadmapId")
     @Mapping(target = "progressStatus", ignore = true)
     @Mapping(target = "isLocked", ignore = true)
+    @Mapping(target = "summary", ignore = true)
+    @Mapping(target = "level", ignore = true)
+    @Mapping(target = "estimatedHours", ignore = true)
+    @Mapping(target = "note", ignore = true)
+    @Mapping(target = "checklist", ignore = true)
+    @Mapping(target = "learningResources", ignore = true)
     SkillNodeResponse toResponse(SkillNode entity);
 
     @Mapping(target = "roadmap", ignore = true)
