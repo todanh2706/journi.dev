@@ -5,9 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -153,6 +156,77 @@ class UserNodeProgressServiceTest {
         assertThatThrownBy(() -> userNodeProgressService.markNodeCompleted(user, springBoot.getNodeId()))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Cannot complete a locked skill node");
+    }
+
+    @DisplayName("[TEST] A dependent lesson can be completed after its prerequisite is completed")
+    @Test
+    void markNodeCompletedLoadsPrerequisiteProgress() {
+        User user = TestData.user();
+        SkillNode fundamentals = TestData.node("programming-fundamentals", 1);
+        SkillNode javaBasics = TestData.node("java-basics", 2);
+        NodePrerequisite prerequisite = TestData.prerequisite(fundamentals, javaBasics);
+        UserNodeProgress prerequisiteProgress = TestData.progress(user, fundamentals, ProgressStatus.COMPLETED);
+
+        when(skillNodeRepository.findById(javaBasics.getNodeId())).thenReturn(Optional.of(javaBasics));
+        when(nodePrerequisiteRepository.findByChildNode_NodeIdIn(anyCollection()))
+                .thenReturn(List.of(prerequisite));
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeIdIn(eq(user.getUserId()), anyCollection()))
+                .thenReturn(List.of(prerequisiteProgress));
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeId(user.getUserId(), javaBasics.getNodeId()))
+                .thenReturn(Optional.empty());
+        when(userNodeProgressRepository.save(any(UserNodeProgress.class))).thenAnswer(invocation -> {
+            UserNodeProgress progress = invocation.getArgument(0);
+            progress.setProgressId(UUID.randomUUID());
+            return progress;
+        });
+
+        UserNodeProgressResponse response = userNodeProgressService.markNodeCompleted(user, javaBasics.getNodeId());
+
+        assertThat(response.getStatus()).isEqualTo(ProgressStatus.COMPLETED);
+        ArgumentCaptor<Collection<UUID>> nodeIdsCaptor = ArgumentCaptor.forClass(Collection.class);
+        verify(userNodeProgressRepository)
+                .findByUser_UserIdAndNode_NodeIdIn(eq(user.getUserId()), nodeIdsCaptor.capture());
+        assertThat(nodeIdsCaptor.getValue())
+                .containsExactlyInAnyOrder(javaBasics.getNodeId(), fundamentals.getNodeId());
+    }
+
+    @DisplayName("[TEST] Repeated completion preserves the first completion timestamp")
+    @Test
+    void markNodeCompletedIsIdempotent() {
+        User user = TestData.user();
+        SkillNode fundamentals = TestData.node("programming-fundamentals", 1);
+        UserNodeProgress completedProgress = TestData.progress(user, fundamentals, ProgressStatus.COMPLETED);
+        LocalDateTime firstCompletedAt = LocalDateTime.of(2026, 6, 20, 10, 15);
+        completedProgress.setUnlockedAt(firstCompletedAt.minusMinutes(5));
+        completedProgress.setCompletedAt(firstCompletedAt);
+
+        when(skillNodeRepository.findById(fundamentals.getNodeId())).thenReturn(Optional.of(fundamentals));
+        when(nodePrerequisiteRepository.findByChildNode_NodeIdIn(anyCollection())).thenReturn(List.of());
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeIdIn(eq(user.getUserId()), anyCollection()))
+                .thenReturn(List.of(completedProgress));
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeId(user.getUserId(), fundamentals.getNodeId()))
+                .thenReturn(Optional.of(completedProgress));
+        when(userNodeProgressRepository.save(completedProgress)).thenReturn(completedProgress);
+
+        UserNodeProgressResponse response = userNodeProgressService.markNodeCompleted(user, fundamentals.getNodeId());
+
+        assertThat(response.getCompletedAt()).isEqualTo(firstCompletedAt);
+        assertThat(completedProgress.getCompletedAt()).isEqualTo(firstCompletedAt);
+    }
+
+    @DisplayName("[TEST] Non-lesson nodes cannot be completed manually")
+    @Test
+    void markNodeCompletedRejectsNonLessonNode() {
+        User user = TestData.user();
+        SkillNode practice = TestData.node("collections-practice", 4);
+        practice.setNodeType(NodeType.PRACTICE);
+
+        when(skillNodeRepository.findById(practice.getNodeId())).thenReturn(Optional.of(practice));
+
+        assertThatThrownBy(() -> userNodeProgressService.markNodeCompleted(user, practice.getNodeId()))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Only lesson nodes can be completed manually");
+        verify(userNodeProgressRepository, never()).save(any(UserNodeProgress.class));
     }
 
     private static final class TestData {

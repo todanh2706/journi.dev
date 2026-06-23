@@ -2,6 +2,7 @@ package journi.dev.backend.services;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import journi.dev.backend.dtos.responses.UserNodeProgressResponse;
+import journi.dev.backend.entities.NodeType;
 import journi.dev.backend.entities.ProgressStatus;
 import journi.dev.backend.entities.SkillNode;
 import journi.dev.backend.entities.User;
@@ -54,6 +56,10 @@ public class UserNodeProgressService {
         SkillNode node = skillNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Skill node not found with id: " + nodeId));
 
+        if (node.getNodeType() != NodeType.LESSON) {
+            throw new BadRequestException("Only lesson nodes can be completed manually");
+        }
+
         ProgressStatus computedStatus = getComputedStatus(user, node);
         if (computedStatus == ProgressStatus.LOCKED) {
             throw new BadRequestException("Cannot complete a locked skill node");
@@ -92,12 +98,15 @@ public class UserNodeProgressService {
                 .map(SkillNode::getNodeId)
                 .collect(Collectors.toSet());
 
-        Map<UUID, UserNodeProgress> progressByNodeId = getProgressByNodeId(user.getUserId(), nodeIds);
+        Map<UUID, List<UUID>> prerequisiteIdsByChildNodeId = getPrerequisiteIdsByChildNodeId(nodeIds);
+        Set<UUID> progressLookupNodeIds = new HashSet<>(nodeIds);
+        prerequisiteIdsByChildNodeId.values().forEach(progressLookupNodeIds::addAll);
+
+        Map<UUID, UserNodeProgress> progressByNodeId = getProgressByNodeId(user.getUserId(), progressLookupNodeIds);
         Set<UUID> completedNodeIds = progressByNodeId.values().stream()
                 .filter(progress -> progress.getStatus() == ProgressStatus.COMPLETED)
                 .map(progress -> progress.getNode().getNodeId())
                 .collect(Collectors.toSet());
-        Map<UUID, List<UUID>> prerequisiteIdsByChildNodeId = getPrerequisiteIdsByChildNodeId(nodeIds);
 
         return nodes.stream().collect(Collectors.toMap(SkillNode::getNodeId, node -> {
             UserNodeProgress savedProgress = progressByNodeId.get(node.getNodeId());
