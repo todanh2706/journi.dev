@@ -17,9 +17,9 @@
       "estimatedHours": 12,
       "note": "Treat this node as a thinking-skills foundation, not just a syntax checkpoint.",
       "checklist": [
-        "Explain variables, conditions, loops, and functions in your own words.",
-        "Trace a small program line by line without running it.",
-        "Solve a few beginner algorithm problems with clear pseudocode first."
+        "Write pseudocode for a console program that validates input and repeats until the user exits.",
+        "Trace the program by hand for at least three inputs and record each variable value.",
+        "Implement and debug three beginner problems, documenting how each problem was decomposed."
       ],
       "prerequisites": [],
       "resources": [
@@ -35,13 +35,13 @@
           }
         },
         {
-          "sourceType": "ARTICLE",
-          "title": "Problem Solving Strategies in Programming",
-          "sourceUrl": "https://www.geeksforgeeks.org/problem-solving-strategies-in-programming/",
-          "contentBody": "A lightweight reference for practicing problem breakdown before touching Java.",
+          "sourceType": "COURSE",
+          "title": "Khan Academy: Introduction to Algorithms",
+          "sourceUrl": "https://www.khanacademy.org/computing/computer-science/algorithms",
+          "contentBody": "Practice representing, comparing, and reasoning about algorithms before tying the ideas to Java syntax.",
           "meta": {
-            "provider": "GeeksforGeeks",
-            "format": "article",
+            "provider": "Khan Academy",
+            "format": "course",
             "recommendedOrder": 2
           }
         }
@@ -57,9 +57,9 @@
       "estimatedHours": 14,
       "note": "Focus on writing many tiny examples instead of reading passively.",
       "checklist": [
-        "Write and run Java classes from an IDE or the command line.",
-        "Use primitive types, strings, arrays, and methods correctly.",
-        "Read compiler errors and fix basic syntax mistakes without guessing."
+        "Create, compile, and run a small Java console application from both an IDE and the command line.",
+        "Build a grade calculator that uses primitive types, strings, arrays, control flow, and methods.",
+        "Record and explain fixes for five compiler or runtime errors encountered while building the exercises."
       ],
       "prerequisites": [
         "programming-fundamentals"
@@ -77,13 +77,13 @@
           }
         },
         {
-          "sourceType": "GUIDE",
+          "sourceType": "DOCUMENTATION",
           "title": "Dev.java Learn Java",
           "sourceUrl": "https://dev.java/learn/",
           "contentBody": "Modern Java learning material straight from the Java platform team.",
           "meta": {
             "provider": "Oracle",
-            "format": "guide",
+            "format": "docs",
             "recommendedOrder": 2
           }
         }
@@ -99,9 +99,9 @@
       "estimatedHours": 12,
       "note": "The goal is not to memorize jargon; it is to model simple domains with clear responsibilities.",
       "checklist": [
-        "Create classes with fields, constructors, and methods.",
-        "Explain the difference between inheritance and composition.",
-        "Refactor repetitive code into better object boundaries."
+        "Model a library domain with classes, private fields, constructors, and behavior-focused methods.",
+        "Implement one relationship with composition and explain why inheritance would be weaker there.",
+        "Refactor a procedural console program into objects with clear, non-overlapping responsibilities."
       ],
       "prerequisites": [
         "java-basics"
@@ -141,9 +141,9 @@
       "estimatedHours": 10,
       "note": "This node pays off everywhere in backend code because data almost always flows through collections.",
       "checklist": [
-        "Choose between List, Set, and Map based on a use case.",
-        "Use generics to avoid raw types and unsafe casts.",
-        "Write small exercises that transform and filter collections."
+        "Implement the same lookup requirement with List, Set, and Map and compare their semantics.",
+        "Create a reusable generic container or utility without raw types or unchecked casts.",
+        "Transform, filter, group, and sort a collection of domain objects with tests for duplicate values."
       ],
       "prerequisites": [
         "oop-in-java"
@@ -183,9 +183,9 @@
       "estimatedHours": 10,
       "note": "Stay grounded in tables, joins, and constraints before jumping into ORMs.",
       "checklist": [
-        "Write SELECT, INSERT, UPDATE, and DELETE queries.",
-        "Explain primary keys, foreign keys, and joins.",
-        "Read a schema and predict what data shape a query will return."
+        "Create a small PostgreSQL schema with primary keys, foreign keys, unique constraints, and sample rows.",
+        "Write and execute SELECT, INSERT, UPDATE, and DELETE statements against the schema.",
+        "Answer five domain questions with INNER and LEFT joins, then verify the returned row shapes."
       ],
       "prerequisites": [
         "collections-and-generics"
@@ -225,9 +225,9 @@
       "estimatedHours": 8,
       "note": "Do not aim for perfect architecture here; aim to understand the plumbing and pain points.",
       "checklist": [
-        "Open a JDBC connection and run a query.",
-        "Map a ResultSet into a Java object manually.",
-        "Use prepared statements instead of string-concatenated SQL."
+        "Connect a Java console application to PostgreSQL with a JDBC URL and close resources safely.",
+        "Implement create and find operations with PreparedStatement and parameter binding.",
+        "Map a multi-row ResultSet into typed Java objects and test the empty-result case."
       ],
       "prerequisites": [
         "sql-basics"
@@ -267,9 +267,9 @@
       "estimatedHours": 10,
       "note": "If you understand bean wiring and inversion of control, debugging Boot apps gets much easier.",
       "checklist": [
-        "Explain what inversion of control means in practical backend terms.",
-        "Create simple beans and inject dependencies cleanly.",
-        "Understand component scanning and configuration classes."
+        "Build a small Spring context with service and repository beans wired through constructor injection.",
+        "Replace one component-scanned bean with an explicit @Bean definition and explain the trade-off.",
+        "Use two profiles or qualifiers to select implementations and verify which bean the context loads."
       ],
       "prerequisites": [
         "jdbc-basics"
@@ -287,13 +287,13 @@
           }
         },
         {
-          "sourceType": "GUIDE",
-          "title": "Spring Guide: Managing Components",
-          "sourceUrl": "https://spring.io/guides/gs/serving-web-content/",
-          "contentBody": "Read selectively to see how components are discovered and wired in a small application.",
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Framework Reference: The IoC Container",
+          "sourceUrl": "https://docs.spring.io/spring-framework/reference/core/beans.html",
+          "contentBody": "Study bean definitions, dependency injection, component scanning, scopes, and Java-based container configuration.",
           "meta": {
             "provider": "Spring",
-            "format": "guide",
+            "format": "docs",
             "recommendedOrder": 2
           }
         }
@@ -309,9 +309,9 @@
       "estimatedHours": 10,
       "note": "Get comfortable reading configuration and understanding what Boot has already set up for you.",
       "checklist": [
-        "Generate and run a Spring Boot application locally.",
-        "Understand application properties, profiles, and starters.",
-        "Explain what auto-configuration does at a high level."
+        "Generate a Spring Boot project with Spring Initializr and run it through Maven and the IDE.",
+        "Add typed application configuration and override it with a local profile and environment variable.",
+        "Inspect the condition evaluation report and explain two auto-configurations activated by the starters."
       ],
       "prerequisites": [
         "spring-core"
@@ -351,9 +351,9 @@
       "estimatedHours": 16,
       "note": "This is where the roadmap starts to feel like product development instead of framework study.",
       "checklist": [
-        "Create controllers, request DTOs, and response DTOs cleanly.",
-        "Handle validation and return appropriate HTTP status codes.",
-        "Design CRUD-style API routes that are consistent and predictable."
+        "Implement CRUD endpoints with thin controllers, request DTOs, response DTOs, and a service layer.",
+        "Add Bean Validation and a global error handler that returns consistent 400 and 404 responses.",
+        "Exercise the API with curl or an API client and document status codes for success and failure cases."
       ],
       "prerequisites": [
         "spring-boot-basics"
@@ -400,9 +400,9 @@
       "estimatedHours": 14,
       "note": "JPA becomes much less mysterious if you keep checking the SQL shape underneath.",
       "checklist": [
-        "Create JPA entities with relationships and constraints.",
-        "Write repository methods for common read and write flows.",
-        "Explain when lazy loading can surprise an API response."
+        "Map two related entities with database constraints and keep entities out of controller responses.",
+        "Implement repository queries for lookup, pagination, and one relationship-aware use case.",
+        "Capture generated SQL for a lazy-loading scenario and remove the resulting N+1 query."
       ],
       "prerequisites": [
         "rest-api-development",
@@ -450,9 +450,9 @@
       "estimatedHours": 14,
       "note": "Security work gets much easier when you can explain every step from login to protected endpoint access.",
       "checklist": [
-        "Explain the difference between authentication and authorization.",
-        "Secure selected endpoints with JWT-based access control.",
-        "Avoid leaking sensitive fields or weak password handling in API responses."
+        "Diagram the request path from credential verification through JWT issuance and filter-chain authentication.",
+        "Protect public, authenticated, and role-restricted endpoints and test each access outcome.",
+        "Hash passwords, validate token expiry, and confirm responses and logs never expose secrets or password hashes."
       ],
       "prerequisites": [
         "rest-api-development",
@@ -500,9 +500,9 @@
       "estimatedHours": 10,
       "note": "Aim for confidence around behavior, not coverage numbers for their own sake.",
       "checklist": [
-        "Write focused unit tests with clear arrange-act-assert flow.",
-        "Use Spring test slices or integration tests where they add confidence.",
-        "Test failure paths, not only the happy path."
+        "Write unit tests for service behavior with clear arrange-act-assert structure and descriptive names.",
+        "Add a repository or MVC slice test for one persistence or HTTP contract boundary.",
+        "Cover validation, not-found, and authorization failures in addition to the happy path."
       ],
       "prerequisites": [
         "spring-security-and-jwt"
@@ -549,9 +549,9 @@
       "estimatedHours": 8,
       "note": "You do not need deep container theory yet; focus on running your app consistently.",
       "checklist": [
-        "Build and run a Docker image for the backend service.",
-        "Use Docker Compose to wire the app to PostgreSQL and Redis locally.",
-        "Explain the difference between an image, a container, and a volume."
+        "Write a Dockerfile, build the backend image, and run it with explicit environment configuration.",
+        "Use Docker Compose to connect the app, PostgreSQL, and Redis with persistent database storage.",
+        "Inspect images, containers, networks, and volumes, then explain which artifact stores each kind of state."
       ],
       "prerequisites": [
         "testing-basics"
@@ -591,22 +591,22 @@
       "estimatedHours": 10,
       "note": "The goal is a boring, repeatable release flow you can explain clearly.",
       "checklist": [
-        "Externalize secrets and environment-specific configuration.",
-        "Describe the steps required to build, ship, and run the service.",
-        "Prepare a deployment checklist for health checks, logging, and rollback."
+        "Externalize database credentials, JWT configuration, and environment-specific settings without committing secrets.",
+        "Create a repeatable workflow that tests, builds, and publishes the deployable container artifact.",
+        "Run a deployment rehearsal using health checks, structured logs, a schema-change check, and a documented rollback."
       ],
       "prerequisites": [
         "docker-basics"
       ],
       "resources": [
         {
-          "sourceType": "GUIDE",
-          "title": "Spring Boot with Docker",
-          "sourceUrl": "https://spring.io/guides/topicals/spring-boot-docker/",
-          "contentBody": "Shows a simple path from local Boot app to containerized deployment artifact.",
+          "sourceType": "DOCUMENTATION",
+          "title": "Spring Boot Externalized Configuration",
+          "sourceUrl": "https://docs.spring.io/spring-boot/reference/features/external-config.html",
+          "contentBody": "Explains how to move environment-specific values and secrets out of the application artifact for deployment.",
           "meta": {
             "provider": "Spring",
-            "format": "guide",
+            "format": "docs",
             "recommendedOrder": 1
           }
         },

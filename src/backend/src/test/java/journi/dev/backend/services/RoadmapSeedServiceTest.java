@@ -94,6 +94,19 @@ class RoadmapSeedServiceTest {
                         "testing-basics",
                         "docker-basics",
                         "deployment-basics");
+        assertThat(nodes)
+                .extracting(SkillNode::getOrderIndex)
+                .containsExactlyElementsOf(java.util.stream.IntStream.rangeClosed(1, 14).boxed().toList());
+
+        for (SkillNode node : nodes) {
+            JsonNode content = objectMapper.readTree(node.getContentJson());
+            assertThat(content.path("summary").asText()).isNotBlank();
+            assertThat(content.path("level").asText()).isIn("BEGINNER", "INTERMEDIATE");
+            assertThat(content.path("estimatedHours").asInt()).isPositive();
+            assertThat(content.path("note").asText()).isNotBlank();
+            assertThat(content.path("checklist")).hasSizeGreaterThanOrEqualTo(3);
+            assertThat(content.path("checklist")).allSatisfy(item -> assertThat(item.asText()).isNotBlank());
+        }
 
         JsonNode restApiContent = objectMapper.readTree(nodesBySlug.get("rest-api-development").getContentJson());
         assertThat(restApiContent.get("summary").asText()).contains("HTTP APIs");
@@ -106,6 +119,9 @@ class RoadmapSeedServiceTest {
         List<Challenge> restApiChallenges = challengeRepository
                 .findByNode_NodeId(nodesBySlug.get("rest-api-development").getNodeId());
         List<NodePrerequisite> prerequisites = nodePrerequisiteRepository.findByChildNode_NodeIdIn(nodeIds);
+        List<LearningContent> allResources = learningContentRepository.findByNode_NodeIdIn(nodeIds);
+        Map<UUID, List<LearningContent>> resourcesByNodeId = allResources.stream()
+                .collect(Collectors.groupingBy(resource -> resource.getNode().getNodeId()));
 
         assertThat(restApiResources).hasSize(2);
         assertThat(restApiChallenges)
@@ -116,10 +132,25 @@ class RoadmapSeedServiceTest {
             assertThat(nodeIds).contains(prerequisite.getParentNode().getNodeId());
             assertThat(nodeIds).contains(prerequisite.getChildNode().getNodeId());
             assertThat(prerequisite.getRelationType()).isEqualTo("REQUIRED");
+            assertThat(prerequisite.getParentNode().getOrderIndex())
+                    .isLessThan(prerequisite.getChildNode().getOrderIndex());
         });
 
-        assertThat(learningContentRepository.findByNode_NodeIdIn(nodeIds)).hasSize(28);
-        assertThat(challengeRepository.findByNode_NodeIdIn(nodeIds)).hasSize(5);
+        assertThat(allResources).hasSize(28).allSatisfy(resource -> {
+            assertThat(resource.getTitle()).isNotBlank();
+            assertThat(resource.getSourceType()).isNotBlank();
+            assertThat(resource.getSourceUrl()).startsWith("https://");
+            assertThat(resource.getContentBody()).isNotBlank();
+        });
+        assertThat(resourcesByNodeId).hasSize(14);
+        assertThat(nodes).allSatisfy(node -> assertThat(resourcesByNodeId.get(node.getNodeId()))
+                .hasSizeGreaterThanOrEqualTo(2));
+
+        assertThat(challengeRepository.findByNode_NodeIdIn(nodeIds)).hasSize(5).allSatisfy(challenge -> {
+            assertThat(challenge.getTitle()).isNotBlank();
+            assertThat(challenge.getDescription()).isNotBlank();
+            assertThat(nodeIds).contains(challenge.getNode().getNodeId());
+        });
     }
 
     @DisplayName("[TEST] Roadmap seeder is idempotent on rerun")
@@ -139,6 +170,8 @@ class RoadmapSeedServiceTest {
         int firstResourceCount = learningContentRepository.findByNode_NodeIdIn(nodeIds).size();
         int firstChallengeCount = challengeRepository.findByNode_NodeIdIn(nodeIds).size();
         int firstPrerequisiteCount = nodePrerequisiteRepository.findByChildNode_NodeIdIn(nodeIds).size();
+        Map<String, String> firstContentBySlug = firstRunNodes.stream()
+                .collect(Collectors.toMap(SkillNode::getSlug, SkillNode::getContentJson));
 
         roadmapSeedService.seedConfiguredRoadmaps();
 
@@ -151,6 +184,8 @@ class RoadmapSeedServiceTest {
 
         assertThat(secondRoadmap.getRoadmapId()).isEqualTo(firstRoadmap.getRoadmapId());
         assertThat(secondRunNodeIds).isEqualTo(firstRunNodeIds);
+        assertThat(secondRunNodes.stream().collect(Collectors.toMap(SkillNode::getSlug, SkillNode::getContentJson)))
+                .isEqualTo(firstContentBySlug);
         assertThat(learningRoadmapRepository.findAll()).hasSize(firstRoadmapCount);
         assertThat(userRepository.findAll()).hasSize(firstUserCount);
         assertThat(learningContentRepository.findByNode_NodeIdIn(secondNodeIds)).hasSize(firstResourceCount);
