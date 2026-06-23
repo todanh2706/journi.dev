@@ -4,15 +4,16 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, use
 import { buildRoadmapGraph } from "../utils/buildRoadmapGraph";
 import { layoutRoadmapGraph } from "../utils/layoutRoadmapGraph";
 import type { RoadmapCanvasProps, RoadmapSkillGraphEdge, RoadmapSkillGraphNode, RoadmapSkillNodeData } from "../types";
+import { findSelectedNodeById } from "../utils/nodeDetailPresentation";
 import { RoadmapNodeDrawer } from "./RoadmapNodeDrawer";
 import { RoadmapSkillNode } from "./RoadmapSkillNode";
 import { RoadmapToolbar } from "./RoadmapToolbar";
 
 const nodeTypes: NodeTypes = { roadmapSkillNode: RoadmapSkillNode };
 
-function RoadmapCanvasInner({ roadmap }: RoadmapCanvasProps) {
+function RoadmapCanvasInner({ roadmap, onCompleteNode }: RoadmapCanvasProps) {
   const reactFlow = useReactFlow<RoadmapSkillGraphNode, RoadmapSkillGraphEdge>();
-  const [selectedNode, setSelectedNode] = useState<RoadmapSkillNodeData | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const graph = useMemo(() => layoutRoadmapGraph(buildRoadmapGraph(roadmap.nodes)), [roadmap.nodes]);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -27,12 +28,13 @@ function RoadmapCanvasInner({ roadmap }: RoadmapCanvasProps) {
 
   const completedCount = useMemo(() => roadmap.nodes.filter((node) => node.progressStatus === "COMPLETED").length, [roadmap.nodes]);
   const matchCount = useMemo(() => normalizedSearchTerm ? nodes.filter((node) => node.data.isSearchMatch).length : 0, [nodes, normalizedSearchTerm]);
+  const selectedNode = useMemo(() => findSelectedNodeById(nodes, selectedNodeId), [nodes, selectedNodeId]);
 
   const closeDrawer = useCallback(() => {
-    const nodeId = selectedNode?.skillNode.nodeId;
-    setSelectedNode(null);
+    const nodeId = selectedNodeId;
+    setSelectedNodeId(null);
     if (nodeId) requestAnimationFrame(() => document.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(nodeId)}"]`)?.focus());
-  }, [selectedNode]);
+  }, [selectedNodeId]);
 
   return (
     <div className="relative h-[calc(100dvh-240px)] min-h-[560px] overflow-hidden rounded-2xl border border-line bg-shell shadow-2xl shadow-black/25 sm:h-[calc(100dvh-250px)]">
@@ -55,7 +57,7 @@ function RoadmapCanvasInner({ roadmap }: RoadmapCanvasProps) {
         elevateNodesOnSelect={false}
         elevateEdgesOnSelect={false}
         elementsSelectable
-        onNodeClick={(_, node) => setSelectedNode(node.data)}
+        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
         proOptions={{ hideAttribution: true }}
         className="roadmap-canvas"
       >
@@ -85,7 +87,7 @@ function RoadmapCanvasInner({ roadmap }: RoadmapCanvasProps) {
         </Panel>
       </ReactFlow>
 
-      <RoadmapNodeDrawer node={selectedNode} onClose={closeDrawer} />
+      <RoadmapNodeDrawer node={selectedNode} onClose={closeDrawer} onCompleteNode={onCompleteNode} />
     </div>
   );
 }

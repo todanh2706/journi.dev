@@ -3,7 +3,7 @@ import { AlertCircle, ArrowLeft, LoaderCircle, Map } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { useAuth } from "../../features/auth";
-import { RoadmapCanvas, roadmapService, type RoadmapWithNodes } from "../../features/roadmaps";
+import { completeRoadmapNode, progressService, RoadmapCanvas, roadmapService, type RoadmapWithNodes } from "../../features/roadmaps";
 
 export default function RoadmapDetailPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -49,6 +49,20 @@ export default function RoadmapDetailPage() {
     setError(null);
     void loadRoadmap();
   };
+
+  const handleCompleteNode = useCallback(async (nodeId: string) => {
+    if (!roadmapId) return;
+
+    await completeRoadmapNode(
+      nodeId,
+      progressService.completeNode,
+      async () => {
+        const refreshedRoadmap = await roadmapService.getRoadmapWithNodes(roadmapId);
+        setData(refreshedRoadmap);
+        setError(null);
+      },
+    );
+  }, [roadmapId]);
 
   const displayError = roadmapId ? error : "This roadmap link is missing its identifier.";
 
@@ -111,7 +125,7 @@ export default function RoadmapDetailPage() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">This roadmap exists, but its learning sequence has not been published.</p>
           </section>
         ) : (
-          <RoadmapCanvas roadmap={data} />
+          <RoadmapCanvas roadmap={data} onCompleteNode={handleCompleteNode} />
         )}
       </div>
     </div>

@@ -3,6 +3,7 @@ import type { RoadmapWithNodes, SkillNode } from "../types/roadmap";
 
 export type RoadmapCanvasProps = {
   roadmap: RoadmapWithNodes;
+  onCompleteNode: (nodeId: string) => Promise<void>;
 };
 
 export type RoadmapSkillNodeData = {

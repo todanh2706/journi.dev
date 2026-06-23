@@ -33,7 +33,9 @@ export const buildRoadmapGraph = (skillNodes: SkillNode[]): RoadmapGraph => {
       nodeType: skillNode.nodeType,
       progressStatus: skillNode.progressStatus,
       isLocked: skillNode.isLocked,
-      summary: slugToSummary(skillNode.slug),
+      summary: skillNode.isLocked || skillNode.progressStatus === "LOCKED"
+        ? "Complete prerequisites to unlock this learning step."
+        : skillNode.summary ?? slugToSummary(skillNode.slug),
     },
   }));
 

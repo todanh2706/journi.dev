@@ -12,6 +12,15 @@ export interface Roadmap {
   deletedAt: string | null;
 }
 
+export type NodeProgressStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
+
+export interface LearningResource {
+  title: string;
+  sourceType: string;
+  sourceUrl: string;
+  description: string;
+}
+
 export interface SkillNode {
   nodeId: string;
   roadmapId: string;
@@ -20,7 +29,13 @@ export interface SkillNode {
   orderIndex: number;
   nodeType: 'LESSON' | 'PRACTICE' | 'PROJECT' | 'QUIZ' | 'CHALLENGE';
   contentJson: string | null;
-  progressStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  summary: string | null;
+  level: string | null;
+  estimatedHours: number | null;
+  note: string | null;
+  checklist: string[] | null;
+  learningResources: LearningResource[] | null;
+  progressStatus: NodeProgressStatus;
   isLocked: boolean;
   createdBy: string | null;
   updatedBy: string | null;
