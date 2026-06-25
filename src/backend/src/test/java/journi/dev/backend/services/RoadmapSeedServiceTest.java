@@ -23,12 +23,19 @@ import journi.dev.backend.entities.Challenge;
 import journi.dev.backend.entities.LearningContent;
 import journi.dev.backend.entities.LearningRoadmap;
 import journi.dev.backend.entities.NodePrerequisite;
+import journi.dev.backend.entities.NodeType;
 import journi.dev.backend.entities.SkillNode;
+import journi.dev.backend.entities.Submission;
+import journi.dev.backend.entities.SubmissionStatus;
+import journi.dev.backend.entities.User;
+import journi.dev.backend.entities.UserRole;
+import journi.dev.backend.entities.UserStatus;
 import journi.dev.backend.repositories.ChallengeRepository;
 import journi.dev.backend.repositories.LearningContentRepository;
 import journi.dev.backend.repositories.LearningRoadmapRepository;
 import journi.dev.backend.repositories.NodePrerequisiteRepository;
 import journi.dev.backend.repositories.SkillNodeRepository;
+import journi.dev.backend.repositories.SubmissionRepository;
 import journi.dev.backend.repositories.UserRepository;
 
 @ActiveProfiles("test")
@@ -57,6 +64,9 @@ class RoadmapSeedServiceTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SubmissionRepository submissionRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -146,11 +156,43 @@ class RoadmapSeedServiceTest {
         assertThat(nodes).allSatisfy(node -> assertThat(resourcesByNodeId.get(node.getNodeId()))
                 .hasSizeGreaterThanOrEqualTo(2));
 
-        assertThat(challengeRepository.findByNode_NodeIdIn(nodeIds)).hasSize(5).allSatisfy(challenge -> {
+        List<Challenge> challenges = challengeRepository.findByNode_NodeIdIn(nodeIds);
+        assertThat(challenges).hasSize(8).allSatisfy(challenge -> {
             assertThat(challenge.getTitle()).isNotBlank();
             assertThat(challenge.getDescription()).isNotBlank();
+            assertThat(challenge.getInstructions()).isNotBlank();
+            assertThat(challenge.getIsRequired()).isTrue();
+            assertThat(challenge.getMaxScore()).isPositive();
+            assertThat(challenge.getPassingScore()).isBetween(1, challenge.getMaxScore());
+            assertThat(challenge.getTimeoutSeconds()).isBetween(10, 900);
+            assertThat(challenge.getStarterRepositoryUrl()).matches("https://github\\.com/[^/]+/[^/]+$");
+            assertThat(challenge.getGraderImage()).matches("^[^\\s]+@sha256:[0-9a-f]{64}$");
+            assertJsonArrayNotEmpty(challenge.getAcceptanceCriteriaJson());
+            assertJsonArrayNotEmpty(challenge.getHintsJson());
+            assertJsonArrayNotEmpty(challenge.getExpectedArtifactsJson());
+            assertJsonArrayNotEmpty(challenge.getGraderCommandJson());
             assertThat(nodeIds).contains(challenge.getNode().getNodeId());
         });
+        assertThat(challenges)
+                .extracting(challenge -> challenge.getNode().getSlug())
+                .containsExactlyInAnyOrder(
+                        "collections-and-generics",
+                        "jdbc-basics",
+                        "rest-api-development",
+                        "spring-data-jpa",
+                        "spring-security-and-jwt",
+                        "testing-basics",
+                        "docker-basics",
+                        "deployment-basics");
+        assertThat(challenges).allSatisfy(challenge -> assertThat(challenge.getNode().getNodeType())
+                .isIn(NodeType.PRACTICE, NodeType.PROJECT));
+        assertThat(nodes.stream().filter(node -> node.getNodeType() == NodeType.LESSON))
+                .allSatisfy(node -> assertThat(challengeRepository.findByNode_NodeId(node.getNodeId())).isEmpty());
+        assertThat(challenges.stream().filter(Challenge::isEvaluationEnabled))
+                .singleElement()
+                .satisfies(challenge -> assertThat(challenge.getNode().getSlug())
+                        .isEqualTo("collections-and-generics"));
+        assertThat(challenges.stream().filter(challenge -> !challenge.isEvaluationEnabled())).hasSize(7);
     }
 
     @DisplayName("[TEST] Roadmap seeder is idempotent on rerun")
@@ -164,6 +206,30 @@ class RoadmapSeedServiceTest {
         List<UUID> nodeIds = firstRunNodes.stream().map(SkillNode::getNodeId).toList();
         Map<String, UUID> firstRunNodeIds = firstRunNodes.stream()
                 .collect(Collectors.toMap(SkillNode::getSlug, SkillNode::getNodeId));
+        Map<String, UUID> firstRunChallengeIds = challengeRepository.findByNode_NodeIdIn(nodeIds).stream()
+                .collect(Collectors.toMap(challenge -> challenge.getNode().getSlug(), Challenge::getChallengeId));
+
+        User learner = new User();
+        learner.setUsername("seed-idempotency-learner");
+        learner.setEmail("seed-idempotency@example.com");
+        learner.setPasswordHash("encoded-password");
+        learner.setRole(UserRole.USER);
+        learner.setStatus(UserStatus.ACTIVE);
+        learner.setEnabled(true);
+        learner = userRepository.saveAndFlush(learner);
+
+        Challenge pilotChallenge = challengeRepository.findById(
+                firstRunChallengeIds.get("collections-and-generics")).orElseThrow();
+        Submission submission = new Submission();
+        submission.setUser(learner);
+        submission.setChallenge(pilotChallenge);
+        submission.setRepositoryUrl("https://github.com/example/library-catalog");
+        submission.setBranchName("main");
+        submission.setCommitHash("a".repeat(40));
+        submission.setAttemptNumber(1);
+        submission.setStatus(SubmissionStatus.SUBMITTED);
+        submission = submissionRepository.saveAndFlush(submission);
+        UUID submissionId = submission.getSubmissionId();
 
         int firstRoadmapCount = learningRoadmapRepository.findAll().size();
         int firstUserCount = userRepository.findAll().size();
@@ -181,9 +247,17 @@ class RoadmapSeedServiceTest {
         List<UUID> secondNodeIds = secondRunNodes.stream().map(SkillNode::getNodeId).toList();
         Map<String, UUID> secondRunNodeIds = secondRunNodes.stream()
                 .collect(Collectors.toMap(SkillNode::getSlug, SkillNode::getNodeId));
+        Map<String, UUID> secondRunChallengeIds = challengeRepository.findByNode_NodeIdIn(secondNodeIds).stream()
+                .collect(Collectors.toMap(challenge -> challenge.getNode().getSlug(), Challenge::getChallengeId));
 
         assertThat(secondRoadmap.getRoadmapId()).isEqualTo(firstRoadmap.getRoadmapId());
         assertThat(secondRunNodeIds).isEqualTo(firstRunNodeIds);
+        assertThat(secondRunChallengeIds).isEqualTo(firstRunChallengeIds);
+        assertThat(submissionRepository.findById(submissionId))
+                .isPresent()
+                .get()
+                .extracting(saved -> saved.getChallenge().getChallengeId())
+                .isEqualTo(pilotChallenge.getChallengeId());
         assertThat(secondRunNodes.stream().collect(Collectors.toMap(SkillNode::getSlug, SkillNode::getContentJson)))
                 .isEqualTo(firstContentBySlug);
         assertThat(learningRoadmapRepository.findAll()).hasSize(firstRoadmapCount);
@@ -191,5 +265,15 @@ class RoadmapSeedServiceTest {
         assertThat(learningContentRepository.findByNode_NodeIdIn(secondNodeIds)).hasSize(firstResourceCount);
         assertThat(challengeRepository.findByNode_NodeIdIn(secondNodeIds)).hasSize(firstChallengeCount);
         assertThat(nodePrerequisiteRepository.findByChildNode_NodeIdIn(secondNodeIds)).hasSize(firstPrerequisiteCount);
+    }
+
+    private void assertJsonArrayNotEmpty(String json) {
+        try {
+            JsonNode value = objectMapper.readTree(json);
+            assertThat(value.isArray()).isTrue();
+            assertThat(value.size()).isGreaterThanOrEqualTo(1);
+        } catch (IOException exception) {
+            throw new AssertionError("Expected a valid JSON array", exception);
+        }
     }
 }

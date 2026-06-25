@@ -47,6 +47,36 @@ public class Challenge {
     @Column(name = "is_required")
     private Boolean isRequired;
 
+    @Column(columnDefinition = "TEXT")
+    private String instructions;
+
+    @Column(name = "acceptance_criteria_json", columnDefinition = "TEXT")
+    private String acceptanceCriteriaJson;
+
+    @Column(name = "hints_json", columnDefinition = "TEXT")
+    private String hintsJson;
+
+    @Column(name = "expected_artifacts_json", columnDefinition = "TEXT")
+    private String expectedArtifactsJson;
+
+    @Column(name = "starter_repository_url", length = 500)
+    private String starterRepositoryUrl;
+
+    @Column(name = "passing_score")
+    private Integer passingScore;
+
+    @Column(name = "timeout_seconds")
+    private Integer timeoutSeconds;
+
+    @Column(name = "grader_image", length = 500)
+    private String graderImage;
+
+    @Column(name = "grader_command_json", columnDefinition = "TEXT")
+    private String graderCommandJson;
+
+    @Column(name = "evaluation_enabled", nullable = false)
+    private boolean evaluationEnabled;
+
     @Column(name = "created_by")
     private UUID createdBy;
 
@@ -118,6 +148,86 @@ public class Challenge {
 
     public void setIsRequired(Boolean isRequired) {
         this.isRequired = isRequired;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+
+    public String getAcceptanceCriteriaJson() {
+        return acceptanceCriteriaJson;
+    }
+
+    public void setAcceptanceCriteriaJson(String acceptanceCriteriaJson) {
+        this.acceptanceCriteriaJson = acceptanceCriteriaJson;
+    }
+
+    public String getHintsJson() {
+        return hintsJson;
+    }
+
+    public void setHintsJson(String hintsJson) {
+        this.hintsJson = hintsJson;
+    }
+
+    public String getExpectedArtifactsJson() {
+        return expectedArtifactsJson;
+    }
+
+    public void setExpectedArtifactsJson(String expectedArtifactsJson) {
+        this.expectedArtifactsJson = expectedArtifactsJson;
+    }
+
+    public String getStarterRepositoryUrl() {
+        return starterRepositoryUrl;
+    }
+
+    public void setStarterRepositoryUrl(String starterRepositoryUrl) {
+        this.starterRepositoryUrl = starterRepositoryUrl;
+    }
+
+    public Integer getPassingScore() {
+        return passingScore;
+    }
+
+    public void setPassingScore(Integer passingScore) {
+        this.passingScore = passingScore;
+    }
+
+    public Integer getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(Integer timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public String getGraderImage() {
+        return graderImage;
+    }
+
+    public void setGraderImage(String graderImage) {
+        this.graderImage = graderImage;
+    }
+
+    public String getGraderCommandJson() {
+        return graderCommandJson;
+    }
+
+    public void setGraderCommandJson(String graderCommandJson) {
+        this.graderCommandJson = graderCommandJson;
+    }
+
+    public boolean isEvaluationEnabled() {
+        return evaluationEnabled;
+    }
+
+    public void setEvaluationEnabled(boolean evaluationEnabled) {
+        this.evaluationEnabled = evaluationEnabled;
     }
 
     public UUID getCreatedBy() {

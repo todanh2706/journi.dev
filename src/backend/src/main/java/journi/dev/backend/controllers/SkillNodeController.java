@@ -15,16 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import journi.dev.backend.dtos.requests.SkillNodeRequest;
 import journi.dev.backend.dtos.responses.SkillNodeResponse;
+import journi.dev.backend.dtos.responses.ChallengeResponse;
 import journi.dev.backend.entities.User;
+import journi.dev.backend.services.ChallengeService;
 import journi.dev.backend.services.SkillNodeService;
 
 @RestController
 @RequestMapping("/api/v1/skill-nodes")
 public class SkillNodeController {
     private final SkillNodeService skillNodeService;
+    private final ChallengeService challengeService;
 
-    public SkillNodeController(SkillNodeService skillNodeService) {
+    public SkillNodeController(SkillNodeService skillNodeService, ChallengeService challengeService) {
         this.skillNodeService = skillNodeService;
+        this.challengeService = challengeService;
     }
 
     @GetMapping
@@ -35,6 +39,11 @@ public class SkillNodeController {
     @GetMapping("/{nodeId}")
     public SkillNodeResponse getNodeById(@PathVariable UUID nodeId, @AuthenticationPrincipal User currentUser) {
         return skillNodeService.getNodeById(nodeId, currentUser);
+    }
+
+    @GetMapping("/{nodeId}/challenge")
+    public ChallengeResponse getChallenge(@PathVariable UUID nodeId, @AuthenticationPrincipal User currentUser) {
+        return challengeService.getChallenge(nodeId, currentUser);
     }
 
     @PostMapping("/{creatorId}")

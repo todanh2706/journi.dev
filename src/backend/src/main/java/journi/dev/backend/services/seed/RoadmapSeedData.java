@@ -43,6 +43,16 @@ public record RoadmapSeedData(
             String description,
             String difficulty,
             Integer maxScore,
-            Boolean isRequired) {
+            Boolean isRequired,
+            String instructions,
+            List<String> acceptanceCriteria,
+            List<String> hints,
+            List<String> expectedArtifacts,
+            String starterRepositoryUrl,
+            Integer passingScore,
+            Integer timeoutSeconds,
+            String graderImage,
+            List<String> graderCommand,
+            Boolean evaluationEnabled) {
     }
 }

@@ -171,7 +171,39 @@
             "recommendedOrder": 2
           }
         }
-      ]
+      ],
+      "challenge": {
+        "title": "Build a Type-Safe Library Catalog",
+        "description": "Implement a small Java library catalog that uses collections and generics to store books, reject duplicate identifiers, and answer common lookup and grouping questions.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true,
+        "instructions": "Fork or copy the starter repository, implement the catalog classes in the provided package, keep the public method signatures unchanged, and submit the exact full commit SHA that contains your solution.",
+        "acceptanceCriteria": [
+          "The catalog stores books without raw collection types or unchecked casts.",
+          "Adding the same ISBN twice does not create a duplicate entry.",
+          "Books can be found by ISBN and grouped by author with deterministic results.",
+          "The supplied Maven test suite passes without modifying grader-owned tests."
+        ],
+        "hints": [
+          "Choose collection implementations based on identity, ordering, and lookup requirements.",
+          "Use bounded generic methods only where the algorithm needs a specific capability."
+        ],
+        "expectedArtifacts": [
+          "src/practice/collections-and-generics/LibraryCatalog.java",
+          "src/practice/collections-and-generics/Book.java",
+          "src/practice/collections-and-generics/README.md"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 120,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "collections-and-generics"
+        ],
+        "evaluationEnabled": true
+      }
     },
     {
       "title": "SQL Basics",
@@ -255,7 +287,39 @@
             "recommendedOrder": 2
           }
         }
-      ]
+      ],
+      "challenge": {
+        "title": "Build a JDBC Book Repository",
+        "description": "Implement a JDBC repository for books using prepared statements, explicit row mapping, and safe resource handling.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true,
+        "instructions": "Complete the repository methods in the starter project, keep SQL parameterized, preserve the supplied schema contract, and submit the full commit SHA for the finished implementation.",
+        "acceptanceCriteria": [
+          "Create and lookup operations use PreparedStatement parameters instead of SQL string concatenation.",
+          "Every Connection, PreparedStatement, and ResultSet is closed safely.",
+          "Rows are mapped into typed Book objects and an absent row is represented explicitly.",
+          "Repository tests pass against the grader-managed database fixture."
+        ],
+        "hints": [
+          "Use try-with-resources for every JDBC resource acquired by a method.",
+          "Keep row mapping in one focused method so all queries use the same mapping rules."
+        ],
+        "expectedArtifacts": [
+          "pom.xml",
+          "src/main/java/dev/journi/practice/jdbc/JdbcBookRepository.java",
+          "src/main/java/dev/journi/practice/jdbc/Book.java"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 180,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "jdbc-basics"
+        ],
+        "evaluationEnabled": false
+      }
     },
     {
       "title": "Spring Core",
@@ -387,7 +451,32 @@
         "description": "Create a Spring Boot API for books and authors with pagination, validation, exception handling, and consistent JSON responses. Include endpoints for listing, creating, updating, and deleting books, and document at least one tradeoff you made in the design.",
         "difficulty": "MEDIUM",
         "maxScore": 100,
-        "isRequired": true
+        "isRequired": true,
+        "instructions": "Extend the starter catalog into a Spring Boot REST API. Preserve the documented endpoint paths, return DTOs instead of entities, validate incoming data, and submit the exact full commit SHA for evaluation.",
+        "acceptanceCriteria": [
+          "Book create, list, update, and delete endpoints follow the supplied HTTP contract.",
+          "Invalid payloads and missing records return consistent error responses with appropriate status codes.",
+          "List responses support the required pagination parameters.",
+          "Controller responses do not expose persistence entities directly."
+        ],
+        "hints": [
+          "Keep request handling in controllers and application rules in services.",
+          "Use one exception handler to keep error payloads consistent."
+        ],
+        "expectedArtifacts": [
+          "pom.xml",
+          "src/main/java/dev/journi/catalog/controllers/BookController.java",
+          "src/main/java/dev/journi/catalog/services/BookService.java"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 300,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "rest-api-development"
+        ],
+        "evaluationEnabled": false
       }
     },
     {
@@ -437,7 +526,32 @@
         "description": "Extend the REST API by storing books, authors, and categories in PostgreSQL using JPA entities and repository methods. Add at least one relationship, one uniqueness rule, and one query method that would matter in a real product.",
         "difficulty": "MEDIUM",
         "maxScore": 100,
-        "isRequired": true
+        "isRequired": true,
+        "instructions": "Persist the cumulative Book Catalog with Spring Data JPA. Implement the supplied entity relationships and repository behavior without changing the public REST contract, then submit the full commit SHA.",
+        "acceptanceCriteria": [
+          "Book and Author entities enforce the supplied database constraints and relationship ownership.",
+          "Repository queries support pagination and the required author lookup.",
+          "The implementation avoids the tested N+1 query path.",
+          "API responses remain DTO-based and persistence details do not leak into JSON."
+        ],
+        "hints": [
+          "Model database constraints explicitly instead of relying only on service validation.",
+          "Inspect generated SQL when choosing fetch joins or entity graphs."
+        ],
+        "expectedArtifacts": [
+          "src/main/java/dev/journi/catalog/entities/Book.java",
+          "src/main/java/dev/journi/catalog/entities/Author.java",
+          "src/main/java/dev/journi/catalog/repositories/BookRepository.java"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 300,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "spring-data-jpa"
+        ],
+        "evaluationEnabled": false
       }
     },
     {
@@ -487,7 +601,32 @@
         "description": "Implement signup and login for the catalog API, issue JWTs, protect write endpoints, and enforce at least one role-based rule. Document how an unauthenticated request and an authenticated request should differ.",
         "difficulty": "MEDIUM",
         "maxScore": 100,
-        "isRequired": true
+        "isRequired": true,
+        "instructions": "Add JWT authentication to the cumulative catalog project using the supplied endpoint and role contract. Never commit secrets, keep password hashes out of responses, and submit the exact full commit SHA.",
+        "acceptanceCriteria": [
+          "Signup hashes passwords and never returns stored password data.",
+          "Login returns a valid signed JWT for correct credentials and rejects incorrect credentials.",
+          "Public, authenticated, and role-restricted routes enforce the supplied access rules.",
+          "Expired or malformed tokens fail safely without exposing internal details."
+        ],
+        "hints": [
+          "Keep JWT parsing in the security boundary instead of controllers.",
+          "Test authorization separately from authentication so failures are easier to diagnose."
+        ],
+        "expectedArtifacts": [
+          "src/main/java/dev/journi/catalog/configs/SecurityConfig.java",
+          "src/main/java/dev/journi/catalog/controllers/AuthenticationController.java",
+          "src/main/java/dev/journi/catalog/services/AuthenticationService.java"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 300,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "spring-security-and-jwt"
+        ],
+        "evaluationEnabled": false
       }
     },
     {
@@ -536,7 +675,32 @@
         "description": "Create a test suite that covers at least one repository constraint, one service-level business rule, one validation failure, and one secured endpoint behavior. The suite should be fast enough to run regularly during development.",
         "difficulty": "MEDIUM",
         "maxScore": 100,
-        "isRequired": true
+        "isRequired": true,
+        "instructions": "Add focused JUnit tests to the cumulative catalog project. Keep tests deterministic and isolated, use the narrowest suitable Spring test slice, and submit the exact full commit SHA.",
+        "acceptanceCriteria": [
+          "A repository test proves one database constraint or query contract.",
+          "A service test covers one success path and one business-rule failure.",
+          "An MVC test covers validation and a secured endpoint response.",
+          "The complete Maven test suite passes repeatedly without ordering dependencies."
+        ],
+        "hints": [
+          "Prefer behavior-focused assertions over implementation details.",
+          "Use explicit test fixtures so each test communicates why its data matters."
+        ],
+        "expectedArtifacts": [
+          "src/test/java/dev/journi/catalog/repositories/BookRepositoryTest.java",
+          "src/test/java/dev/journi/catalog/services/BookServiceTest.java",
+          "src/test/java/dev/journi/catalog/controllers/BookControllerTest.java"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 300,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "testing-basics"
+        ],
+        "evaluationEnabled": false
       }
     },
     {
@@ -579,7 +743,39 @@
             "recommendedOrder": 2
           }
         }
-      ]
+      ],
+      "challenge": {
+        "title": "Containerize the Book Catalog",
+        "description": "Package the cumulative catalog API in a reproducible container and run it with PostgreSQL through Docker Compose.",
+        "difficulty": "MEDIUM",
+        "maxScore": 100,
+        "isRequired": true,
+        "instructions": "Add a production-oriented Dockerfile and Compose definition for the catalog. Keep secrets external, preserve the supplied service contract, and submit the exact full commit SHA.",
+        "acceptanceCriteria": [
+          "The application image builds from the submitted repository using the supplied command.",
+          "The application container runs as a non-root user and exposes the expected health endpoint.",
+          "Compose connects the application and PostgreSQL without hard-coded credentials.",
+          "Build context and final image exclude source-control metadata and local secrets."
+        ],
+        "hints": [
+          "Use a multi-stage build to keep build tools out of the runtime image.",
+          "Use environment interpolation and document required variables in an example file."
+        ],
+        "expectedArtifacts": [
+          "Dockerfile",
+          "compose.yaml",
+          ".dockerignore"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 240,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "docker-basics"
+        ],
+        "evaluationEnabled": false
+      }
     },
     {
       "title": "Deployment Basics",
@@ -627,7 +823,32 @@
         "description": "Containerize the catalog API, configure environment variables cleanly, and prepare a basic deployment workflow for a staging environment. Include a short release checklist covering migration safety, health verification, and rollback steps.",
         "difficulty": "HARD",
         "maxScore": 100,
-        "isRequired": true
+        "isRequired": true,
+        "instructions": "Finish the cumulative catalog project with a deterministic CI workflow and an operational release plan. The grader validates configuration and workflow behavior without requiring production credentials. Submit the exact full commit SHA.",
+        "acceptanceCriteria": [
+          "The CI workflow runs tests and builds the deployable image from a clean checkout.",
+          "Runtime configuration is externalized and the repository contains no real credentials.",
+          "A health check and release checklist cover migration, verification, and rollback.",
+          "The documented deployment procedure identifies immutable artifact versions."
+        ],
+        "hints": [
+          "Treat the commit SHA or image digest as the release identity.",
+          "Make rollback a concrete command sequence instead of a general intention."
+        ],
+        "expectedArtifacts": [
+          ".github/workflows/ci.yml",
+          ".env.example",
+          "docs/release-checklist.md"
+        ],
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "passingScore": 80,
+        "timeoutSeconds": 300,
+        "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
+        "graderCommand": [
+          "/grader/run.sh",
+          "deployment-basics"
+        ],
+        "evaluationEnabled": false
       }
     }
   ]

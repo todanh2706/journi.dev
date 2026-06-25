@@ -14,6 +14,8 @@ import journi.dev.backend.dtos.responses.ErrorResponse;
 import journi.dev.backend.dtos.responses.ValidationErrorResponse;
 import journi.dev.backend.exceptions.ResourceNotFoundException;
 import journi.dev.backend.exceptions.BadRequestException;
+import journi.dev.backend.exceptions.ForbiddenException;
+import journi.dev.backend.exceptions.ExternalServiceException;
 import journi.dev.backend.exceptions.RefreshSessionException;
 import journi.dev.backend.services.RefreshCookieService;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -65,6 +67,32 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ErrorResponse> handleExternalService(
+            ExternalServiceException ex,
+            HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.BAD_GATEWAY.value())
+                .error(HttpStatus.BAD_GATEWAY.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_GATEWAY);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

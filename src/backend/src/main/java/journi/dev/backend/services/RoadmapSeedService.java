@@ -1,5 +1,6 @@
 package journi.dev.backend.services;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ public class RoadmapSeedService {
     private static final String SEED_OWNER_EMAIL = "system+roadmaps@journi.dev";
     private static final String SEED_OWNER_PASSWORD = "system-roadmap-seed";
     private static final String REQUIRED_RELATION_TYPE = "REQUIRED";
+    private static final String PINNED_IMAGE_PATTERN = "^[^\\s]+@sha256:[0-9a-f]{64}$";
 
     private final RoadmapSeedProperties roadmapSeedProperties;
     private final RoadmapSeedDataLoader roadmapSeedDataLoader;
@@ -131,6 +133,64 @@ public class RoadmapSeedService {
             if (!orderIndexes.add(orderIndex)) {
                 throw new IllegalStateException("Duplicate node order index in roadmap seed dataset: " + orderIndex);
             }
+
+            NodeType nodeType = NodeType.from(node.nodeType());
+            boolean assessmentNode = nodeType == NodeType.PRACTICE || nodeType == NodeType.PROJECT;
+            if (assessmentNode && node.challenge() == null) {
+                throw new IllegalStateException("Assessment node requires a challenge: " + slug);
+            }
+            if (!assessmentNode && node.challenge() != null) {
+                throw new IllegalStateException("Only PRACTICE and PROJECT nodes may define a challenge: " + slug);
+            }
+            if (node.challenge() != null) {
+                validateChallenge(node.challenge(), slug);
+            }
+        }
+    }
+
+    private void validateChallenge(ChallengeDefinition challenge, String nodeSlug) {
+        requireText(challenge.title(), "Challenge title");
+        requireText(challenge.description(), "Challenge description");
+        requireText(challenge.difficulty(), "Challenge difficulty");
+        requireText(challenge.instructions(), "Challenge instructions");
+        requireNonEmptyTextList(challenge.acceptanceCriteria(), "Challenge acceptance criteria", nodeSlug);
+        requireNonEmptyTextList(challenge.hints(), "Challenge hints", nodeSlug);
+        requireNonEmptyTextList(challenge.expectedArtifacts(), "Challenge expected artifacts", nodeSlug);
+        requireNonEmptyTextList(challenge.graderCommand(), "Challenge grader command", nodeSlug);
+
+        Integer maxScore = Objects.requireNonNull(challenge.maxScore(), "Challenge max score is required");
+        Integer passingScore = Objects.requireNonNull(challenge.passingScore(), "Challenge passing score is required");
+        if (maxScore <= 0 || passingScore <= 0 || passingScore > maxScore) {
+            throw new IllegalStateException("Challenge passing score must be between 1 and max score: " + nodeSlug);
+        }
+
+        Integer timeoutSeconds = Objects.requireNonNull(challenge.timeoutSeconds(),
+                "Challenge timeout is required");
+        if (timeoutSeconds < 10 || timeoutSeconds > 900) {
+            throw new IllegalStateException("Challenge timeout must be between 10 and 900 seconds: " + nodeSlug);
+        }
+
+        String starterRepositoryUrl = requireText(challenge.starterRepositoryUrl(),
+                "Challenge starter repository url");
+        URI starterUri;
+        try {
+            starterUri = URI.create(starterRepositoryUrl);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException("Challenge starter repository url is invalid: " + nodeSlug, exception);
+        }
+        if (!"https".equalsIgnoreCase(starterUri.getScheme())
+                || !"github.com".equalsIgnoreCase(starterUri.getHost())) {
+            throw new IllegalStateException("Challenge starter repository must use public GitHub HTTPS: " + nodeSlug);
+        }
+
+        String graderImage = requireText(challenge.graderImage(), "Challenge grader image");
+        if (!graderImage.matches(PINNED_IMAGE_PATTERN)) {
+            throw new IllegalStateException("Challenge grader image must be pinned by sha256 digest: " + nodeSlug);
+        }
+        Objects.requireNonNull(challenge.evaluationEnabled(),
+                "Challenge evaluation enabled flag is required: " + nodeSlug);
+        if (!Boolean.TRUE.equals(challenge.isRequired())) {
+            throw new IllegalStateException("Seeded assessment challenge must be required: " + nodeSlug);
         }
     }
 
@@ -235,7 +295,6 @@ public class RoadmapSeedService {
 
         nodePrerequisiteRepository.deleteByNodeIds(nodeIds);
         learningContentRepository.deleteByNodeIds(nodeIds);
-        challengeRepository.deleteByNodeIds(nodeIds);
     }
 
     private int syncLearningContent(Map<String, SkillNode> nodesBySlug, List<NodeDefinition> nodeDefinitions) {
@@ -262,7 +321,7 @@ public class RoadmapSeedService {
     }
 
     private int syncChallenges(User seedOwner, Map<String, SkillNode> nodesBySlug, List<NodeDefinition> nodeDefinitions) {
-        int createdCount = 0;
+        int syncedCount = 0;
 
         for (NodeDefinition nodeDefinition : nodeDefinitions) {
             ChallengeDefinition challengeDefinition = nodeDefinition.challenge();
@@ -270,21 +329,43 @@ public class RoadmapSeedService {
                 continue;
             }
 
-            Challenge challenge = new Challenge();
-            challenge.setNode(nodesBySlug.get(nodeDefinition.slug()));
+            SkillNode node = nodesBySlug.get(nodeDefinition.slug());
+            Challenge challenge = challengeRepository.findByNode_NodeId(node.getNodeId()).stream()
+                    .findFirst()
+                    .orElseGet(Challenge::new);
+            challenge.setNode(node);
             challenge.setTitle(requireText(challengeDefinition.title(), "Challenge title"));
             challenge.setDescription(requireText(challengeDefinition.description(), "Challenge description"));
             challenge.setDifficulty(requireText(challengeDefinition.difficulty(), "Challenge difficulty"));
             challenge.setMaxScore(Objects.requireNonNull(challengeDefinition.maxScore(), "Challenge max score is required"));
             challenge.setIsRequired(Boolean.TRUE.equals(challengeDefinition.isRequired()));
-            challenge.setCreatedBy(seedOwner.getUserId());
+            challenge.setInstructions(requireText(challengeDefinition.instructions(), "Challenge instructions"));
+            challenge.setAcceptanceCriteriaJson(writeJson(challengeDefinition.acceptanceCriteria(),
+                    "challenge acceptance criteria", nodeDefinition.slug()));
+            challenge.setHintsJson(writeJson(challengeDefinition.hints(), "challenge hints", nodeDefinition.slug()));
+            challenge.setExpectedArtifactsJson(writeJson(challengeDefinition.expectedArtifacts(),
+                    "challenge expected artifacts", nodeDefinition.slug()));
+            challenge.setStarterRepositoryUrl(requireText(challengeDefinition.starterRepositoryUrl(),
+                    "Challenge starter repository url"));
+            challenge.setPassingScore(Objects.requireNonNull(challengeDefinition.passingScore(),
+                    "Challenge passing score is required"));
+            challenge.setTimeoutSeconds(Objects.requireNonNull(challengeDefinition.timeoutSeconds(),
+                    "Challenge timeout is required"));
+            challenge.setGraderImage(requireText(challengeDefinition.graderImage(), "Challenge grader image"));
+            challenge.setGraderCommandJson(writeJson(challengeDefinition.graderCommand(),
+                    "challenge grader command", nodeDefinition.slug()));
+            challenge.setEvaluationEnabled(Objects.requireNonNull(challengeDefinition.evaluationEnabled(),
+                    "Challenge evaluation enabled flag is required"));
+            if (challenge.getCreatedBy() == null) {
+                challenge.setCreatedBy(seedOwner.getUserId());
+            }
             challenge.setUpdatedBy(seedOwner.getUserId());
             challengeRepository.save(challenge);
-            createdCount++;
+            syncedCount++;
         }
 
         challengeRepository.flush();
-        return createdCount;
+        return syncedCount;
     }
 
     private int syncPrerequisites(Map<String, SkillNode> nodesBySlug, List<NodeDefinition> nodeDefinitions) {
@@ -315,7 +396,7 @@ public class RoadmapSeedService {
         return createdCount;
     }
 
-    private String writeJson(Map<String, Object> data, String label, String nodeSlug) {
+    private String writeJson(Object data, String label, String nodeSlug) {
         try {
             return objectMapper.writeValueAsString(data == null ? Map.of() : data);
         } catch (JsonProcessingException exception) {
@@ -333,6 +414,12 @@ public class RoadmapSeedService {
 
     private <T> List<T> defaultList(List<T> values) {
         return values == null ? List.of() : values;
+    }
+
+    private void requireNonEmptyTextList(List<String> values, String fieldName, String nodeSlug) {
+        if (values == null || values.isEmpty() || values.stream().anyMatch(value -> value == null || value.isBlank())) {
+            throw new IllegalStateException(fieldName + " must contain non-blank values: " + nodeSlug);
+        }
     }
 
     public record RoadmapSeedResult(

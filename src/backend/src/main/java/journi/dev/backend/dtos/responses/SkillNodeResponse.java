@@ -23,6 +23,8 @@ public class SkillNodeResponse {
     private List<LearningResourceResponse> learningResources;
     private ProgressStatus progressStatus;
     private Boolean isLocked;
+    private Boolean hasRequiredChallenge;
+    private Boolean practiceSubmissionEnabled;
     private UUID createdBy;
     private UUID updatedBy;
     private LocalDateTime createdAt;
@@ -147,6 +149,22 @@ public class SkillNodeResponse {
 
     public void setIsLocked(Boolean isLocked) {
         this.isLocked = isLocked;
+    }
+
+    public Boolean getHasRequiredChallenge() {
+        return hasRequiredChallenge;
+    }
+
+    public void setHasRequiredChallenge(Boolean hasRequiredChallenge) {
+        this.hasRequiredChallenge = hasRequiredChallenge;
+    }
+
+    public Boolean getPracticeSubmissionEnabled() {
+        return practiceSubmissionEnabled;
+    }
+
+    public void setPracticeSubmissionEnabled(Boolean practiceSubmissionEnabled) {
+        this.practiceSubmissionEnabled = practiceSubmissionEnabled;
     }
 
     public UUID getCreatedBy() {

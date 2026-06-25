@@ -81,6 +81,48 @@ public class UserNodeProgressService {
         return toResponse(savedProgress);
     }
 
+    @Transactional
+    public UserNodeProgressResponse markAssessmentInProgress(User user, SkillNode node) {
+        requireUser(user);
+        requireAssessmentNode(node);
+
+        ProgressStatus computedStatus = getComputedStatus(user, node);
+        if (computedStatus == ProgressStatus.LOCKED) {
+            throw new BadRequestException("Cannot start a locked skill node");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        UserNodeProgress progress = userNodeProgressRepository
+                .findByUser_UserIdAndNode_NodeId(user.getUserId(), node.getNodeId())
+                .orElseGet(UserNodeProgress::new);
+        progress.setUser(user);
+        progress.setNode(node);
+        if (progress.getStatus() != ProgressStatus.COMPLETED) {
+            progress.setStatus(ProgressStatus.IN_PROGRESS);
+        }
+        progress.setUnlockedAt(progress.getUnlockedAt() != null ? progress.getUnlockedAt() : now);
+        progress.setLastAccessedAt(now);
+        return toResponse(userNodeProgressRepository.save(progress));
+    }
+
+    @Transactional
+    public UserNodeProgressResponse completeAssessmentFromPassedSubmission(User user, SkillNode node) {
+        requireUser(user);
+        requireAssessmentNode(node);
+
+        LocalDateTime now = LocalDateTime.now();
+        UserNodeProgress progress = userNodeProgressRepository
+                .findByUser_UserIdAndNode_NodeId(user.getUserId(), node.getNodeId())
+                .orElseGet(UserNodeProgress::new);
+        progress.setUser(user);
+        progress.setNode(node);
+        progress.setStatus(ProgressStatus.COMPLETED);
+        progress.setUnlockedAt(progress.getUnlockedAt() != null ? progress.getUnlockedAt() : now);
+        progress.setCompletedAt(progress.getCompletedAt() != null ? progress.getCompletedAt() : now);
+        progress.setLastAccessedAt(now);
+        return toResponse(userNodeProgressRepository.save(progress));
+    }
+
     @Transactional(readOnly = true)
     public ProgressStatus getComputedStatus(User user, SkillNode node) {
         return getComputedStatuses(user, List.of(node)).getOrDefault(node.getNodeId(), ProgressStatus.LOCKED);
@@ -155,6 +197,12 @@ public class UserNodeProgressService {
     private void requireUser(User user) {
         if (user == null) {
             throw new BadRequestException("Authenticated user is required");
+        }
+    }
+
+    private void requireAssessmentNode(SkillNode node) {
+        if (node == null || (node.getNodeType() != NodeType.PRACTICE && node.getNodeType() != NodeType.PROJECT)) {
+            throw new BadRequestException("Only practice and project nodes use assessment progress");
         }
     }
 }

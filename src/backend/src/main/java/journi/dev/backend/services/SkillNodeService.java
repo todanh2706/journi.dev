@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import journi.dev.backend.dtos.requests.SkillNodeRequest;
+import journi.dev.backend.configurations.PracticeSubmissionProperties;
 import journi.dev.backend.dtos.responses.LearningResourceResponse;
 import journi.dev.backend.dtos.responses.SkillNodeResponse;
 import journi.dev.backend.entities.LearningContent;
@@ -28,6 +29,7 @@ import journi.dev.backend.exceptions.ResourceNotFoundException;
 import journi.dev.backend.mappers.SkillNodeMapper;
 import journi.dev.backend.repositories.LearningRoadmapRepository;
 import journi.dev.backend.repositories.LearningContentRepository;
+import journi.dev.backend.repositories.ChallengeRepository;
 import journi.dev.backend.repositories.SkillNodeRepository;
 import journi.dev.backend.repositories.UserRepository;
 import journi.dev.backend.utils.SlugUtils;
@@ -40,18 +42,23 @@ public class SkillNodeService {
     private final SkillNodeMapper skillNodeMapper;
     private final UserNodeProgressService userNodeProgressService;
     private final LearningContentRepository learningContentRepository;
+    private final ChallengeRepository challengeRepository;
+    private final PracticeSubmissionProperties practiceSubmissionProperties;
     private final ObjectMapper objectMapper;
 
     public SkillNodeService(SkillNodeRepository skillNodeRepository, UserRepository userRepository,
             LearningRoadmapRepository roadmapRepository, SkillNodeMapper skillNodeMapper,
             UserNodeProgressService userNodeProgressService, LearningContentRepository learningContentRepository,
-            ObjectMapper objectMapper) {
+            ChallengeRepository challengeRepository, ObjectMapper objectMapper,
+            PracticeSubmissionProperties practiceSubmissionProperties) {
         this.skillNodeRepository = skillNodeRepository;
         this.userRepository = userRepository;
         this.roadmapRepository = roadmapRepository;
         this.skillNodeMapper = skillNodeMapper;
         this.userNodeProgressService = userNodeProgressService;
         this.learningContentRepository = learningContentRepository;
+        this.challengeRepository = challengeRepository;
+        this.practiceSubmissionProperties = practiceSubmissionProperties;
         this.objectMapper = objectMapper;
     }
 
@@ -105,12 +112,25 @@ public class SkillNodeService {
                 .map(SkillNode::getNodeId)
                 .toList();
         Map<UUID, List<LearningContent>> resourcesByNodeId = getResourcesByNodeId(unlockedNodeIds);
+        Map<UUID, journi.dev.backend.entities.Challenge> requiredChallengeByNodeId = challengeRepository
+                .findByNode_NodeIdIn(nodes.stream().map(SkillNode::getNodeId).toList())
+                .stream()
+                .filter(challenge -> Boolean.TRUE.equals(challenge.getIsRequired()))
+                .collect(Collectors.toMap(
+                        challenge -> challenge.getNode().getNodeId(),
+                        challenge -> challenge,
+                        (first, ignored) -> first));
 
         return nodes.stream().map(node -> {
             SkillNodeResponse response = skillNodeMapper.toResponse(node);
             ProgressStatus progressStatus = progressStatusByNodeId.getOrDefault(node.getNodeId(), ProgressStatus.LOCKED);
             response.setProgressStatus(progressStatus);
             response.setIsLocked(progressStatus == ProgressStatus.LOCKED);
+            journi.dev.backend.entities.Challenge requiredChallenge = requiredChallengeByNodeId.get(node.getNodeId());
+            response.setHasRequiredChallenge(requiredChallenge != null);
+            response.setPracticeSubmissionEnabled(requiredChallenge != null
+                    && requiredChallenge.isEvaluationEnabled()
+                    && practiceSubmissionProperties.isEnabled());
 
             if (progressStatus == ProgressStatus.LOCKED) {
                 redactLearningDetails(response);

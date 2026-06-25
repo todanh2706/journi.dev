@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import journi.dev.backend.dtos.responses.SkillNodeResponse;
+import journi.dev.backend.configurations.PracticeSubmissionProperties;
 import journi.dev.backend.entities.LearningContent;
 import journi.dev.backend.entities.LearningRoadmap;
 import journi.dev.backend.entities.NodeType;
@@ -31,6 +32,7 @@ import journi.dev.backend.entities.SkillNode;
 import journi.dev.backend.entities.User;
 import journi.dev.backend.mappers.SkillNodeMapper;
 import journi.dev.backend.repositories.LearningContentRepository;
+import journi.dev.backend.repositories.ChallengeRepository;
 import journi.dev.backend.repositories.LearningRoadmapRepository;
 import journi.dev.backend.repositories.SkillNodeRepository;
 import journi.dev.backend.repositories.UserRepository;
@@ -56,10 +58,15 @@ class SkillNodeServiceTest {
     @Mock
     private LearningContentRepository learningContentRepository;
 
+    @Mock
+    private ChallengeRepository challengeRepository;
+
     private SkillNodeService skillNodeService;
 
     @BeforeEach
     void setUp() {
+        PracticeSubmissionProperties properties = new PracticeSubmissionProperties();
+        properties.setEnabled(true);
         skillNodeService = new SkillNodeService(
                 skillNodeRepository,
                 userRepository,
@@ -67,7 +74,9 @@ class SkillNodeServiceTest {
                 skillNodeMapper,
                 userNodeProgressService,
                 learningContentRepository,
-                new ObjectMapper());
+                challengeRepository,
+                new ObjectMapper(),
+                properties);
 
         when(skillNodeMapper.toResponse(any(SkillNode.class))).thenAnswer(invocation -> {
             SkillNode node = invocation.getArgument(0);

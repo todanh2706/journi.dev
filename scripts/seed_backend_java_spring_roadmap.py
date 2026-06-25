@@ -20,6 +20,7 @@ DOCKER_ONLY_HOST_ALIASES = {
     "journi_frontend",
     "journi_prim_db",
 }
+LOCAL_DATABASE_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -30,6 +31,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--dataset",
         default=DEFAULT_DATASET,
         help="Spring resource location for the roadmap dataset.",
+    )
+    parser.add_argument(
+        "--reset-database",
+        action="store_true",
+        help=(
+            "DESTRUCTIVE: recreate the configured database schema before seeding. "
+            "Use only for disposable local development data."
+        ),
     )
     return parser
 
@@ -186,6 +195,27 @@ def ensure_database_is_reachable(env: dict[str, str]) -> bool:
         return False
 
 
+def ensure_database_reset_is_local(env: dict[str, str]) -> bool:
+    datasource_url = env.get("SPRING_DATASOURCE_URL", "")
+    host_port = parse_postgres_host_port(datasource_url)
+    if host_port is None:
+        print(
+            "Reset mode requires a local PostgreSQL JDBC URL.",
+            file=sys.stderr,
+        )
+        return False
+
+    host, _ = host_port
+    if host not in LOCAL_DATABASE_HOSTS:
+        print(
+            f"Refusing to reset non-local PostgreSQL host: {host}",
+            file=sys.stderr,
+        )
+        return False
+
+    return True
+
+
 def find_packaged_jar(backend_dir: pathlib.Path) -> pathlib.Path | None:
     target_dir = backend_dir / "target"
     if not target_dir.exists():
@@ -219,6 +249,11 @@ def main() -> int:
     env["JOURNI_SEED_ROADMAPS_ENABLED"] = "true"
     env["JOURNI_SEED_ROADMAPS_EXIT_AFTER_RUN"] = "true"
     env["JOURNI_SEED_ROADMAPS_DATASET_LOCATION"] = args.dataset
+    if args.reset_database:
+        env["SPRING_JPA_HIBERNATE_DDL_AUTO"] = "create"
+
+    if args.reset_database and not ensure_database_reset_is_local(env):
+        return 1
 
     if not ensure_database_is_reachable(env):
         return 1
@@ -235,6 +270,11 @@ def main() -> int:
         return 1
 
     run_command = ["java", "-jar", str(jar_path)]
+    if args.reset_database:
+        print(
+            "Reset mode enabled: recreating the configured database schema before seeding.",
+            flush=True,
+        )
     print(f"Running roadmap seeder with dataset: {args.dataset}", flush=True)
     print(f"Using datasource: {env.get('SPRING_DATASOURCE_URL', '<not set>')}", flush=True)
     completed = subprocess.run(run_command, cwd=backend_dir, env=env, check=False)
