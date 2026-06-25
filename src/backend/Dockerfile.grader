@@ -1,0 +1,8 @@
+FROM eclipse-temurin:25-jdk-alpine@sha256:5ecfde8e5ecde5954ea3721155b345ef56c1d579b940c761318ad4c05959a151
+
+WORKDIR /app
+RUN apk add --no-cache bash docker-cli git
+COPY . .
+RUN chmod +x ./mvnw ./src/main/resources/grader/run.sh
+
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.profiles=grader", "-Dspring-boot.run.arguments=--spring.main.web-application-type=none"]

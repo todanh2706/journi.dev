@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: journi
 
 services:
@@ -39,6 +37,34 @@ services:
     volumes:
       - ./backend:/app
       - ~/.m2:/root/.m2
+
+  grader:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.grader
+    container_name: journi_grader
+    environment:
+      - SPRING_PROFILES_ACTIVE=grader
+      - SPRING_MAIN_WEB_APPLICATION_TYPE=none
+      - SPRING_DATASOURCE_URL=${SPRING_DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=${REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET_KEY=${GRADER_BOOTSTRAP_SECRET}
+      - FRONTEND_ALLOWED_ORIGINS=http://localhost
+      - PRACTICE_GRADER_WORKSPACE_ROOT=${PWD}/.grader-workspaces
+      - PRACTICE_GRADER_ASSETS_PATH=${PWD}/backend/src/main/resources/grader
+    depends_on:
+      - database
+      - cache
+    restart: always
+    volumes:
+      - ./backend:/app
+      - ~/.m2:/root/.m2
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PWD}/.grader-workspaces:${PWD}/.grader-workspaces
+      - ${PWD}/backend/src/main/resources/grader:${PWD}/backend/src/main/resources/grader:ro
 
   database:
     image: postgres:16
