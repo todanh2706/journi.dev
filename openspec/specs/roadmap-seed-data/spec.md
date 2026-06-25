@@ -1,8 +1,6 @@
 ## Purpose
 Describe the deterministic local seed-data capability for roadmap content, including the predefined Backend Java Spring Boot roadmap dataset, its relational graph, and rerunnable local seeding flow.
-
 ## Requirements
-
 ### Requirement: Local Roadmap Seed Execution
 The backend SHALL provide an explicit local-development seeding flow that inserts predefined roadmap data without requiring manual SQL editing. The seeding flow SHALL be safe to run more than once against the same database.
 
@@ -26,7 +24,7 @@ The seeding flow SHALL create one realistic predefined roadmap titled `Backend J
 - **THEN** they find a realistic multi-step learning path with stable slugs, valid node types, descriptive content, and milestone coverage across the Java Spring Boot backend journey
 
 ### Requirement: Rich Relational Roadmap Content
-Each of the 14 seeded roadmap nodes SHALL include topic-specific learning detail compatible with the current relational model. Nodes SHALL store a concrete summary, level, estimated effort, learner note, and at least three actionable checklist tasks in `contentJson`. Each node SHALL also have at least two related `LearningContent` rows whose HTTPS URLs resolve to real documentation, guides, courses, articles, or exercises directly relevant to that node. Resource titles and descriptions SHALL accurately identify the linked material, with authoritative sources preferred when available. `Challenge` rows SHALL remain available for milestone nodes where practical validation is appropriate.
+Each of the 14 seeded roadmap nodes SHALL include topic-specific learning detail compatible with the current relational model. Nodes SHALL store a concrete summary, level, estimated effort, learner note, and at least three actionable checklist tasks in `contentJson`. Each node SHALL also have at least two related `LearningContent` rows whose HTTPS URLs resolve to real documentation, guides, courses, articles, or exercises directly relevant to that node. Resource titles and descriptions SHALL accurately identify the linked material, with authoritative sources preferred when available. Every seeded `PRACTICE` and `PROJECT` node SHALL have exactly one required deterministic `Challenge` with instructions, acceptance criteria, hints, expected artifacts, a public HTTPS starter repository, passing score, timeout, pinned grader image, fixed evaluator command, and explicit non-null evaluation activation owned by the seed dataset.
 
 #### Scenario: Inspecting a seeded roadmap node
 - **WHEN** a contributor inspects any of the 14 seeded node records
@@ -41,13 +39,25 @@ Each of the 14 seeded roadmap nodes SHALL include topic-specific learning detail
 - **WHEN** the curated seed dataset is validated during development
 - **THEN** every learning-resource URL resolves successfully or redirects to a valid page whose content matches the resource title and node topic
 
-#### Scenario: Inspecting milestone challenges
-- **WHEN** a contributor inspects the `Challenge` rows related to seeded milestone nodes
-- **THEN** they find realistic challenge titles and descriptions linked through valid `@ManyToOne` relationships to the correct `SkillNode` records
+#### Scenario: Inspecting required assessment challenges
+- **WHEN** a contributor inspects the seeded `PRACTICE` and `PROJECT` nodes
+- **THEN** each has exactly one required challenge linked through a valid `@ManyToOne` relationship
+- **THEN** each challenge contains complete learner-facing metadata and server-owned deterministic evaluator configuration
+- **THEN** no `LESSON` node is assigned a required code-evaluation challenge
+
+#### Scenario: Validating starter repositories and grader configuration
+- **WHEN** the practice dataset is validated during development
+- **THEN** every starter-repository URL resolves to the intended public GitHub repository
+- **THEN** every grader image is pinned by digest and every command, timeout, passing score, acceptance criterion, and expected artifact passes schema validation
+
+#### Scenario: Inspecting staged challenge activation
+- **WHEN** a contributor inspects the seeded challenge activation values
+- **THEN** `Collections and Generics` is enabled as the first pilot
+- **THEN** the other seven `PRACTICE` and `PROJECT` challenges are explicitly disabled until their grader contracts are approved
 
 #### Scenario: Re-running the enriched seed dataset
-- **WHEN** a contributor reruns the seeder after the enriched content has already been stored
-- **THEN** the backend updates the scoped node details and relational resources without creating duplicate rows
+- **WHEN** a contributor reruns the seeder after the enriched content and challenge definitions have already been stored
+- **THEN** the backend updates the scoped node details, relational resources, and challenges without creating duplicate rows
 
 ### Requirement: Relationship-Safe Prerequisite Graph
 The seeding flow SHALL persist prerequisite edges that respect the current roadmap relationship rules. Every seeded prerequisite SHALL reference nodes from the same roadmap, follow the intended unlock progression, and satisfy existing uniqueness constraints.

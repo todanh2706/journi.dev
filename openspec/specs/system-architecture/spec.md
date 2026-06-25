@@ -1,8 +1,6 @@
 ## Purpose
 Capture the repository-wide technical baseline for Journi.dev, including the code layout, runtime topology, backend layering, and current security posture.
-
 ## Requirements
-
 ### Requirement: Repository Layering
 The system SHALL be organized as a split frontend and backend repository with documentation and OpenSpec assets alongside the product code. The primary source tree SHALL keep the React application in `src/frontend`, the Spring Boot application in `src/backend`, reference documents in `docs`, and specification artifacts in `openspec`.
 
@@ -11,11 +9,12 @@ The system SHALL be organized as a split frontend and backend repository with do
 - **THEN** they find separate top-level locations for product code, reference documentation, and OpenSpec artifacts
 
 ### Requirement: Local Runtime Topology
-The local development environment SHALL be runnable as a four-service container topology. `src/docker-compose.yml` SHALL define a frontend container, a backend container, a PostgreSQL database container, and a Redis cache container, with the backend configured to depend on the database and cache services.
+The local development environment SHALL be runnable as a five-service container topology. `src/docker-compose.yml` SHALL define frontend, backend, grader, PostgreSQL database, and Redis cache services. The public backend and non-web grader SHALL depend on the database and cache; only the grader boundary SHALL receive the local container-launch capability and grader workspace/assets mounts.
 
 #### Scenario: Reading the local orchestration file
 - **WHEN** a contributor reviews `src/docker-compose.yml`
-- **THEN** they can trace how the frontend, backend, database, and cache are started together for local development
+- **THEN** they can trace how frontend, backend, grader, database, and cache are started together for local development
+- **THEN** the Docker socket is mounted only into the grader service and no grader HTTP port is exposed
 
 ### Requirement: Layered Backend Structure
 The backend SHALL follow a layered Spring Boot structure. HTTP entry points SHALL live in `controllers`, business logic in `services`, persistence adapters in `repositories`, transport models in `dtos`, security wiring in `configurations`, and database-mapped aggregates in `entities`.
@@ -25,22 +24,27 @@ The backend SHALL follow a layered Spring Boot structure. HTTP entry points SHAL
 - **THEN** they find controllers, services, repositories, DTOs, entities, and security configuration packages with distinct responsibilities
 
 ### Requirement: JWT-Aware Security Baseline
-The backend SHALL initialize stateless Spring Security with a JWT filter and DAO-backed authentication provider. The current security baseline SHALL permit anonymous access to all routes, while still attempting to parse bearer tokens and populate the security context when an `Authorization` header is present.
+The backend SHALL use stateless Spring Security with a JWT filter and DAO-backed authentication provider. Signup, login, refresh, logout, and CSRF bootstrap endpoints SHALL remain publicly reachable according to their endpoint contracts, while other API routes SHALL require an authenticated principal. A valid bearer access token SHALL populate the security context before protected controllers execute.
 
-#### Scenario: Calling the API without a bearer token
-- **WHEN** a request reaches the backend without an `Authorization` header
-- **THEN** the security chain allows the request to continue without authenticated principal context
+#### Scenario: Call a protected API without authentication
+- **WHEN** a request reaches a protected roadmap, challenge, submission, or user endpoint without valid authentication
+- **THEN** the security chain rejects it with an authentication error before protected business logic executes
 
-#### Scenario: Calling the API with a bearer token
-- **WHEN** a request includes `Authorization: Bearer <token>`
-- **THEN** the JWT filter attempts to extract the username, load the corresponding user, and attach authentication to the security context before the controller executes
+#### Scenario: Call a protected API with a bearer token
+- **WHEN** a request includes a valid `Authorization: Bearer <token>` header
+- **THEN** the JWT filter loads the corresponding user and attaches authentication to the security context before the controller executes
+
+#### Scenario: Call a public authentication endpoint
+- **WHEN** a client calls an allowlisted authentication bootstrap endpoint without an access token
+- **THEN** the security chain permits the request to reach that endpoint's own validation and CSRF rules
 
 ### Requirement: Partially Connected Vertical Slice
-The current repository baseline SHALL document an implementation gap between product intent and running behavior. The frontend already presents the main user journeys and product themes, while the backend exposes working auth, user, roadmap, node, streak, and notification endpoints and also carries a broader persistence model for future domains such as submissions, peer review, leaderboards, AI review, and deployment environments.
+The current repository SHALL distinguish implemented MVP behavior from future domain scaffolding. Authentication, roadmap retrieval, progress-aware nodes, learner-confirmed lesson completion, challenge delivery, public GitHub revision submission, deterministic grader orchestration, submission feedback, and assessment-driven progress are implemented vertical slices. Peer review, AI review, GitHub webhooks, connected private repositories, community collaboration, advanced ranking, and deployment automation remain future or persistence-only capabilities.
 
-#### Scenario: Comparing the codebase with the product documents
-- **WHEN** a contributor reads the README, SRS, ERD, and current source code together
-- **THEN** they can distinguish which capabilities already have UI or API behavior and which capabilities currently exist as domain scaffolding only
+#### Scenario: Comparing the codebase with product documents
+- **WHEN** a contributor reads the README, SRS, ERD, OpenSpec artifacts, and current source code together
+- **THEN** they can identify deterministic GitHub practice as implemented but configuration-gated
+- **THEN** they can distinguish future peer, AI, webhook, private-repository, community, ranking, and deployment capabilities from current runtime behavior
 
 ### Requirement: Feature-Oriented Frontend Source Layout
 The frontend source tree SHALL organize domain-specific code under feature folders while preserving route-level pages and shared primitives.

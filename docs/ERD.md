@@ -149,6 +149,16 @@ Progress-state semantics:
 - `difficulty`: Varchar(20)
 - `max_score`: Integer
 - `is_required`: Boolean
+- `instructions`: Text
+- `acceptance_criteria_json`: Text
+- `hints_json`: Text
+- `expected_artifacts_json`: Text
+- `starter_repository_url`: Varchar(500)
+- `passing_score`: Integer
+- `timeout_seconds`: Integer
+- `grader_image`: Varchar(500), server-owned digest-pinned image
+- `grader_command_json`: Text, server-owned fixed argument array
+- `evaluation_enabled`: Boolean NOT NULL; the roadmap seeder writes an explicit value for every challenge
 - `created_by`: UUID FK
 - `updated_by`: UUID FK
 - `created_at`: Timestamp
@@ -198,11 +208,25 @@ Progress-state semantics:
 - `submission_id`: UUID PK
 - `user_id`: UUID FK
 - `challenge_id`: UUID FK
-- `github_repo_id`: UUID FK
+- `github_repo_id`: UUID legacy nullable reference
+- `repository_url`: Varchar(500), normalized GitHub HTTPS URL
 - `branch_name`: Varchar(100)
 - `commit_hash`: Varchar(100)
+- `attempt_number`: Integer
 - `submitted_at`: Timestamp
-- `status`: Varchar(30)
+- `status`: Varchar(30), `SUBMITTED`, `EVALUATING`, `PASSED`, `NEEDS_CHANGES`, or `FAILED`
+- `score`: Integer
+- `result_summary`: Varchar(500)
+- `feedback_json`: Text
+- `output_excerpt`: Text
+- `failure_category`: Varchar(40)
+- `evaluation_lease_until`: Timestamp
+- `evaluation_started_at`: Timestamp
+- `evaluation_completed_at`: Timestamp
+- `version`: Bigint optimistic-lock version
+- Unique constraint: (`user_id`, `challenge_id`, `commit_hash`)
+
+Legacy rows without a resolvable challenge or immutable repository metadata remain auditable but are not evaluation-eligible. Redis Stream messages contain only `submission_id`; PostgreSQL remains the lifecycle source of truth.
 
 ### PEER_REVIEW
 
@@ -440,6 +464,9 @@ erDiagram
         UUID node_id FK
         Varchar title
         Integer max_score
+        Integer passing_score
+        Integer timeout_seconds
+        Boolean evaluation_enabled
     }
 
     LEADERBOARD {
@@ -474,8 +501,13 @@ erDiagram
         UUID user_id FK
         UUID challenge_id FK
         UUID github_repo_id FK
+        Varchar repository_url
+        Varchar branch_name
         Varchar commit_hash
+        Integer attempt_number
         Varchar status
+        Integer score
+        Timestamp evaluation_lease_until
     }
 
     PEER_REVIEW {

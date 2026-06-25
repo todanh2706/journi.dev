@@ -33,19 +33,19 @@ Each unlocked Node provides a self-contained learning environment with a summary
 * Only `AVAILABLE` or `IN_PROGRESS` Nodes of type `LESSON` can be manually completed.
 * Repeating the completion request is idempotent and does not create duplicate progress records or replace the original completion time.
 * Completing a locked Node is rejected.
-* `PRACTICE`, `PROJECT`, `QUIZ`, and `CHALLENGE` Nodes do not use self-reported completion; they require a type-specific assessment flow when that flow is implemented.
+* `PRACTICE` and `PROJECT` Nodes require a passing deterministic GitHub submission. `QUIZ` and `CHALLENGE` node types remain unsupported by this workflow.
 
-### 2.2 AI-Powered Code Review
+### 2.2 Deterministic GitHub Practice
 Competency assessment is based on "Proof of Work" rather than theoretical multiple-choice tests.
 
 **Challenge-based Learning:**
-Challenge-oriented Nodes can require practical proof of work instead of self-reported completion. For example, a Backend `CHALLENGE` Node might require a complete RESTful API system meeting specific endpoint criteria. This assessment workflow is separate from the MVP manual-completion flow used by theory `LESSON` Nodes.
+Each seeded `PRACTICE` or `PROJECT` Node has one required challenge with instructions, acceptance criteria, hints, expected artifacts, a public starter repository, a passing score, a timeout, and server-owned grader configuration. Locked Nodes do not expose the brief or submission controls.
 
 **Submission & Automated Evaluation Process:**
-Users push their source code to a personal GitHub repository and provide the link to the system. The AI Agent interacts directly with the GitHub API to pull individual source code files for Static Analysis. The system scores based on directory structure, clean code principles, design patterns, and basic security (e.g., XSS and SQL Injection prevention configurations).
+Users push source code to a public GitHub repository and submit its HTTPS URL, branch, and full commit SHA. The API verifies the immutable revision, stores learner-owned attempt history, and sends only the submission ID through Redis Streams. A separate non-web grader checks out the exact SHA and runs challenge-owned deterministic checks inside an isolated, network-disabled, resource-limited container.
 
 **Feedback & Decision:**
-When the later AI assessment workflow is implemented, it can return "Pass" to complete an assessment Node or "Request Changes" to require revision. This future decision path does not replace learner-confirmed completion for theory `LESSON` Nodes.
+The lifecycle is `SUBMITTED`, `EVALUATING`, then `PASSED`, `NEEDS_CHANGES`, or infrastructure `FAILED`. Only a trusted `PASSED` result completes the submitting learner's assessment Node. A corrected SHA creates a new attempt; infrastructure failure retries the same attempt. AI feedback and AI pass/fail decisions are explicitly outside this implementation.
 
 ### 2.3 Milestone Communities
 Avoids fragmenting the community by individual Nodes, which leads to disjointed interactions.
@@ -74,22 +74,22 @@ Dynamically ranks users by niche (Backend, Frontend, Security). Scores are calcu
 * **Backend:** Leverages **Java Spring Boot** as the core framework. This architecture ensures Enterprise-standard robustness, high load capacity, and strict Object-Oriented Programming (OOP) structure to handle complex business logic flows.
 * **Database:** * *Primary DB:* Utilizes **PostgreSQL** to store complex cross-entity relationships (User - Node - Community) and leverages its flexible JSONB storage capabilities for Roadmap data.
     * *In-memory DB:* Uses **Redis** for caching static data (reducing DB queries) and high-speed processing for real-time features like Leaderboards and Streak Tracking.
-* **AI Agent & Code Review System:**
-    * Utilizes **GitHub Webhooks combined with the GitHub API** to automatically listen for submission events (Push/Pull Request) and directly retrieve source code.
-    * Integrates the **Gemini API** to act as the Code Reviewer Agent, performing static code analysis, checking clean code and design patterns, and returning automated feedback.
+* **Practice Evaluation System:**
+    * Uses the **GitHub API** only to verify public repositories, branches, and exact commit SHAs. Private repositories, OAuth, and webhooks are not supported.
+    * Uses **Redis Streams** between the public API and a separate grader process. The grader alone may launch restricted evaluation containers.
 * **DevOps & Deployment Infrastructure:**
     * Uses **Docker** to containerize all Backend and Database services, ensuring consistency between development and production environments.
     * *Frontend Hosting:* Deployed directly on **Vercel** to leverage automated CI/CD and optimize rendering performance.
     * *Backend Hosting:* Deployed on an **AWS EC2** virtual server, providing full Linux system administration control and flexibility to tweak the Docker container runtime environment.
 
 ### 3.2 Performance & Security
-* **Performance:** The Backend system (Spring Boot on EC2) must have optimally configured Connection Pools with PostgreSQL and appropriate Heap memory management to handle sudden traffic spikes, especially during AI Agent webhook executions and code analysis.
+* **Performance:** The API remains separate from untrusted evaluation work. Grader concurrency, leases, repository size, output, and runtime limits are configurable and conservative by default.
 * **Security:** Applies OWASP web security standards. Due to the strict separation between Frontend (Vercel) and Backend (EC2), CORS and CSRF policies must be tightly controlled. Encrypts user tokens (JWT) and absolutely secures sensitive credentials (Gemini API Key, GitHub Tokens) via independent Environment Variables on the server.
 
 ---
 
 ## 4. ESTIMATED DEVELOPMENT ROADMAP
 * **Phase 1:** Build the predefined Roadmap framework, learning graph UI, theoretical learning content, manual lesson completion, and prerequisite-based unlocking.
-* **Phase 2:** Implement the AI Agent Code Review, connect the GitHub API, and finalize the submission flow (Proof of Work).
+* **Phase 2:** Harden and roll out deterministic GitHub practice beyond the first enabled pilot.
 * **Phase 3:** Expand community features (Clusters), Leaderboards, Heatmaps, and the Email Reminder system.
 * **Phase 4:** Upgrade the context-aware dynamic Roadmap generation AI (Prompt-based) and expand the node library.

@@ -1,11 +1,11 @@
 # Journi.dev: Interactive Programming Learning and Roadmap Navigation System
 
-Journi.dev is a comprehensive, gamified Learning Management System (LMS) and Social Learning Network designed to guide Information Technology students and entry-level developers along structured programming paths. The platform replaces static learning roadmaps with interactive skill trees, practical hands-on challenges, automated AI-powered code reviews, and community cluster discussion rooms to boost engagement and retention.
+Journi.dev is currently a roadmap tracker for beginner developers. Its MVP guides an authenticated learner through predefined skill nodes, learning content, explicit lesson completion, GitHub-based practice, and prerequisite unlocking. AI review, webhooks, social learning, and dynamic roadmaps remain future work.
 
 ## Core Features
 
 - **Interactive Roadmap System**: A directed-acyclic-graph (DAG) visualization representing hierarchical skill nodes. For unlocked theory lessons, learners explicitly mark the lesson as completed after reading it; completing every prerequisite unlocks the dependent node.
-- **AI-Powered Code Review**: Practical, submission-based evaluation rather than standard multiple-choice testing. Users push their work to personal GitHub repositories, which are processed via GitHub Webhooks. The AI agent performs static code analysis to evaluate directory structures, clean code practices, security configurations, and design patterns.
+- **Deterministic GitHub Practice**: Learners work in a local IDE, push a public GitHub repository, and submit a branch plus exact commit SHA. A separate grader worker runs server-owned checks in a network-disabled, resource-limited container. No AI model or webhook participates in pass/fail decisions.
 - **Milestone Communities**: Discussions organized around major milestones (e.g., Database Cluster, DevOps Cluster) to foster interactions among peers at similar stages of learning.
 - **Gamification and Retention**: Activity heatmaps, learning streak tracking, automated inactive-user reminders, and specialized niche leaderboards (Frontend, Backend, Security) based on code quality and contributions.
 
@@ -27,8 +27,8 @@ Journi.dev is a comprehensive, gamified Learning Management System (LMS) and Soc
 
 ### Integration Services
 
-- **GitHub API and Webhooks**: Subscriptions to user submission events (push / pull request) to ingest repository content.
-- **Gemini API**: Powers the automated code reviewer agent, providing context-aware feedback and evaluation results.
+- **GitHub API**: Verifies public repositories, branches, and immutable commit SHAs submitted by learners.
+- **Redis Streams**: Delivers submission identifiers from the public API to the separate grader process.
 
 ## Directory Structure
 
@@ -77,7 +77,8 @@ Key entities include:
 - **User**: General profile and role settings.
 - **RefreshSession**: Stores only refresh-token digests and rotation-family state for revocation and replay detection.
 - **LearningRoadmap & SkillNode**: Represent roadmap hierarchies.
-- **Submission, CodeReview, & AIReviewTask**: Track the lifecycle of pushed code challenges, AI evaluation feedback, and processing tasks.
+- **Challenge & Submission**: Store learner briefs, server-owned deterministic grader configuration, immutable GitHub attempts, bounded feedback, and evaluation leases.
+- **CodeReview & AIReviewTask**: Reserved future domains; they are not used by deterministic practice grading.
 - **CommunityClusters & ClusterMembership**: Support social network functionalities and discussions.
 
 For a full specification of fields, types, and schema relationships, refer to the [ERD Documentation](docs/ERD.md).
@@ -87,7 +88,7 @@ For a full specification of fields, types, and schema relationships, refer to th
 ### Prerequisites
 
 - Docker and Docker Compose
-- Java Development Kit (JDK) 17 or higher (for local backend development)
+- Java Development Kit (JDK) 25 (for local backend development)
 - Node.js 18 or higher (for local frontend development)
 - PostgreSQL client (optional)
 - Redis CLI (optional)
@@ -119,6 +120,7 @@ SPRING_DB_URL=jdbc:postgresql://database:5432/journi_db
 # Redis Configuration
 REDIS_HOST=cache
 REDIS_PORT=6379
+GRADER_BOOTSTRAP_SECRET=replace_with_a_separate_base64_encoded_32_byte_secret
 
 # src/backend/.env
 JWT_SECRET_KEY=replace_with_a_base64_encoded_32_byte_secret
@@ -130,6 +132,7 @@ REFRESH_COOKIE_SAME_SITE=Lax
 CSRF_COOKIE_NAME=journi_csrf
 CSRF_HEADER_NAME=X-CSRF-TOKEN
 FRONTEND_ALLOWED_ORIGINS=http://localhost:3000
+PRACTICE_SUBMISSIONS_ENABLED=false
 ```
 
 Set `REFRESH_COOKIE_SECURE=true` behind production HTTPS. `SameSite=None` is rejected unless the secure flag is enabled. The origin allowlist is comma-separated and must contain exact frontend origins; credentialed CORS does not support a wildcard origin.
@@ -154,11 +157,25 @@ Journi.dev uses explicit learner confirmation for theory-oriented `LESSON` nodes
 4. The frontend reloads the roadmap-node data. Any dependent node whose prerequisites are now all completed becomes `AVAILABLE` immediately; no separate unlock row is required.
 5. `LOCKED` nodes never expose an enabled completion action. Already completed lessons show a completed state instead of another active button.
 
-Checklist items remain read-only guidance in the MVP. They help the learner decide when to self-confirm completion but are not stored individually and do not block the completion request. Manual lesson completion does not apply to `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE` nodes; those node types require their own assessment workflow when implemented.
+Checklist items remain read-only guidance in the MVP. They help the learner decide when to self-confirm completion but are not stored individually and do not block the completion request. Manual lesson completion does not apply to `PRACTICE`, `PROJECT`, `QUIZ`, or `CHALLENGE` nodes.
+
+### GitHub Practice Flow
+
+`PRACTICE` and `PROJECT` nodes use an assessment path instead of self-reported completion:
+
+1. `GET /api/v1/skill-nodes/{nodeId}/challenge` returns the required brief only when the node is unlocked.
+2. The learner works locally and submits a public `https://github.com/{owner}/{repository}` URL, branch, and full commit SHA to `POST /api/v1/users/me/challenges/{challengeId}/submissions`.
+3. The backend verifies the public revision, stores an idempotent `SUBMITTED` attempt, marks the node `IN_PROGRESS`, and publishes only the submission ID to Redis after commit.
+4. The `grader` process atomically claims the attempt, checks out the exact SHA, and launches the challenge-owned command in an ephemeral container with no network, no capabilities, a non-root user, read-only grader assets, and CPU, memory, process, output, and timeout limits.
+5. `PASSED` completes the assessment node and unlocks eligible dependents. `NEEDS_CHANGES` accepts a corrected commit as a new attempt. Infrastructure `FAILED` can retry the same attempt number.
+
+Submission history and detail endpoints are learner-owned. Evaluator images, commands, hidden checks, provider credentials, and other learners' attempts are never returned. `PRACTICE_SUBMISSIONS_ENABLED` defaults to `false`; enable it only after local isolation checks pass. `Collections and Generics` is the first challenge-level pilot, while the remaining assessment definitions stay disabled individually.
+
+Rollback is configuration-first: set `PRACTICE_SUBMISSIONS_ENABLED=false` and stop the `grader` service. Existing attempts and completed progress remain auditable; do not delete submission history or reverse completed assessment progress without an explicit data migration.
 
 ### Running with Docker Compose
 
-To start the complete local environment (frontend, backend, database, and cache) concurrently, run:
+To start the complete local environment (frontend, backend, grader, database, and cache) concurrently, run:
 
 ```bash
 cd src
@@ -171,6 +188,7 @@ Access the applications on the following ports:
 - **Backend API**: `http://localhost:8000` (mapped to `8080` internally)
 - **PostgreSQL**: `localhost:5432`
 - **Redis Cache**: `localhost:6379`
+- **Grader worker**: no public port; it alone receives the local Docker socket mount
 
 ### Local Development Setup
 
@@ -210,13 +228,26 @@ What this does:
 
 The seeder is idempotent, so you can rerun the same command after editing the dataset or backend seed logic.
 
+If the local database was created before the current challenge schema, recreate the disposable local schema and seed it in one run:
+
+```bash
+cd src
+docker compose stop backend grader
+cd ..
+python3 scripts/seed_backend_java_spring_roadmap.py --reset-database
+cd src
+docker compose up --build
+```
+
+`--reset-database` deletes all data in the configured database schema. It is intended only for local development data that can be recreated.
+
 To use a different dataset location:
 
 ```bash
 python3 scripts/seed_backend_java_spring_roadmap.py --dataset classpath:seed-data/backend-java-spring-roadmap.json
 ```
 
-To fully reset the seeded roadmap in local development, either:
+To reset only the seeded roadmap while preserving the rest of the schema, either:
 
 - delete the seeded roadmap and the `system_roadmap_seed` user from the local database, then rerun the script, or
 - recreate the local database and rerun the script
@@ -239,6 +270,6 @@ To fully reset the seeded roadmap in local development, either:
 ## Development Roadmap
 
 - **Phase 1**: Construct learning roadmaps, visual interactive graph interfaces, linked learning materials, learner-confirmed lesson completion, and prerequisite-based unlocking.
-- **Phase 2**: Implement the AI reviewer agent pipeline, integrate GitHub webhooks, and finalize challenge submissions.
+- **Phase 2**: Harden and enable deterministic GitHub practice challenges beyond the first pilot.
 - **Phase 3**: Roll out cluster-based community boards, leaderboards, heatmap updates, and automated email reminders.
-- **Phase 4**: Add context-aware prompt personalization for dynamic roadmap customization.
+- **Phase 4**: Evaluate AI review, GitHub webhooks, and dynamic roadmap generation as separate post-MVP features.
