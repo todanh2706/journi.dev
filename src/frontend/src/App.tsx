@@ -7,6 +7,7 @@ import DashboardOverview from "./pages/Dashboard/DashboardOverview";
 import ProfilePage from "./pages/Dashboard/ProfilePage";
 import RoadmapsPage from "./pages/Roadmaps/RoadmapsPage";
 import RoadmapDetailPage from "./pages/Roadmaps/RoadmapDetailPage";
+import PracticePage from "./pages/Roadmaps/PracticePage";
 import NotFound from "./pages/NotFound";
 import { SlideUpTransition } from "./utils/transitions/SlideUpTransition";
 import { AuthProvider } from "./features/auth";
@@ -24,6 +25,7 @@ function AnimatedRoutes() {
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="roadmaps" element={<RoadmapsPage />} />
                 <Route path="roadmaps/:roadmapId" element={<RoadmapDetailPage />} />
+                <Route path="roadmaps/:roadmapId/nodes/:nodeId/practice" element={<PracticePage />} />
             </Route>
             <Route path="*" element={<SlideUpTransition key="not-found"><NotFound /></SlideUpTransition>} />
         </Routes>

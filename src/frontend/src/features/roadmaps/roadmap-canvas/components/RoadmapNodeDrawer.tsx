@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, BookOpen, Check, CheckCircle2, Clock3, ExternalLink, Gauge, Lightbulb, Link2, ListChecks, LoaderCircle, Lock, X } from "lucide-react";
+import { AlertCircle, BookOpen, Check, CheckCircle2, Clock3, Code2, ExternalLink, Gauge, History, Lightbulb, Link2, ListChecks, LoaderCircle, Lock, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import type { RoadmapSkillNodeData } from "../types";
-import { canShowLearningDetails, getCompletionActionPresentation, getFocusTrapTarget, NODE_STATUS_LABELS, normalizeLearningCollections, SAFE_EXTERNAL_LINK_PROPS, shouldCloseNodeDrawer, type CompletionRequestState } from "../utils/nodeDetailPresentation";
+import { canShowLearningDetails, getCompletionActionPresentation, getFocusTrapTarget, getPracticeAction, NODE_STATUS_LABELS, normalizeLearningCollections, SAFE_EXTERNAL_LINK_PROPS, shouldCloseNodeDrawer, type CompletionRequestState } from "../utils/nodeDetailPresentation";
 
 interface RoadmapNodeDrawerProps {
   node: RoadmapSkillNodeData | null;
@@ -45,6 +46,7 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
   const { checklist, learningResources } = normalizeLearningCollections(skillNode);
   const completionState = completionRequest.nodeId === skillNode.nodeId ? completionRequest.state : "idle";
   const completionAction = getCompletionActionPresentation(skillNode, completionState);
+  const practiceAction = getPracticeAction(skillNode);
 
   const handleComplete = async () => {
     if (!completionAction.visible || completionAction.disabled) return;
@@ -188,6 +190,37 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
                 <p className="mt-2 text-center text-xs leading-5 text-subtle">Confirm after you have finished the reading and checklist.</p>
               </div>
             ) : null}
+          </footer>
+        ) : practiceAction !== "hidden" ? (
+          <footer className="border-t border-line bg-surface/70 p-5">
+            {practiceAction === "history" ? (
+              <Link
+                to={`/dashboard/roadmaps/${skillNode.roadmapId}/nodes/${skillNode.nodeId}/practice`}
+                className="secondary-button w-full"
+              >
+                <History aria-hidden="true" size={16} /> View practice history
+              </Link>
+            ) : practiceAction === "start" ? (
+              <div>
+                <Link
+                  to={`/dashboard/roadmaps/${skillNode.roadmapId}/nodes/${skillNode.nodeId}/practice`}
+                  className="primary-button w-full"
+                >
+                  <Code2 aria-hidden="true" size={16} /> Start practice
+                </Link>
+                <p className="mt-2 text-center text-xs leading-5 text-subtle">Work in your IDE, push to GitHub, then submit an exact commit.</p>
+              </div>
+            ) : (
+              <div>
+                <Link
+                  to={`/dashboard/roadmaps/${skillNode.roadmapId}/nodes/${skillNode.nodeId}/practice`}
+                  className="secondary-button w-full"
+                >
+                  <BookOpen aria-hidden="true" size={16} /> View practice brief
+                </Link>
+                <p className="mt-2 text-center text-xs leading-5 text-subtle">Review the task now. Submission will unlock when its grader is ready.</p>
+              </div>
+            )}
           </footer>
         ) : null}
       </aside>

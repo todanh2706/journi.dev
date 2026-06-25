@@ -9,6 +9,11 @@ type LessonCompletionAccess = LearningDetailAccess & {
   nodeType: string;
 };
 
+type PracticeAccess = LessonCompletionAccess & {
+  hasRequiredChallenge: boolean;
+  practiceSubmissionEnabled: boolean;
+};
+
 export type CompletionRequestState = "idle" | "pending" | "error";
 
 export const NODE_STATUS_LABELS: Record<NodeProgressStatus, string> = {
@@ -30,6 +35,13 @@ export const canManuallyCompleteLesson = (node: LessonCompletionAccess) =>
   node.nodeType === "LESSON"
   && canShowLearningDetails(node)
   && node.progressStatus !== "COMPLETED";
+
+export const getPracticeAction = (node: PracticeAccess): "start" | "brief" | "history" | "hidden" => {
+  const isSupported = node.nodeType === "PRACTICE" || node.nodeType === "PROJECT";
+  if (!isSupported || !canShowLearningDetails(node) || !node.hasRequiredChallenge) return "hidden";
+  if (node.progressStatus === "COMPLETED") return "history";
+  return node.practiceSubmissionEnabled ? "start" : "brief";
+};
 
 export const getCompletionActionPresentation = (
   node: LessonCompletionAccess,

@@ -7,12 +7,14 @@ import {
   findSelectedNodeById,
   getCompletionActionPresentation,
   getFocusTrapTarget,
+  getPracticeAction,
   NODE_STATUS_LABELS,
   normalizeLearningCollections,
   SAFE_EXTERNAL_LINK_PROPS,
   shouldCloseNodeDrawer,
 } from "../src/features/roadmaps/roadmap-canvas/utils/nodeDetailPresentation.ts";
 import { completeRoadmapNode } from "../src/features/roadmaps/utils/completeRoadmapNode.ts";
+import { canRetryEvaluation, canSubmitRevision, focusPracticeHeading, isActiveSubmission, isTerminalSubmission, pollingDelay, practiceRoute, roadmapRoute, shouldRefreshRoadmap, SUBMISSION_STATUS_TITLES, validateSubmission } from "../src/features/practice/practice.utils.ts";
 
 test("maps every backend progress status to an explicit label", () => {
   assert.deepEqual(NODE_STATUS_LABELS, {
@@ -116,4 +118,63 @@ test("preserves the selected node identity when refreshed graph data replaces it
 
   assert.deepEqual(findSelectedNodeById(refreshedNodes, selectedNodeId), { progressStatus: "COMPLETED" });
   assert.equal(findSelectedNodeById(refreshedNodes, null), null);
+});
+
+test("keeps unlocked practice briefs accessible when automated submission is disabled", () => {
+  const base = { nodeType: "PRACTICE", isLocked: false, progressStatus: "AVAILABLE", hasRequiredChallenge: true, practiceSubmissionEnabled: true };
+  assert.equal(getPracticeAction(base), "start");
+  assert.equal(getPracticeAction({ ...base, progressStatus: "COMPLETED" }), "history");
+  assert.equal(getPracticeAction({ ...base, practiceSubmissionEnabled: false }), "brief");
+  assert.equal(getPracticeAction({ ...base, isLocked: true, progressStatus: "LOCKED" }), "hidden");
+  assert.equal(getPracticeAction({ ...base, nodeType: "LESSON" }), "hidden");
+  assert.equal(getPracticeAction({ ...base, hasRequiredChallenge: false }), "hidden");
+});
+
+test("validates repository, branch, and immutable commit fields before submission", () => {
+  assert.deepEqual(validateSubmission({ repositoryUrl: "https://github.com/alex/catalog", branch: "feature/books", commitSha: "a".repeat(40) }), {});
+  assert.deepEqual(Object.keys(validateSubmission({ repositoryUrl: "http://localhost/repo", branch: "../main", commitSha: "abc" })).sort(), ["branch", "commitSha", "repositoryUrl"]);
+});
+
+test("defines bounded polling and terminal lifecycle semantics", () => {
+  assert.equal(isActiveSubmission("SUBMITTED"), true);
+  assert.equal(isActiveSubmission("EVALUATING"), true);
+  for (const status of ["PASSED", "NEEDS_CHANGES", "FAILED"]) assert.equal(isTerminalSubmission(status), true);
+  assert.deepEqual([0, 1, 2, 3, 4, 20].map(pollingDelay), [1500, 2500, 4000, 7000, 10000, 10000]);
+});
+
+test("prevents duplicate submission and applies infrastructure-only retry semantics", () => {
+  assert.equal(canSubmitRevision(false), true);
+  assert.equal(canSubmitRevision(true), false);
+  assert.equal(canSubmitRevision(false, "SUBMITTED"), false);
+  assert.equal(canSubmitRevision(false, "EVALUATING"), false);
+  assert.equal(canSubmitRevision(false, "NEEDS_CHANGES"), true);
+  assert.equal(canRetryEvaluation("FAILED", true), true);
+  assert.equal(canRetryEvaluation("NEEDS_CHANGES", true), false);
+  assert.equal(canRetryEvaluation("FAILED", false), false);
+});
+
+test("defines distinct safe learner-facing status presentations", () => {
+  assert.deepEqual(SUBMISSION_STATUS_TITLES, {
+    SUBMITTED: "Queued",
+    EVALUATING: "Evaluating",
+    PASSED: "Passed",
+    NEEDS_CHANGES: "Needs changes",
+    FAILED: "Infrastructure failure",
+  });
+});
+
+test("refreshes once on pass and builds stable practice navigation paths", () => {
+  assert.equal(shouldRefreshRoadmap("PASSED", null, "submission-1"), true);
+  assert.equal(shouldRefreshRoadmap("PASSED", "submission-1", "submission-1"), false);
+  assert.equal(shouldRefreshRoadmap("NEEDS_CHANGES", null, "submission-1"), false);
+  assert.equal(practiceRoute("roadmap-1", "node-4"), "/dashboard/roadmaps/roadmap-1/nodes/node-4/practice");
+  assert.equal(roadmapRoute("roadmap-1"), "/dashboard/roadmaps/roadmap-1");
+  assert.equal(roadmapRoute(), "/dashboard/roadmaps");
+});
+
+test("moves focus to the practice heading after navigation data loads", () => {
+  let focused = false;
+  focusPracticeHeading({ focus: () => { focused = true; } });
+  assert.equal(focused, true);
+  assert.doesNotThrow(() => focusPracticeHeading(null));
 });

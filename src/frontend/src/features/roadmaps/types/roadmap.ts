@@ -37,6 +37,8 @@ export interface SkillNode {
   learningResources: LearningResource[] | null;
   progressStatus: NodeProgressStatus;
   isLocked: boolean;
+  hasRequiredChallenge: boolean;
+  practiceSubmissionEnabled: boolean;
   createdBy: string | null;
   updatedBy: string | null;
   createdAt: string;
