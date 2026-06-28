@@ -80,6 +80,8 @@ Important directories:
 
 ```text
 journi.dev/
+├── AGENTS.md
+├── DESIGN.md
 ├── docs/
 │   ├── ERD.md
 │   ├── ERD.png
@@ -113,6 +115,12 @@ Product/domain direction:
 - `docs/SRS.md`
 - `docs/ERD.md`
 - `openspec/specs/*/spec.md`
+
+Frontend design and structure direction:
+
+- `DESIGN.md`
+- `src/frontend/src/index.css`
+- Relevant page/component/service/type/context for the frontend task
 
 Existing implementation patterns:
 
@@ -152,24 +160,13 @@ Frontend dependency rules:
 8. Do not duplicate API base URLs inside components.
 9. Do not add dependencies for problems that can be solved with existing project tools.
 
-### Journi.dev UI Direction
+### Frontend Design Source of Truth
 
-Use this as the project design constitution for frontend work:
+Detailed frontend UI, theme, component, and placement guidance lives in `DESIGN.md`.
 
-- Product type: developer learning platform, roadmap tracker, and skill-tree LMS.
-- Primary experience: authenticated product UI, not a marketing landing page.
-- Visual mood: premium dark learning OS, calm, technical, focused, and credible.
-- Base surfaces: off-black backgrounds, subtle panels, thin borders, restrained depth, and soft glass only when it improves readability.
-- Accent system: use gold as the single brand and primary-action accent on black and warm-neutral surfaces. Use green for completed/success, red for error/destructive, neutral gray for locked/disabled, and gold for selected, available, or current learning focus. Do not reintroduce purple, indigo, violet, or cyan as competing brand accents.
-- Typography: keep Inter unless the project explicitly adopts a new type system. Use clear hierarchy, compact spacing, and readable body text.
-- Shape: use a consistent radius scale. Prefer `rounded-xl` and `rounded-2xl` for panels and `rounded-lg` or `rounded-xl` for controls. Avoid random pill-heavy UI.
-- Components: prioritize roadmap nodes, side drawers, toolbars, tabs, command/search bars, badges, checklist rows, progress states, and empty/error/loading states.
-- Icons: use `lucide-react`, because it is already installed. Keep stroke width consistent and do not mix icon families without an explicit reason.
-- Motion: use subtle hover, focus, drawer, and state transitions. Avoid excessive bounce, cinematic scroll effects, or animation libraries not already present.
-- Avoid generic AI UI tells: three-card marketing sections, purple mesh blobs, fake dashboards, decorative status dots, random gradients, and placeholder product screenshots.
-- Prefer reusable components and small design tokens over one-off Tailwind class soup when the pattern is repeated.
-- Preserve the MVP flow first: login, choose roadmap, view nodes, open node, complete node, unlock next node.
-- When updating Taste Skill, preserve the `Journi.dev Project Override` section in `.agents/skills/design-taste-frontend/SKILL.md`.
+Read `DESIGN.md` before changing frontend pages, components, layout, styling, or feature structure. It overrides generic frontend taste rules for Journi-specific visual decisions.
+
+When updating Taste Skill, preserve the `Journi.dev Project Override` section in `.agents/skills/design-taste-frontend/SKILL.md`.
 
 ### Backend Stack
 

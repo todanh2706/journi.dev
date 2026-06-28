@@ -12,14 +12,14 @@ description: Anti-slop frontend skill for landing pages, portfolios, and redesig
 
 ## Journi.dev Project Override
 
-This repository has a product-specific design constitution. It overrides generic Taste Skill preferences whenever there is a conflict.
+This repository has a product-specific design constitution in `DESIGN.md`. It overrides generic Taste Skill preferences whenever there is a conflict.
 
 - Product type: developer learning platform, roadmap tracker, and skill-tree LMS.
 - Primary experience: authenticated product UI, not a marketing landing page.
 - MVP priority: preserve and improve the flow `login -> choose roadmap -> view nodes -> open node -> complete node -> unlock next node`.
 - Visual mood: premium dark learning OS, calm, technical, focused, and credible.
-- Base surfaces: off-black backgrounds, subtle panels, thin borders, restrained depth, and soft glass only when it improves readability.
-- Accent system: use one primary accent from the indigo, violet, or cyan family. Use green, amber, and red only for semantic states such as completed, available, locked, warning, and error.
+- Base surfaces: warm off-black backgrounds, subtle panels, thin borders, restrained depth, and soft glass only when it improves readability.
+- Accent system: use gold as the single brand and primary-action accent. Use green for completed/success, red for error/destructive, warning amber for warnings, and neutral gray for locked/disabled states. Do not introduce purple, indigo, violet, or cyan as competing brand accents.
 - Typography: keep Inter unless the project explicitly adopts a new type system. Use clear hierarchy, compact spacing, and readable body text.
 - Shape: use a consistent radius scale. Prefer `rounded-xl` and `rounded-2xl` for panels and `rounded-lg` or `rounded-xl` for controls. Avoid random pill-heavy UI.
 - Components: prioritize roadmap nodes, side drawers, toolbars, tabs, command/search bars, badges, checklist rows, progress states, and empty/error/loading states.
@@ -29,7 +29,7 @@ This repository has a product-specific design constitution. It overrides generic
 - Prefer reusable components and small design tokens over one-off Tailwind class soup when the pattern is repeated.
 - Do not add new runtime dependencies or design systems for visual polish unless the user explicitly asks.
 
-Use Taste Skill as a quality filter for Journi's existing React, TypeScript, Tailwind v4, Vite, and Lucide setup. For dashboard-like product surfaces, apply only the relevant hierarchy, spacing, state, accessibility, and anti-slop rules. Do not force landing-page rules onto roadmap, drawer, toolbar, auth, dashboard, or progress-tracking screens.
+Before frontend UI work in this repository, read `DESIGN.md`, `src/frontend/src/index.css`, and the relevant existing page/component files. Use Taste Skill as a quality filter for Journi's existing React, TypeScript, Tailwind v4, Vite, and Lucide setup. For dashboard-like product surfaces, apply only the relevant hierarchy, spacing, state, accessibility, and anti-slop rules. Do not force landing-page rules onto roadmap, drawer, toolbar, auth, dashboard, or progress-tracking screens.
 
 ---
 
