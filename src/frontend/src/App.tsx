@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Welcome from "./pages/Home/Welcome";
+import HomePage from "./pages/Home/HomePage";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import DashboardLayout from "./pages/Dashboard/DashboardLayout";
@@ -17,7 +17,7 @@ function AnimatedRoutes() {
     
     return (
         <Routes location={location}>
-            <Route path="/" element={<SlideUpTransition key="home"><Welcome /></SlideUpTransition>} />
+            <Route path="/" element={<SlideUpTransition key="home"><HomePage /></SlideUpTransition>} />
             <Route path="/signin" element={<SlideUpTransition key="signin"><SignIn /></SlideUpTransition>} />
             <Route path="/signup" element={<SlideUpTransition key="signup"><SignUp /></SlideUpTransition>} />
             <Route path="/dashboard" element={<DashboardLayout />}>
