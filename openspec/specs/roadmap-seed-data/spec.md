@@ -59,6 +59,14 @@ Each of the 14 seeded roadmap nodes SHALL include topic-specific learning detail
 - **WHEN** a contributor reruns the seeder after the enriched content and challenge definitions have already been stored
 - **THEN** the backend updates the scoped node details, relational resources, and challenges without creating duplicate rows
 
+### Requirement: Challenge-Specific Starter Repositories In Seed Data
+The roadmap seed dataset SHALL assign every seeded `PRACTICE` and `PROJECT` challenge a challenge-specific public starter repository that matches the learner-facing brief and expected artifacts.
+
+#### Scenario: Inspect starter repositories in the seeded assessment dataset
+- **WHEN** a contributor inspects the seeded assessment challenge definitions
+- **THEN** each challenge exposes a public starter repository URL intended for that challenge's learner workflow
+- **THEN** the starter repository URLs are not generic placeholders shared with the main application source repository
+
 ### Requirement: Relationship-Safe Prerequisite Graph
 The seeding flow SHALL persist prerequisite edges that respect the current roadmap relationship rules. Every seeded prerequisite SHALL reference nodes from the same roadmap, follow the intended unlock progression, and satisfy existing uniqueness constraints.
 

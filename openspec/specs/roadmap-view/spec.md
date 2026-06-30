@@ -166,7 +166,7 @@ The system SHALL preserve distinct roadmap-detail loading, error, and empty stat
 - **THEN** the system displays a concise empty state instead of an empty graph or fabricated node content
 
 ### Requirement: Practice Entry from the Roadmap
-The authenticated roadmap experience SHALL expose a route to the practice workspace for unlocked `PRACTICE` and `PROJECT` nodes with a required challenge. Unlocked incomplete nodes SHALL show **Start practice** when automated submission is enabled and **View practice brief** when it is disabled. Locked nodes, lesson nodes, unsupported assessment types, and nodes without a valid required challenge SHALL NOT expose a practice route action.
+The authenticated roadmap experience SHALL expose a route to the practice workspace for unlocked `PRACTICE` and `PROJECT` nodes with a required challenge. Unlocked incomplete nodes SHALL show **Start practice** when automated submission is enabled and **View practice brief** when it is disabled. Unlocked assessment node metadata SHALL include the curated challenge-specific `starterRepositoryUrl` when a required challenge exists, and locked assessment node metadata SHALL NOT expose that URL before prerequisites are complete. Locked nodes, lesson nodes, unsupported assessment types, and nodes without a valid required challenge SHALL NOT expose a practice route action.
 
 #### Scenario: Start an enabled practice
 - **WHEN** a learner opens an `AVAILABLE` or `IN_PROGRESS` `PRACTICE` or `PROJECT` node whose required challenge accepts submissions and activates **Start practice**
@@ -178,9 +178,15 @@ The authenticated roadmap experience SHALL expose a route to the practice worksp
 - **THEN** the frontend navigates to the same practice workspace route
 - **THEN** the brief, criteria, hints, resources, artifacts, and starter repository remain readable while the submission form is unavailable
 
+#### Scenario: Open a starter repository from an unlocked assessment node
+- **WHEN** a learner opens the details for an unlocked `PRACTICE` or `PROJECT` node with a required challenge
+- **THEN** the roadmap node metadata includes the curated public starter repository URL for that challenge
+- **THEN** the **Open starter repository** action opens that backend-provided GitHub URL in a safe new tab
+
 #### Scenario: Inspect a locked assessment node
 - **WHEN** a learner opens a locked `PRACTICE` or `PROJECT` node
 - **THEN** the drawer shows prerequisite guidance and no enabled practice or submission action
+- **THEN** the roadmap node metadata does not expose the starter repository URL
 
 #### Scenario: Reopen a completed practice
 - **WHEN** a learner opens a completed `PRACTICE` or `PROJECT` node

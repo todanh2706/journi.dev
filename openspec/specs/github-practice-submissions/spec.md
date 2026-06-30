@@ -23,6 +23,14 @@ The backend SHALL expose the required challenge for an authenticated learner onl
 - **THEN** the backend returns the learner-facing brief with submission reported as disabled
 - **THEN** no evaluator configuration is disclosed
 
+### Requirement: Challenge Brief Returns The Curated Starter Repository
+The learner-facing challenge brief SHALL return the curated starter repository associated with the requested unlocked assessment node, even when automated evaluation remains disabled.
+
+#### Scenario: Retrieve a brief for a disabled assessment challenge
+- **WHEN** an authenticated learner requests an unlocked `PRACTICE` or `PROJECT` challenge whose automated evaluation is disabled
+- **THEN** the response still includes the curated challenge-specific starter repository URL for that assessment node
+- **THEN** the starter repository metadata remains learner-visible even though submission is unavailable
+
 ### Requirement: Immutable GitHub Revision Submission
 The system SHALL allow an authenticated learner to submit a readable public GitHub repository, branch, and full commit SHA for an unlocked required challenge only when both the global practice submission flag and challenge evaluation flag are enabled. The backend SHALL normalize and allowlist the repository URL, verify that the revision belongs to the repository, persist the exact revision as a learner-owned attempt, and prevent arbitrary clone hosts or user-selected execution commands.
 
