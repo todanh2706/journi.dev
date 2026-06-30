@@ -34,6 +34,7 @@ import journi.dev.backend.repositories.SubmissionRepository;
 @Profile("grader")
 public class RedisSubmissionWorker {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisSubmissionWorker.class);
+    private static final String REDIS_BUSY_GROUP_ERROR = "BUSYGROUP";
     private final StringRedisTemplate redisTemplate;
     private final SubmissionEvaluationProcessor processor;
     private final SubmissionRepository submissionRepository;
@@ -68,15 +69,28 @@ public class RedisSubmissionWorker {
         try {
             redisTemplate.opsForStream().createGroup(streamName, ReadOffset.latest(), groupName);
         } catch (RedisSystemException exception) {
-            if (exception.getMessage() == null || !exception.getMessage().contains("BUSYGROUP")) {
+            if (!isConsumerGroupAlreadyExists(exception)) {
                 throw exception;
             }
+            LOGGER.info("Redis consumer group {} already exists for stream {}; continuing", groupName, streamName);
         } finally {
             if (bootstrap != null) {
                 redisTemplate.opsForStream().delete(streamName, bootstrap);
             }
         }
         republishSubmittedRows();
+    }
+
+    private boolean isConsumerGroupAlreadyExists(RedisSystemException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && message.contains(REDIS_BUSY_GROUP_ERROR)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     @Scheduled(fixedDelayString = "${practice.submission.poll-delay-ms:1000}")
