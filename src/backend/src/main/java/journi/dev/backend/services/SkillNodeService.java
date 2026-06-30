@@ -128,7 +128,11 @@ public class SkillNodeService {
             response.setIsLocked(progressStatus == ProgressStatus.LOCKED);
             journi.dev.backend.entities.Challenge requiredChallenge = requiredChallengeByNodeId.get(node.getNodeId());
             response.setHasRequiredChallenge(requiredChallenge != null);
+            response.setStarterRepositoryUrl(requiredChallenge != null && progressStatus != ProgressStatus.LOCKED
+                    ? requiredChallenge.getStarterRepositoryUrl()
+                    : null);
             response.setPracticeSubmissionEnabled(requiredChallenge != null
+                    && progressStatus != ProgressStatus.LOCKED
                     && requiredChallenge.isEvaluationEnabled()
                     && practiceSubmissionProperties.isEnabled());
 

@@ -194,7 +194,7 @@
           "src/practice/collections-and-generics/Book.java",
           "src/practice/collections-and-generics/README.md"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-collections-and-generics",
         "passingScore": 80,
         "timeoutSeconds": 120,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -310,7 +310,7 @@
           "src/main/java/dev/journi/practice/jdbc/JdbcBookRepository.java",
           "src/main/java/dev/journi/practice/jdbc/Book.java"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-jdbc-basics",
         "passingScore": 80,
         "timeoutSeconds": 180,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -468,7 +468,7 @@
           "src/main/java/dev/journi/catalog/controllers/BookController.java",
           "src/main/java/dev/journi/catalog/services/BookService.java"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-rest-api-development",
         "passingScore": 80,
         "timeoutSeconds": 300,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -543,7 +543,7 @@
           "src/main/java/dev/journi/catalog/entities/Author.java",
           "src/main/java/dev/journi/catalog/repositories/BookRepository.java"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-spring-data-jpa",
         "passingScore": 80,
         "timeoutSeconds": 300,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -618,7 +618,7 @@
           "src/main/java/dev/journi/catalog/controllers/AuthenticationController.java",
           "src/main/java/dev/journi/catalog/services/AuthenticationService.java"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-spring-security-and-jwt",
         "passingScore": 80,
         "timeoutSeconds": 300,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -692,7 +692,7 @@
           "src/test/java/dev/journi/catalog/services/BookServiceTest.java",
           "src/test/java/dev/journi/catalog/controllers/BookControllerTest.java"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-testing-basics",
         "passingScore": 80,
         "timeoutSeconds": 300,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -766,7 +766,7 @@
           "compose.yaml",
           ".dockerignore"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-docker-basics",
         "passingScore": 80,
         "timeoutSeconds": 240,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",
@@ -840,7 +840,7 @@
           ".env.example",
           "docs/release-checklist.md"
         ],
-        "starterRepositoryUrl": "https://github.com/todanh2706/journi.dev",
+        "starterRepositoryUrl": "https://github.com/todanh2706/journi-practice-deployment-basics",
         "passingScore": 80,
         "timeoutSeconds": 300,
         "graderImage": "maven:3.9-eclipse-temurin-25@sha256:01ef98a139ed64622c086bac54d1e167453d0f2ff68b69d00978f26d8736215c",

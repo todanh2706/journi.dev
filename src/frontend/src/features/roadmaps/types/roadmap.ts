@@ -38,6 +38,7 @@ export interface SkillNode {
   progressStatus: NodeProgressStatus;
   isLocked: boolean;
   hasRequiredChallenge: boolean;
+  starterRepositoryUrl: string | null;
   practiceSubmissionEnabled: boolean;
   createdBy: string | null;
   updatedBy: string | null;

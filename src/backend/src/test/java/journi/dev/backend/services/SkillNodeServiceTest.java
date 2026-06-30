@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import journi.dev.backend.dtos.responses.SkillNodeResponse;
 import journi.dev.backend.configurations.PracticeSubmissionProperties;
+import journi.dev.backend.entities.Challenge;
 import journi.dev.backend.entities.LearningContent;
 import journi.dev.backend.entities.LearningRoadmap;
 import journi.dev.backend.entities.NodeType;
@@ -183,6 +184,41 @@ class SkillNodeServiceTest {
         assertThat(response.getLearningResources()).isEmpty();
     }
 
+    @DisplayName("[TEST] Assessment node metadata exposes starter repositories only after unlock")
+    @Test
+    void getNodesByRoadmapIncludesStarterRepositoryForUnlockedAssessmentNodes() {
+        User user = user();
+        LearningRoadmap roadmap = roadmap();
+        SkillNode lockedPractice = node(roadmap, "jdbc-basics", 1);
+        lockedPractice.setNodeType(NodeType.PRACTICE);
+        SkillNode availablePractice = node(roadmap, "collections-and-generics", 2);
+        availablePractice.setNodeType(NodeType.PRACTICE);
+        String starterRepositoryUrl = "https://github.com/todanh2706/journi-practice-collections-and-generics";
+        List<SkillNode> nodes = List.of(lockedPractice, availablePractice);
+
+        when(skillNodeRepository.findByRoadmap_RoadmapIdOrderByOrderIndexAsc(roadmap.getRoadmapId()))
+                .thenReturn(nodes);
+        when(userNodeProgressService.getComputedStatuses(user, nodes)).thenReturn(Map.of(
+                lockedPractice.getNodeId(), ProgressStatus.LOCKED,
+                availablePractice.getNodeId(), ProgressStatus.AVAILABLE));
+        when(learningContentRepository.findByNode_NodeIdIn(anyCollection())).thenReturn(List.of());
+        when(challengeRepository.findByNode_NodeIdIn(anyCollection())).thenReturn(List.of(
+                requiredChallenge(lockedPractice, "https://github.com/todanh2706/journi-practice-jdbc-basics", false),
+                requiredChallenge(availablePractice, starterRepositoryUrl, true)));
+
+        List<SkillNodeResponse> responses = skillNodeService.getNodesByRoadmap(roadmap.getRoadmapId(), user);
+
+        SkillNodeResponse lockedResponse = responses.get(0);
+        assertThat(lockedResponse.getHasRequiredChallenge()).isTrue();
+        assertThat(lockedResponse.getStarterRepositoryUrl()).isNull();
+        assertThat(lockedResponse.getPracticeSubmissionEnabled()).isFalse();
+
+        SkillNodeResponse availableResponse = responses.get(1);
+        assertThat(availableResponse.getHasRequiredChallenge()).isTrue();
+        assertThat(availableResponse.getStarterRepositoryUrl()).isEqualTo(starterRepositoryUrl);
+        assertThat(availableResponse.getPracticeSubmissionEnabled()).isTrue();
+    }
+
     private static SkillNode node(LearningRoadmap roadmap, String slug, int orderIndex) {
         SkillNode node = new SkillNode();
         node.setNodeId(UUID.randomUUID());
@@ -211,6 +247,16 @@ class SkillNodeServiceTest {
         resource.setSourceUrl(url);
         resource.setContentBody("Read the relevant sections.");
         return resource;
+    }
+
+    private static Challenge requiredChallenge(SkillNode node, String starterRepositoryUrl, boolean evaluationEnabled) {
+        Challenge challenge = new Challenge();
+        challenge.setChallengeId(UUID.randomUUID());
+        challenge.setNode(node);
+        challenge.setIsRequired(true);
+        challenge.setStarterRepositoryUrl(starterRepositoryUrl);
+        challenge.setEvaluationEnabled(evaluationEnabled);
+        return challenge;
     }
 
     private static LearningRoadmap roadmap() {

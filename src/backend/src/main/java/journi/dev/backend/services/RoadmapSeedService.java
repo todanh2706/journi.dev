@@ -2,10 +2,12 @@ package journi.dev.backend.services;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -47,6 +49,9 @@ public class RoadmapSeedService {
     private static final String SEED_OWNER_PASSWORD = "system-roadmap-seed";
     private static final String REQUIRED_RELATION_TYPE = "REQUIRED";
     private static final String PINNED_IMAGE_PATTERN = "^[^\\s]+@sha256:[0-9a-f]{64}$";
+    private static final String MAIN_SOURCE_REPOSITORY_URL = "https://github.com/todanh2706/journi.dev";
+    private static final String GITHUB_OWNER_PATTERN = "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$";
+    private static final String GITHUB_REPOSITORY_PATTERN = "^[A-Za-z0-9._-]+$";
 
     private final RoadmapSeedProperties roadmapSeedProperties;
     private final RoadmapSeedDataLoader roadmapSeedDataLoader;
@@ -123,6 +128,7 @@ public class RoadmapSeedService {
 
         Set<String> nodeSlugs = new LinkedHashSet<>();
         Set<Integer> orderIndexes = new LinkedHashSet<>();
+        Set<String> starterRepositoryUrls = new LinkedHashSet<>();
         for (NodeDefinition node : dataset.nodes()) {
             String slug = requireText(node.slug(), "Node slug");
             if (!nodeSlugs.add(slug)) {
@@ -143,12 +149,17 @@ public class RoadmapSeedService {
                 throw new IllegalStateException("Only PRACTICE and PROJECT nodes may define a challenge: " + slug);
             }
             if (node.challenge() != null) {
-                validateChallenge(node.challenge(), slug);
+                String starterRepositoryUrl = validateChallenge(node.challenge(), slug);
+                if (!starterRepositoryUrls.add(starterRepositoryUrl.toLowerCase(Locale.ROOT))) {
+                    throw new IllegalStateException(
+                            "Duplicate challenge starter repository in roadmap seed dataset: "
+                                    + starterRepositoryUrl);
+                }
             }
         }
     }
 
-    private void validateChallenge(ChallengeDefinition challenge, String nodeSlug) {
+    private String validateChallenge(ChallengeDefinition challenge, String nodeSlug) {
         requireText(challenge.title(), "Challenge title");
         requireText(challenge.description(), "Challenge description");
         requireText(challenge.difficulty(), "Challenge difficulty");
@@ -172,16 +183,7 @@ public class RoadmapSeedService {
 
         String starterRepositoryUrl = requireText(challenge.starterRepositoryUrl(),
                 "Challenge starter repository url");
-        URI starterUri;
-        try {
-            starterUri = URI.create(starterRepositoryUrl);
-        } catch (IllegalArgumentException exception) {
-            throw new IllegalStateException("Challenge starter repository url is invalid: " + nodeSlug, exception);
-        }
-        if (!"https".equalsIgnoreCase(starterUri.getScheme())
-                || !"github.com".equalsIgnoreCase(starterUri.getHost())) {
-            throw new IllegalStateException("Challenge starter repository must use public GitHub HTTPS: " + nodeSlug);
-        }
+        String validatedStarterRepositoryUrl = validateStarterRepositoryUrl(starterRepositoryUrl, nodeSlug);
 
         String graderImage = requireText(challenge.graderImage(), "Challenge grader image");
         if (!graderImage.matches(PINNED_IMAGE_PATTERN)) {
@@ -192,6 +194,50 @@ public class RoadmapSeedService {
         if (!Boolean.TRUE.equals(challenge.isRequired())) {
             throw new IllegalStateException("Seeded assessment challenge must be required: " + nodeSlug);
         }
+        return validatedStarterRepositoryUrl;
+    }
+
+    private String validateStarterRepositoryUrl(String starterRepositoryUrl, String nodeSlug) {
+        URI starterUri;
+        try {
+            starterUri = URI.create(starterRepositoryUrl);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException("Challenge starter repository url is invalid: " + nodeSlug, exception);
+        }
+
+        if (!"https".equalsIgnoreCase(starterUri.getScheme())
+                || !"github.com".equalsIgnoreCase(starterUri.getHost())
+                || starterUri.getUserInfo() != null
+                || starterUri.getPort() != -1
+                || starterUri.getQuery() != null
+                || starterUri.getFragment() != null) {
+            throw new IllegalStateException("Challenge starter repository must use public GitHub HTTPS: " + nodeSlug);
+        }
+
+        List<String> pathSegments = Arrays.stream((starterUri.getPath() == null ? "" : starterUri.getPath()).split("/"))
+                .filter(segment -> !segment.isBlank())
+                .toList();
+        if (pathSegments.size() != 2) {
+            throw new IllegalStateException(
+                    "Challenge starter repository must be a GitHub repository URL: " + nodeSlug);
+        }
+
+        String owner = pathSegments.get(0);
+        String repository = pathSegments.get(1);
+        if (!owner.matches(GITHUB_OWNER_PATTERN)
+                || !repository.matches(GITHUB_REPOSITORY_PATTERN)
+                || repository.toLowerCase(Locale.ROOT).endsWith(".git")) {
+            throw new IllegalStateException(
+                    "Challenge starter repository must be a valid GitHub owner/repository URL: " + nodeSlug);
+        }
+
+        String canonicalUrl = "https://github.com/" + owner + "/" + repository;
+        if (MAIN_SOURCE_REPOSITORY_URL.equalsIgnoreCase(canonicalUrl)) {
+            throw new IllegalStateException(
+                    "Challenge starter repository must not point to the main Journi.dev source repository: "
+                            + nodeSlug);
+        }
+        return canonicalUrl;
     }
 
     private User upsertSeedOwner() {

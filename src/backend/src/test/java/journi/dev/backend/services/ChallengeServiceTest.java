@@ -101,6 +101,27 @@ class ChallengeServiceTest {
     }
 
     @Test
+    void returnsCuratedStarterRepositoryForUnlockedDisabledChallenge() {
+        User user = user();
+        SkillNode node = node(NodeType.PRACTICE);
+        Challenge challenge = challenge(node);
+        challenge.setEvaluationEnabled(false);
+        challenge.setStarterRepositoryUrl("https://github.com/todanh2706/journi-practice-rest-api-development");
+        when(skillNodeRepository.findById(node.getNodeId())).thenReturn(Optional.of(node));
+        when(userNodeProgressService.getComputedStatus(user, node)).thenReturn(ProgressStatus.AVAILABLE);
+        when(challengeRepository.findByNode_NodeId(node.getNodeId())).thenReturn(List.of(challenge));
+        when(submissionRepository.findFirstByUser_UserIdAndChallenge_ChallengeIdOrderByAttemptNumberDesc(
+                user.getUserId(), challenge.getChallengeId())).thenReturn(Optional.empty());
+
+        ChallengeResponse response = challengeService.getChallenge(node.getNodeId(), user);
+
+        assertThat(response.progressStatus()).isEqualTo(ProgressStatus.AVAILABLE);
+        assertThat(response.starterRepositoryUrl())
+                .isEqualTo("https://github.com/todanh2706/journi-practice-rest-api-development");
+        assertThat(response.submissionEnabled()).isFalse();
+    }
+
+    @Test
     void rejectsLockedChallengeBeforeLoadingChallengeMetadata() {
         User user = user();
         SkillNode node = node(NodeType.PRACTICE);

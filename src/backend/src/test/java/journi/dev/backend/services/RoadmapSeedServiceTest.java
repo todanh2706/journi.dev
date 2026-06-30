@@ -1,8 +1,12 @@
 package journi.dev.backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import journi.dev.backend.entities.Challenge;
 import journi.dev.backend.entities.LearningContent;
@@ -43,6 +48,18 @@ import journi.dev.backend.repositories.UserRepository;
 @SpringBootTest
 class RoadmapSeedServiceTest {
     private static final String ROADMAP_SLUG = "backend-java-spring-boot-developer";
+    private static final Map<String, String> EXPECTED_STARTER_REPOSITORIES = Map.ofEntries(
+            Map.entry("collections-and-generics",
+                    "https://github.com/todanh2706/journi-practice-collections-and-generics"),
+            Map.entry("jdbc-basics", "https://github.com/todanh2706/journi-practice-jdbc-basics"),
+            Map.entry("rest-api-development",
+                    "https://github.com/todanh2706/journi-practice-rest-api-development"),
+            Map.entry("spring-data-jpa", "https://github.com/todanh2706/journi-practice-spring-data-jpa"),
+            Map.entry("spring-security-and-jwt",
+                    "https://github.com/todanh2706/journi-practice-spring-security-and-jwt"),
+            Map.entry("testing-basics", "https://github.com/todanh2706/journi-practice-testing-basics"),
+            Map.entry("docker-basics", "https://github.com/todanh2706/journi-practice-docker-basics"),
+            Map.entry("deployment-basics", "https://github.com/todanh2706/journi-practice-deployment-basics"));
 
     @Autowired
     private RoadmapSeedService roadmapSeedService;
@@ -157,6 +174,9 @@ class RoadmapSeedServiceTest {
                 .hasSizeGreaterThanOrEqualTo(2));
 
         List<Challenge> challenges = challengeRepository.findByNode_NodeIdIn(nodeIds);
+        Map<String, String> starterRepositoriesBySlug = challenges.stream()
+                .collect(Collectors.toMap(challenge -> challenge.getNode().getSlug(),
+                        Challenge::getStarterRepositoryUrl));
         assertThat(challenges).hasSize(8).allSatisfy(challenge -> {
             assertThat(challenge.getTitle()).isNotBlank();
             assertThat(challenge.getDescription()).isNotBlank();
@@ -173,6 +193,14 @@ class RoadmapSeedServiceTest {
             assertJsonArrayNotEmpty(challenge.getGraderCommandJson());
             assertThat(nodeIds).contains(challenge.getNode().getNodeId());
         });
+        assertThat(starterRepositoriesBySlug)
+                .containsExactlyInAnyOrderEntriesOf(EXPECTED_STARTER_REPOSITORIES);
+        assertThat(starterRepositoriesBySlug.values())
+                .doesNotHaveDuplicates()
+                .allSatisfy(starterRepositoryUrl -> assertThat(starterRepositoryUrl)
+                        .startsWith("https://github.com/todanh2706/journi-practice-")
+                        .doesNotEndWith(".git")
+                        .doesNotContain("journi.dev"));
         assertThat(challenges)
                 .extracting(challenge -> challenge.getNode().getSlug())
                 .containsExactlyInAnyOrder(
@@ -267,6 +295,39 @@ class RoadmapSeedServiceTest {
         assertThat(nodePrerequisiteRepository.findByChildNode_NodeIdIn(secondNodeIds)).hasSize(firstPrerequisiteCount);
     }
 
+    @DisplayName("[TEST] Roadmap seeder rejects duplicate starter repository mappings")
+    @Test
+    void seedConfiguredRoadmapsRejectsDuplicateStarterRepositoryMappings() throws IOException {
+        Path dataset = writeDatasetWithStarterRepositoryOverrides(Map.of(
+                "jdbc-basics", EXPECTED_STARTER_REPOSITORIES.get("collections-and-generics")));
+
+        assertThatThrownBy(() -> roadmapSeedService.seedFromLocation(dataset.toUri().toString()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Duplicate challenge starter repository");
+    }
+
+    @DisplayName("[TEST] Roadmap seeder rejects the main application repository as a starter repository")
+    @Test
+    void seedConfiguredRoadmapsRejectsMainSourceRepositoryPlaceholder() throws IOException {
+        Path dataset = writeDatasetWithStarterRepositoryOverrides(Map.of(
+                "jdbc-basics", "https://github.com/todanh2706/journi.dev"));
+
+        assertThatThrownBy(() -> roadmapSeedService.seedFromLocation(dataset.toUri().toString()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("main Journi.dev source repository");
+    }
+
+    @DisplayName("[TEST] Roadmap seeder rejects malformed starter repository URLs")
+    @Test
+    void seedConfiguredRoadmapsRejectsMalformedStarterRepositoryUrls() throws IOException {
+        Path dataset = writeDatasetWithStarterRepositoryOverrides(Map.of(
+                "jdbc-basics", "https://github.com/todanh2706/journi-practice-jdbc-basics/tree/main"));
+
+        assertThatThrownBy(() -> roadmapSeedService.seedFromLocation(dataset.toUri().toString()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must be a GitHub repository URL");
+    }
+
     private void assertJsonArrayNotEmpty(String json) {
         try {
             JsonNode value = objectMapper.readTree(json);
@@ -275,5 +336,27 @@ class RoadmapSeedServiceTest {
         } catch (IOException exception) {
             throw new AssertionError("Expected a valid JSON array", exception);
         }
+    }
+
+    private Path writeDatasetWithStarterRepositoryOverrides(Map<String, String> overrides) throws IOException {
+        JsonNode dataset;
+        try (InputStream inputStream = RoadmapSeedServiceTest.class
+                .getResourceAsStream("/seed-data/backend-java-spring-roadmap.json")) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Seed dataset fixture is missing");
+            }
+            dataset = objectMapper.readTree(inputStream);
+        }
+
+        for (JsonNode node : dataset.path("nodes")) {
+            String slug = node.path("slug").asText();
+            if (overrides.containsKey(slug) && node.path("challenge") instanceof ObjectNode challenge) {
+                challenge.put("starterRepositoryUrl", overrides.get(slug));
+            }
+        }
+
+        Path datasetFile = Files.createTempFile("journi-roadmap-seed-", ".json");
+        objectMapper.writeValue(datasetFile.toFile(), dataset);
+        return datasetFile;
     }
 }

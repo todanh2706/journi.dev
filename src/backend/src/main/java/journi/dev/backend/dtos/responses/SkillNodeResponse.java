@@ -24,6 +24,7 @@ public class SkillNodeResponse {
     private ProgressStatus progressStatus;
     private Boolean isLocked;
     private Boolean hasRequiredChallenge;
+    private String starterRepositoryUrl;
     private Boolean practiceSubmissionEnabled;
     private UUID createdBy;
     private UUID updatedBy;
@@ -157,6 +158,14 @@ public class SkillNodeResponse {
 
     public void setHasRequiredChallenge(Boolean hasRequiredChallenge) {
         this.hasRequiredChallenge = hasRequiredChallenge;
+    }
+
+    public String getStarterRepositoryUrl() {
+        return starterRepositoryUrl;
+    }
+
+    public void setStarterRepositoryUrl(String starterRepositoryUrl) {
+        this.starterRepositoryUrl = starterRepositoryUrl;
     }
 
     public Boolean getPracticeSubmissionEnabled() {

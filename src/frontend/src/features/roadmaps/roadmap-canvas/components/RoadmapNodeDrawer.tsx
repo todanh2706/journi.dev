@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, BookOpen, Check, CheckCircle2, Clock3, Code2, ExternalLink, Gauge, History, Lightbulb, Link2, ListChecks, LoaderCircle, Lock, X } from "lucide-react";
+import { AlertCircle, BookOpen, Check, CheckCircle2, Clock3, Code2, ExternalLink, Gauge, GitFork, History, Lightbulb, Link2, ListChecks, LoaderCircle, Lock, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import type { RoadmapSkillNodeData } from "../types";
@@ -194,12 +194,15 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
         ) : practiceAction !== "hidden" ? (
           <footer className="border-t border-line bg-surface/70 p-5">
             {practiceAction === "history" ? (
-              <Link
-                to={`/dashboard/roadmaps/${skillNode.roadmapId}/nodes/${skillNode.nodeId}/practice`}
-                className="secondary-button w-full"
-              >
-                <History aria-hidden="true" size={16} /> View practice history
-              </Link>
+              <>
+                <Link
+                  to={`/dashboard/roadmaps/${skillNode.roadmapId}/nodes/${skillNode.nodeId}/practice`}
+                  className="secondary-button w-full"
+                >
+                  <History aria-hidden="true" size={16} /> View practice history
+                </Link>
+                <StarterRepositoryLink href={skillNode.starterRepositoryUrl} />
+              </>
             ) : practiceAction === "start" ? (
               <div>
                 <Link
@@ -208,6 +211,7 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
                 >
                   <Code2 aria-hidden="true" size={16} /> Start practice
                 </Link>
+                <StarterRepositoryLink href={skillNode.starterRepositoryUrl} />
                 <p className="mt-2 text-center text-xs leading-5 text-subtle">Work in your IDE, push to GitHub, then submit an exact commit.</p>
               </div>
             ) : (
@@ -218,6 +222,7 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
                 >
                   <BookOpen aria-hidden="true" size={16} /> View practice brief
                 </Link>
+                <StarterRepositoryLink href={skillNode.starterRepositoryUrl} />
                 <p className="mt-2 text-center text-xs leading-5 text-subtle">Review the task now. Submission will unlock when its grader is ready.</p>
               </div>
             )}
@@ -225,5 +230,15 @@ export function RoadmapNodeDrawer({ node, onClose, onCompleteNode }: RoadmapNode
         ) : null}
       </aside>
     </div>
+  );
+}
+
+function StarterRepositoryLink({ href }: { href?: string | null }) {
+  if (!href) return null;
+
+  return (
+    <a href={href} {...SAFE_EXTERNAL_LINK_PROPS} className="secondary-button mt-3 w-full">
+      <GitFork aria-hidden="true" size={16} /> Open starter repository <ExternalLink aria-hidden="true" size={14} />
+    </a>
   );
 }
