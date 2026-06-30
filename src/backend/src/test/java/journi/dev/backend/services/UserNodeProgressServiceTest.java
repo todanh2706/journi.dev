@@ -214,6 +214,90 @@ class UserNodeProgressServiceTest {
         assertThat(completedProgress.getCompletedAt()).isEqualTo(firstCompletedAt);
     }
 
+    @DisplayName("[TEST] Opening an unlocked assessment stores an IN_PROGRESS progress record")
+    @Test
+    void markAssessmentInProgressStoresAssessmentProgress() {
+        User user = TestData.user();
+        SkillNode practice = TestData.node("collections-practice", 4);
+        practice.setNodeType(NodeType.PRACTICE);
+
+        when(nodePrerequisiteRepository.findByChildNode_NodeIdIn(anyCollection())).thenReturn(List.of());
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeIdIn(eq(user.getUserId()), anyCollection()))
+                .thenReturn(List.of());
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeId(user.getUserId(), practice.getNodeId()))
+                .thenReturn(Optional.empty());
+        when(userNodeProgressRepository.save(any(UserNodeProgress.class))).thenAnswer(invocation -> {
+            UserNodeProgress progress = invocation.getArgument(0);
+            progress.setProgressId(UUID.randomUUID());
+            return progress;
+        });
+
+        UserNodeProgressResponse response = userNodeProgressService.markAssessmentInProgress(user, practice);
+
+        assertThat(response.getStatus()).isEqualTo(ProgressStatus.IN_PROGRESS);
+        assertThat(response.getCompletedAt()).isNull();
+
+        ArgumentCaptor<UserNodeProgress> progressCaptor = ArgumentCaptor.forClass(UserNodeProgress.class);
+        verify(userNodeProgressRepository).save(progressCaptor.capture());
+        UserNodeProgress savedProgress = progressCaptor.getValue();
+        assertThat(savedProgress.getNode()).isSameAs(practice);
+        assertThat(savedProgress.getStatus()).isEqualTo(ProgressStatus.IN_PROGRESS);
+        assertThat(savedProgress.getUnlockedAt()).isNotNull();
+        assertThat(savedProgress.getCompletedAt()).isNull();
+        assertThat(savedProgress.getLastAccessedAt()).isNotNull();
+    }
+
+    @DisplayName("[TEST] Assessment progress does not downgrade a completed node back to IN_PROGRESS")
+    @Test
+    void markAssessmentInProgressPreservesCompletedAssessment() {
+        User user = TestData.user();
+        SkillNode project = TestData.node("portfolio-project", 5);
+        project.setNodeType(NodeType.PROJECT);
+        UserNodeProgress completedProgress = TestData.progress(user, project, ProgressStatus.COMPLETED);
+        LocalDateTime firstCompletedAt = LocalDateTime.of(2026, 6, 22, 9, 30);
+        completedProgress.setUnlockedAt(firstCompletedAt.minusHours(1));
+        completedProgress.setCompletedAt(firstCompletedAt);
+
+        when(nodePrerequisiteRepository.findByChildNode_NodeIdIn(anyCollection())).thenReturn(List.of());
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeIdIn(eq(user.getUserId()), anyCollection()))
+                .thenReturn(List.of(completedProgress));
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeId(user.getUserId(), project.getNodeId()))
+                .thenReturn(Optional.of(completedProgress));
+        when(userNodeProgressRepository.save(completedProgress)).thenReturn(completedProgress);
+
+        UserNodeProgressResponse response = userNodeProgressService.markAssessmentInProgress(user, project);
+
+        assertThat(response.getStatus()).isEqualTo(ProgressStatus.COMPLETED);
+        assertThat(response.getCompletedAt()).isEqualTo(firstCompletedAt);
+        assertThat(completedProgress.getStatus()).isEqualTo(ProgressStatus.COMPLETED);
+        assertThat(completedProgress.getCompletedAt()).isEqualTo(firstCompletedAt);
+    }
+
+    @DisplayName("[TEST] A passed assessment records COMPLETED progress without losing unlock metadata")
+    @Test
+    void completeAssessmentFromPassedSubmissionStoresCompletion() {
+        User user = TestData.user();
+        SkillNode practice = TestData.node("jdbc-practice", 6);
+        practice.setNodeType(NodeType.PRACTICE);
+        UserNodeProgress inProgress = TestData.progress(user, practice, ProgressStatus.IN_PROGRESS);
+        LocalDateTime unlockedAt = LocalDateTime.of(2026, 6, 23, 13, 15);
+        inProgress.setUnlockedAt(unlockedAt);
+
+        when(userNodeProgressRepository.findByUser_UserIdAndNode_NodeId(user.getUserId(), practice.getNodeId()))
+                .thenReturn(Optional.of(inProgress));
+        when(userNodeProgressRepository.save(inProgress)).thenReturn(inProgress);
+
+        UserNodeProgressResponse response = userNodeProgressService.completeAssessmentFromPassedSubmission(user,
+                practice);
+
+        assertThat(response.getStatus()).isEqualTo(ProgressStatus.COMPLETED);
+        assertThat(response.getUnlockedAt()).isEqualTo(unlockedAt);
+        assertThat(response.getCompletedAt()).isNotNull();
+        assertThat(inProgress.getStatus()).isEqualTo(ProgressStatus.COMPLETED);
+        assertThat(inProgress.getUnlockedAt()).isEqualTo(unlockedAt);
+        assertThat(inProgress.getCompletedAt()).isNotNull();
+    }
+
     @DisplayName("[TEST] Non-lesson nodes cannot be completed manually")
     @Test
     void markNodeCompletedRejectsNonLessonNode() {

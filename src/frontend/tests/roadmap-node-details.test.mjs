@@ -132,6 +132,7 @@ test("keeps unlocked practice briefs accessible when automated submission is dis
 
 test("validates repository, branch, and immutable commit fields before submission", () => {
   assert.deepEqual(validateSubmission({ repositoryUrl: "https://github.com/alex/catalog", branch: "feature/books", commitSha: "a".repeat(40) }), {});
+  assert.deepEqual(validateSubmission({ repositoryUrl: "https://github.com/todanh2706/journi-practice-collections-and-generics", branch: "main", commitSha: "b".repeat(40) }), {});
   assert.deepEqual(Object.keys(validateSubmission({ repositoryUrl: "http://localhost/repo", branch: "../main", commitSha: "abc" })).sort(), ["branch", "commitSha", "repositoryUrl"]);
 });
 

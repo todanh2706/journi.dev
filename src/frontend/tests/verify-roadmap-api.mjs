@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
-const baseUrl = process.env.JOURNI_API_BASE_URL ?? "http://backend:8080/api/v1";
+const baseUrl = process.env.JOURNI_API_BASE_URL ?? "http://localhost:8000/api/v1";
+const collectionsStarterRepositoryUrl = "https://github.com/todanh2706/journi-practice-collections-and-generics";
 const runId = Date.now();
 const credentials = {
   username: `roadmap_verify_${runId}`,
@@ -56,6 +57,9 @@ const nodesBefore = await authenticatedRequest(`/roadmaps/${roadmap.roadmapId}/n
 const sortedBefore = [...nodesBefore].sort((left, right) => left.orderIndex - right.orderIndex);
 const rootBefore = sortedBefore[0];
 const nextBefore = sortedBefore[1];
+const rootDetailsBefore = await authenticatedRequest(`/skill-nodes/${rootBefore.nodeId}`);
+const nextDetailsBefore = await authenticatedRequest(`/skill-nodes/${nextBefore.nodeId}`);
+const progressBefore = await authenticatedRequest("/users/me/progress");
 
 assert.equal(rootBefore.progressStatus, "AVAILABLE");
 assert.equal(rootBefore.isLocked, false);
@@ -69,6 +73,18 @@ assert.equal(nextBefore.contentJson, null);
 assert.equal(nextBefore.summary, null);
 assert.deepEqual(nextBefore.checklist, []);
 assert.deepEqual(nextBefore.learningResources, []);
+assert.equal(rootDetailsBefore.progressStatus, "AVAILABLE");
+assert.equal(rootDetailsBefore.isLocked, false);
+assert.equal(typeof rootDetailsBefore.summary, "string");
+assert.ok(rootDetailsBefore.checklist.length >= 3);
+assert.ok(rootDetailsBefore.learningResources.length >= 2);
+assert.equal(nextDetailsBefore.progressStatus, "LOCKED");
+assert.equal(nextDetailsBefore.isLocked, true);
+assert.equal(nextDetailsBefore.contentJson, null);
+assert.equal(nextDetailsBefore.summary, null);
+assert.deepEqual(nextDetailsBefore.checklist, []);
+assert.deepEqual(nextDetailsBefore.learningResources, []);
+assert.deepEqual(progressBefore, []);
 
 const completion = await authenticatedRequest(`/users/me/progress/nodes/${rootBefore.nodeId}/complete`, {
   method: "POST",
@@ -79,6 +95,8 @@ const nodesAfter = await authenticatedRequest(`/roadmaps/${roadmap.roadmapId}/no
 const sortedAfter = [...nodesAfter].sort((left, right) => left.orderIndex - right.orderIndex);
 const rootAfter = sortedAfter[0];
 const nextAfter = sortedAfter[1];
+const nextDetailsAfter = await authenticatedRequest(`/skill-nodes/${nextAfter.nodeId}`);
+const progressAfter = await authenticatedRequest("/users/me/progress");
 
 assert.equal(rootAfter.progressStatus, "COMPLETED");
 assert.equal(rootAfter.isLocked, false);
@@ -87,5 +105,50 @@ assert.equal(nextAfter.isLocked, false);
 assert.equal(typeof nextAfter.summary, "string");
 assert.ok(nextAfter.checklist.length >= 3);
 assert.ok(nextAfter.learningResources.length >= 2);
+assert.equal(nextDetailsAfter.progressStatus, "AVAILABLE");
+assert.equal(nextDetailsAfter.isLocked, false);
+assert.equal(typeof nextDetailsAfter.summary, "string");
+assert.ok(nextDetailsAfter.checklist.length >= 3);
+assert.ok(nextDetailsAfter.learningResources.length >= 2);
+assert.equal(progressAfter.length, 1);
+assert.equal(progressAfter[0].nodeId, rootBefore.nodeId);
+assert.equal(progressAfter[0].status, "COMPLETED");
+assert.ok(progressAfter[0].completedAt);
 
-console.log("Verified roadmap API flow: AVAILABLE -> COMPLETED, next node LOCKED -> AVAILABLE, gated details hidden then revealed.");
+const secondCompletion = await authenticatedRequest(`/users/me/progress/nodes/${nextAfter.nodeId}/complete`, {
+  method: "POST",
+});
+assert.equal(secondCompletion.status, "COMPLETED");
+
+const nodesAfterSecondCompletion = await authenticatedRequest(`/roadmaps/${roadmap.roadmapId}/nodes`);
+const sortedAfterSecondCompletion = [...nodesAfterSecondCompletion].sort((left, right) => left.orderIndex - right.orderIndex);
+const thirdAfterSecondCompletion = sortedAfterSecondCompletion[2];
+assert.equal(thirdAfterSecondCompletion.slug, "oop-in-java");
+assert.equal(thirdAfterSecondCompletion.progressStatus, "AVAILABLE");
+assert.equal(thirdAfterSecondCompletion.isLocked, false);
+
+const thirdCompletion = await authenticatedRequest(`/users/me/progress/nodes/${thirdAfterSecondCompletion.nodeId}/complete`, {
+  method: "POST",
+});
+assert.equal(thirdCompletion.status, "COMPLETED");
+
+const nodesAfterThirdCompletion = await authenticatedRequest(`/roadmaps/${roadmap.roadmapId}/nodes`);
+const sortedAfterThirdCompletion = [...nodesAfterThirdCompletion].sort((left, right) => left.orderIndex - right.orderIndex);
+const firstPracticeNode = sortedAfterThirdCompletion.find((node) => node.slug === "collections-and-generics");
+assert.ok(firstPracticeNode, "Collections and Generics practice node must exist");
+assert.equal(firstPracticeNode.progressStatus, "AVAILABLE");
+assert.equal(firstPracticeNode.isLocked, false);
+assert.equal(firstPracticeNode.starterRepositoryUrl, collectionsStarterRepositoryUrl);
+assert.equal(firstPracticeNode.starterRepositoryUrl.includes("journi.dev"), false);
+
+const practiceChallenge = await authenticatedRequest(`/skill-nodes/${firstPracticeNode.nodeId}/challenge`);
+assert.equal(practiceChallenge.nodeId, firstPracticeNode.nodeId);
+assert.equal(practiceChallenge.starterRepositoryUrl, collectionsStarterRepositoryUrl);
+assert.equal(practiceChallenge.starterRepositoryUrl.includes("journi.dev"), false);
+assert.deepEqual(practiceChallenge.expectedArtifacts, [
+  "src/practice/collections-and-generics/LibraryCatalog.java",
+  "src/practice/collections-and-generics/Book.java",
+  "src/practice/collections-and-generics/README.md",
+]);
+
+console.log("Verified roadmap API flow: individual node details stay gated until unlock, lesson completion is persisted, seeded practice unlock exposes the curated starter repository, and the next seeded node unlocks immediately.");

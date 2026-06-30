@@ -171,7 +171,21 @@ Checklist items remain read-only guidance in the MVP. They help the learner deci
 
 Submission history and detail endpoints are learner-owned. Evaluator images, commands, hidden checks, provider credentials, and other learners' attempts are never returned. `PRACTICE_SUBMISSIONS_ENABLED` defaults to `false`; enable it only after local isolation checks pass. `Collections and Generics` is the first challenge-level pilot, while the remaining assessment definitions stay disabled individually.
 
+Seeded assessment starter repositories are curated outside this app repository. The mapping, owner policy, default branch, and readiness notes live in [docs/PRACTICE_STARTER_REPOSITORIES.md](docs/PRACTICE_STARTER_REPOSITORIES.md). Seed validation rejects malformed GitHub repository URLs, duplicate starter repository mappings, and links back to the main `journi.dev` source repository.
+
 Rollback is configuration-first: set `PRACTICE_SUBMISSIONS_ENABLED=false` and stop the `grader` service. Existing attempts and completed progress remain auditable; do not delete submission history or reverse completed assessment progress without an explicit data migration.
+
+### Regression Checks
+
+Use the targeted regression commands before or after feature work:
+
+```bash
+cd src/backend && ./mvnw test
+cd src/frontend && npm run test:feature-regression
+cd src/frontend && npm run verify:roadmap-api
+```
+
+`verify:roadmap-api` assumes the local stack is available at `http://localhost:8000/api/v1` unless `JOURNI_API_BASE_URL` is set. The current feature-to-test inventory lives in [docs/REGRESSION_TESTING.md](docs/REGRESSION_TESTING.md).
 
 ### Running with Docker Compose
 

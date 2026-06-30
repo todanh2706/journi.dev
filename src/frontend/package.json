@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test:feature-regression": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:roadmap-node-details": "node --experimental-strip-types --test tests/roadmap-node-details.test.mjs",
+    "verify:roadmap-api": "node tests/verify-roadmap-api.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
