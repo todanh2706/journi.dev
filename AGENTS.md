@@ -31,11 +31,11 @@ The MVP includes:
 1. Authentication
     - Sign up
     - Sign in
-    - JWT-based protected routes
+    - JWT-based API protection with auth-aware frontend routes and session bootstrap
 
 2. Roadmap Catalog
     - List predefined roadmaps
-    - Example roadmap: Backend Java Spring Boot
+    - Example roadmap: Backend Java Spring Boot Developer
 
 3. Roadmap Detail
     - Show all skill nodes in order
@@ -47,12 +47,17 @@ The MVP includes:
     - Prerequisites
     - Learning resources
     - Checklist
-    - Basic challenge placeholder
+    - Practice brief for supported `PRACTICE` and `PROJECT` nodes
 
 5. User Progress
-    - Mark node as completed
+    - Mark unlocked `LESSON` nodes as completed
     - Store user progress
     - Unlock next node when prerequisites are completed
+
+6. GitHub Practice Pilot
+    - Open a practice workspace for supported `PRACTICE` and `PROJECT` nodes
+    - View seeded challenge instructions and starter repository
+    - Submit a public GitHub repository URL, branch, and exact commit SHA for deterministic evaluation
 
 ## Out of Scope for MVP
 
@@ -67,12 +72,14 @@ Do not implement these unless the user explicitly asks:
 - Advanced leaderboard
 - Dynamic AI-generated roadmaps
 - Production AWS deployment
-- Complex React Flow graph visualization
+- Graph editing/authoring beyond the current read-only roadmap canvas
 - Large-scale recommendation engine
 - Payment/subscription system
 - Mobile app
 
 If a task seems to require one of these features, first look for a simpler MVP-compatible solution.
+
+Some future-domain entities, specs, and placeholders already exist in the repository. Treat them as non-MVP unless the task explicitly targets them.
 
 ## Repository Structure
 
@@ -147,6 +154,8 @@ Expected stack:
 - TailwindCSS
 - Axios
 - Lucide React
+- `@xyflow/react`
+- `@dagrejs/dagre`
 
 Frontend dependency rules:
 
@@ -155,7 +164,7 @@ Frontend dependency rules:
 3. Use APIs compatible with the installed React Router major version.
 4. Use TailwindCSS conventions compatible with the installed TailwindCSS major version.
 5. Use the existing Axios setup instead of creating new Axios instances inside components.
-6. Do not introduce Redux, Zustand, TanStack Query, React Flow, or another UI framework unless explicitly requested.
+6. Do not introduce Redux, Zustand, TanStack Query, or another new UI framework unless explicitly requested. Preserve the existing `@xyflow/react` roadmap-canvas stack instead of replacing or expanding it casually.
 7. Do not rewrite the frontend architecture just to solve a local problem.
 8. Do not duplicate API base URLs inside components.
 9. Do not add dependencies for problems that can be solved with existing project tools.
@@ -242,7 +251,7 @@ repositories/    database access
 entities/        JPA entities
 dtos/            request/response DTOs
 mappers/         MapStruct mappers
-configs/         security, CORS, OpenAPI, infrastructure config
+configurations/  security, CORS, OpenAPI, infrastructure config
 exceptions/      custom exceptions and global exception handling
 ```
 
@@ -345,7 +354,7 @@ features/auth/services/auth-related API functions
 features/auth/hooks/auth-related hooks
 features/auth/components/auth-specific components and icons
 pages/sign-in or sign-up pages
-protected route components
+AuthProvider/AuthContext and any auth-aware route wrappers or guards
 ```
 
 ### Roadmap and Skill Node
@@ -424,15 +433,23 @@ Recommended MVP endpoints:
 ```text
 POST   /api/v1/auth/signup
 POST   /api/v1/auth/login
+GET    /api/v1/auth/csrf
+POST   /api/v1/auth/refresh
+POST   /api/v1/auth/logout
 
 GET    /api/v1/roadmaps
 GET    /api/v1/roadmaps/{roadmapId}
 GET    /api/v1/roadmaps/{roadmapId}/nodes
 
 GET    /api/v1/skill-nodes/{nodeId}
+GET    /api/v1/skill-nodes/{nodeId}/challenge
 
 GET    /api/v1/users/me/progress
 POST   /api/v1/users/me/progress/nodes/{nodeId}/complete
+POST   /api/v1/users/me/challenges/{challengeId}/submissions
+GET    /api/v1/users/me/challenges/{challengeId}/submissions
+GET    /api/v1/users/me/submissions/{submissionId}
+POST   /api/v1/users/me/submissions/{submissionId}/retry
 ```
 
 When adding an endpoint:
@@ -472,7 +489,7 @@ Rules:
 
 1. Store and read the access token consistently.
 2. Attach JWT using `Authorization: Bearer <token>`.
-3. Protected pages should redirect unauthenticated users to sign in.
+3. Follow the local pattern for auth-aware screens: restore the session first, then either render the authenticated workspace, a guest state, or a sign-in CTA depending on the route's current behavior.
 4. Keep auth API calls inside auth-related service/context code.
 5. Do not scatter login/logout/token logic across unrelated components.
 
@@ -497,13 +514,15 @@ Core domain entities should support:
 - Prerequisite relationship
 - Learning content/resource
 - User node progress
-- Challenge/submission later
+- Challenge/submission flow for supported practice nodes
 
 For MVP, implement roadmap progression with simple rules:
 
 1. A node is `COMPLETED` if the user has completed it.
 2. A node is `AVAILABLE` if all prerequisite nodes are completed.
 3. A node is `LOCKED` if at least one prerequisite is incomplete.
+4. Manual completion applies to unlocked `LESSON` nodes.
+5. `PRACTICE` and `PROJECT` nodes complete through their seeded challenge/submission workflow, not the lesson completion endpoint.
 
 Do not implement complex DAG algorithms unless needed.
 
@@ -518,7 +537,7 @@ For MVP, prefer predefined seed data over dynamic AI-generated content.
 Seed at least one roadmap:
 
 ```text
-Backend Java Spring Boot
+Backend Java Spring Boot Developer
 ```
 
 Suggested node order:
@@ -549,6 +568,7 @@ Each seed node should have:
 - prerequisites
 - learning resources
 - checklist
+- optional required challenge metadata for `PRACTICE` and `PROJECT` nodes
 
 Seed data should be simple, deterministic, and easy to reset.
 
@@ -695,6 +715,7 @@ npm install
 npm run dev
 npm run build
 npm run lint
+npm run test:roadmap-node-details
 ```
 
 ### Backend
@@ -723,6 +744,7 @@ For frontend:
 
 - Run `npm run build` after TypeScript, route, or API contract changes.
 - Run `npm run lint` after component, service, or hook changes when possible.
+- Run the targeted frontend test script when changing logic already covered in `src/frontend/tests/*`.
 
 For backend:
 
